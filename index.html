@@ -17,7 +17,7 @@
   <h2 class="mb-4 text-center text-primary">Control de Registros y Geolocalización</h2>
   
   <!-- Buscador en tiempo real -->
-  <div class="card mb-4 bg-light border-primary">
+  <div class="card mb-3 bg-light border-primary">
     <div class="card-body row g-3 align-items-center">
       <div class="col-md-9">
         <input type="text" id="buscarTermino" class="form-control form-control-lg" placeholder="Buscar por CURP o ID existente...">
@@ -26,6 +26,14 @@
         <button type="button" class="btn btn-primary btn-lg w-100" onclick="buscarRegistro()">🔍 Buscar</button>
       </div>
     </div>
+  </div>
+
+  <!-- Botón GPS Principal -->
+  <div class="mb-4">
+    <button type="button" id="btnGps" class="btn btn-danger btn-lg w-100 fw-bold py-3 shadow-sm" onclick="obtenerCoordenadas()">
+      📍 Obtener Ubicación GPS en Tiempo Real
+    </button>
+    <div id="statusGps" class="form-text text-center mt-2 fw-semibold text-secondary"></div>
   </div>
 
   <!-- Formulario -->
@@ -71,8 +79,8 @@
       <div class="col-md-4"><label class="form-label">C.P. Original</label><input type="text" id="CP_ORIGINAL" class="form-control"></div>
       <div class="col-md-4"><label class="form-label">Calle Original</label><input type="text" id="CALLE_ORIGINAL" class="form-control"></div>
       <div class="col-12"><label class="form-label">Dirección Formateada (Address)</label><input type="text" id="ADDRESS" class="form-control"></div>
-      <div class="col-md-6"><label class="form-label">Latitud</label><input type="text" id="Latitude" class="form-control"></div>
-      <div class="col-md-6"><label class="form-label">Longitud</label><input type="text" id="Longitude" class="form-control"></div>
+      <div class="col-md-6"><label class="form-label">Latitud</label><input type="text" id="Latitude" class="form-control" readonly placeholder="Se llena con el botón de arriba"></div>
+      <div class="col-md-6"><label class="form-label">Longitud</label><input type="text" id="Longitude" class="form-control" readonly placeholder="Se llena con el botón de arriba"></div>
     </div>
 
     <div class="mt-4 row">
@@ -90,6 +98,52 @@
   // REEMPLAZA ESTA URL CON LA QUE COPIASTE DE GOOGLE APPS SCRIPT
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCz3tlFdMRGBn5WnXNjBoPkUsayBxQE0bA4xYPCb6jI1EU1jv4SiehEkR9ObuDuxfl/exec";
 
+  // Función nativa para Geolocalización mediante el navegador
+  function obtenerCoordenadas() {
+    const status = document.getElementById("statusGps");
+    const btn = document.getElementById("btnGps");
+
+    if (!navigator.geolocation) {
+      status.innerText = "❌ Tu navegador no soporta geolocalización.";
+      status.className = "form-text text-center mt-2 fw-bold text-danger";
+      return;
+    }
+
+    status.innerText = "⏳ Localizando dispositivo...";
+    status.className = "form-text text-center mt-2 fw-semibold text-warning";
+    btn.disabled = true;
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        document.getElementById("Latitude").value = position.coords.latitude;
+        document.getElementById("Longitude").value = position.coords.longitude;
+        
+        status.innerText = "✅ ¡Coordenadas GPS obtenidas con éxito!";
+        status.className = "form-text text-center mt-2 fw-bold text-success";
+        btn.disabled = false;
+      },
+      (error) => {
+        btn.disabled = false;
+        status.className = "form-text text-center mt-2 fw-bold text-danger";
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            status.innerText = "❌ Error: Permiso denegado por el usuario.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            status.innerText = "❌ Error: Ubicación no disponible.";
+            break;
+          case error.TIMEOUT:
+            status.innerText = "❌ Error: Tiempo de espera agotado.";
+            break;
+          default:
+            status.innerText = "❌ Error desconocido al obtener GPS.";
+            break;
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } // Solicita máxima precisión
+    );
+  }
+
   function buscarRegistro() {
     const valor = document.getElementById("buscarTermino").value.trim();
     if(!valor) return alert("Por favor escribe un ID o CURP.");
@@ -102,6 +156,7 @@
             let el = document.getElementById(key);
             if(el) el.value = res.datos[key];
           }
+          document.getElementById("statusGps").innerText = ""; // Limpia estatus gps anterior
           alert("¡Registro encontrado y cargado con éxito!");
         } else {
           alert(res.mensaje);
@@ -121,7 +176,7 @@
 
     fetch(WEB_APP_URL, {
       method: "POST",
-      mode: "no-cors", // Evita problemas de CORS al enviar a Google
+      mode: "no-cors",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     })
@@ -135,6 +190,7 @@
   function limpiar() {
     document.getElementById("miFormulario").reset();
     document.getElementById("buscarTermino").value = "";
+    document.getElementById("statusGps").innerText = "";
   }
 </script>
 </body>
