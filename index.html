@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestor de Registros - Sheets & GitHub</title>
+  <link rel="stylesheet" href="https://jsdelivr.net">
+  <style>
+    body { padding: 20px; background-color: #f4f6f9; }
+    .form-container { max-width: 950px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .section-title { border-bottom: 2px solid #198754; padding-bottom: 5px; margin-top: 25px; margin-bottom: 15px; color: #198754; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<div class="form-container">
+  <h2 class="mb-4 text-center text-primary">Control de Registros y Geolocalización</h2>
+  
+  <!-- Buscador en tiempo real -->
+  <div class="card mb-4 bg-light border-primary">
+    <div class="card-body row g-3 align-items-center">
+      <div class="col-md-9">
+        <input type="text" id="buscarTermino" class="form-control form-control-lg" placeholder="Buscar por CURP o ID existente...">
+      </div>
+      <div class="col-md-3">
+        <button type="button" class="btn btn-primary btn-lg w-100" onclick="buscarRegistro()">🔍 Buscar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario -->
+  <form id="miFormulario">
+    <div class="section-title">Datos Básicos de Identificación</div>
+    <div class="row g-3">
+      <div class="col-md-4"><label class="form-label">CURP</label><input type="text" id="CURP" class="form-control" required></div>
+      <div class="col-md-4"><label class="form-label">ID</label><input type="text" id="ID" class="form-control"></div>
+      <div class="col-md-4"><label class="form-label">Nombre 2</label><input type="text" id="NOMBRE2" class="form-control"></div>
+      <div class="col-md-6"><label class="form-label">Apellido Paterno</label><input type="text" id="AP_PATERNO" class="form-control"></div>
+      <div class="col-md-6"><label class="form-label">Apellido Materno</label><input type="text" id="AP_MATERNO" class="form-control"></div>
+    </div>
+
+    <div class="section-title">Medios de Contacto</div>
+    <div class="row g-3">
+      <div class="col-md-6"><label class="form-label">Teléfono Fijo</label><input type="text" id="TEL_FIJO" class="form-control"></div>
+      <div class="col-md-6"><label class="form-label">Teléfono Celular</label><input type="text" id="TEL_CEL" class="form-control"></div>
+    </div>
+
+    <div class="section-title">Domicilio de Actualización</div>
+    <div class="row g-3">
+      <div class="col-md-4"><label class="form-label">Municipio</label><input type="text" id="MUNICIPIO" class="form-control"></div>
+      <div class="col-md-4"><label class="form-label">Localidad</label><input type="text" id="LOCALIDAD" class="form-control"></div>
+      <div class="col-md-4"><label class="form-label">Colonia</label><input type="text" id="COLONIA" class="form-control"></div>
+      <div class="col-md-3"><label class="form-label">Código Postal (C.P.)</label><input type="text" id="CP" class="form-control"></div>
+      <div class="col-md-5"><label class="form-label">Calle</label><input type="text" id="CALLE" class="form-control"></div>
+      <div class="col-md-2"><label class="form-label">Num Ext</label><input type="text" id="NUM_EXT" class="form-control"></div>
+      <div class="col-md-2"><label class="form-label">Num Int</label><input type="text" id="NUM_INT" class="form-control"></div>
+      <div class="col-12"><label class="form-label">Referencia</label><input type="text" id="REFERENCIA" class="form-control"></div>
+    </div>
+
+    <div class="section-title">Estatus Operativo</div>
+    <div class="row g-3">
+      <div class="col-md-4"><label class="form-label">Situación</label><input type="text" id="SITUACION" class="form-control"></div>
+      <div class="col-md-4"><label class="form-label">Causal</label><input type="text" id="CAUSAL" class="form-control"></div>
+      <div class="col-md-4"><label class="form-label">SIFUB</label><input type="text" id="SIFUB" class="form-control"></div>
+      <div class="col-md-12"><label class="form-label">Unnamed: 20</label><input type="text" id="Unnamed_20" class="form-control"></div>
+    </div>
+
+    <div class="section-title">Historial Original y Ubicación Geográfica</div>
+    <div class="row g-3">
+      <div class="col-md-4"><label class="form-label">Colonia Original</label><input type="text" id="COLONIA_ORIGINAL" class="form-control"></div>
+      <div class="col-md-4"><label class="form-label">C.P. Original</label><input type="text" id="CP_ORIGINAL" class="form-control"></div>
+      <div class="col-md-4"><label class="form-label">Calle Original</label><input type="text" id="CALLE_ORIGINAL" class="form-control"></div>
+      <div class="col-12"><label class="form-label">Dirección Formateada (Address)</label><input type="text" id="ADDRESS" class="form-control"></div>
+      <div class="col-md-6"><label class="form-label">Latitud</label><input type="text" id="Latitude" class="form-control"></div>
+      <div class="col-md-6"><label class="form-label">Longitud</label><input type="text" id="Longitude" class="form-control"></div>
+    </div>
+
+    <div class="mt-4 row">
+      <div class="col-md-6 mb-2">
+        <button type="button" class="btn btn-success w-100 p-3 fw-bold" onclick="guardarRegistro()">💾 Guardar o Actualizar Datos</button>
+      </div>
+      <div class="col-md-6">
+        <button type="button" class="btn btn-secondary w-100 p-3" onclick="limpiar()">🧹 Limpiar Formulario</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+  // REEMPLAZA ESTA URL CON LA QUE COPIASTE DE GOOGLE APPS SCRIPT
+  const WEB_APP_URL = "TU_URL_DE_APPS_SCRIPT_AQUI";
+
+  function buscarRegistro() {
+    const valor = document.getElementById("buscarTermino").value.trim();
+    if(!valor) return alert("Por favor escribe un ID o CURP.");
+
+    fetch(`${WEB_APP_URL}?buscar=${encodeURIComponent(valor)}`)
+      .then(res => res.json())
+      .then(res => {
+        if(res.estatus === "ok") {
+          for(let key in res.datos) {
+            let el = document.getElementById(key);
+            if(el) el.value = res.datos[key];
+          }
+          alert("¡Registro encontrado y cargado con éxito!");
+        } else {
+          alert(res.mensaje);
+        }
+      })
+      .catch(err => alert("Error de conexión al buscar: " + err));
+  }
+
+  function guardarRegistro() {
+    const form = document.getElementById("miFormulario");
+    if(!form.checkValidity()) return form.reportValidity();
+
+    const payload = {};
+    form.querySelectorAll("input").forEach(input => {
+      payload[input.id] = input.value;
+    });
+
+    fetch(WEB_APP_URL, {
+      method: "POST",
+      mode: "no-cors", // Evita problemas de CORS al enviar a Google
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    })
+    .then(() => {
+      alert("Petición de guardado enviada. Por favor revisa tu Google Sheet.");
+      limpiar();
+    })
+    .catch(err => alert("Error enviando datos: " + err));
+  }
+
+  function limpiar() {
+    document.getElementById("miFormulario").reset();
+    document.getElementById("buscarTermino").value = "";
+  }
+</script>
+</body>
+</html>
