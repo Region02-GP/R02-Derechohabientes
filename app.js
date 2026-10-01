@@ -438,6 +438,12 @@ function goBackFromHistory() {
     changeScreen(previousScreen);
 }
 
+// =========================================================================
+// HISTORIAL DE RESPALDO PARA VISITAS YA SINCRONIZADAS
+// =========================================================================
+let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
+
+// MODIFICADA: Mueve los registros al historial local tras sincronizar con éxito
 async function syncWithSheets() {
     if(pendingSync.length === 0) return alert("No tienes registros pendientes de sincronizar en la cola.");
 
@@ -453,11 +459,16 @@ async function syncWithSheets() {
         const result = await response.json();
 
         if (result.status === "success") {
-            // Vaciar la lista temporal solo tras la confirmación exitosa de Google
+            // RESPALDO COMPLEMENTARIO: Guardamos los registros en el historial sincronizado del día
+            syncedHistory = syncedHistory.concat(pendingSync);
+            localStorage.setItem('syncedHistory', JSON.stringify(syncedHistory));
+
+            // Vaciar la lista temporal de pendientes
             pendingSync = [];
             localStorage.removeItem('pendingSync');
+            
             openHistoryScreen();
-            alert(`¡Excelente! Sincronización realizada en Sheets: ${result.message}`);
+            alert(`¡Excelente! Sincronización realizada en Sheets: ${result.message}\nLos registros quedan respaldados para descarga local.`);
         } else {
             alert(`Error retornado del servidor: ${result.message}`);
         }
@@ -467,31 +478,31 @@ async function syncWithSheets() {
     }
 }
 
-// =========================================================================
-// EXPORTAR AVANCE DEL DÍA DIRECTO A EXCEL / CSV (ÚNICA OPCIÓN DE RESPALDO)
-// =========================================================================
+// MODIFICADA: Une los registros pendientes y los sincronizados en un solo reporte CSV
 function downloadBackupCSV() {
-    if (pendingSync.length === 0) {
-        return alert("No tienes registros de visitas guardados en el teléfono para exportar el día de hoy.");
+    // UNIÓN DE CANDIDATOS: Consolidamos todo el trabajo acumulado en el día
+    const allVisitsOfDay = pendingSync.concat(syncedHistory);
+
+    if (allVisitsOfDay.length === 0) {
+        return alert("No tienes ningún registro de visita (ni pendiente ni sincronizado) en el teléfono para exportar hoy.");
     }
 
-    // 1. Definir de forma estricta los encabezados idénticos a las columnas de tu Sheets
+    // 1. Definir los encabezados idénticos a las columnas de tu Sheets
     const headers = [
         "CURP", "ID", "NOMBRE", "AP_PATERNO", "AP_MATERNO", "TEL_FIJO", "TEL_CEL", 
         "MUNICIPIO", "LOCALIDAD", "SECCION", "COLONIA", "CP", "CALLE", "NUM_EXT", 
         "REFERENCIA", "SITUACION", "CUSAL", "Latitud", "Longitud", "FECHA_MODIFICACION", "USUARIO_MODIFICA"
     ];
 
-    // 2. Crear la primera línea del archivo con los títulos de las columnas
+    // 2. Títulos de las columnas
     let csvRows = [headers.join(",")];
 
-    // 3. Recorrer los registros pendientes y transformarlos en renglones de texto limpios
-    pendingSync.forEach(record => {
+    // 3. Recorrer el universo consolidado de visitas
+    allVisitsOfDay.forEach(record => {
         const values = headers.map(header => {
             let val = record[header] !== undefined ? record[header] : "";
             let valStr = String(val).trim();
             
-            // PROTECCIÓN DE EXCEL: Envolver entre comillas si el campo contiene comas o saltos de línea
             if (valStr.includes(",") || valStr.includes("\n") || valStr.includes('"')) {
                 valStr = `"${valStr.replace(/"/g, '""')}"`;
             }
@@ -500,29 +511,40 @@ function downloadBackupCSV() {
         csvRows.push(values.join(","));
     });
 
-    // 4. Unir todas las líneas con un salto de renglón estándar
+    // 4. Unir líneas con saltos de renglón
     const csvContent = csvRows.join("\n");
 
-    // 5. Agregar el marcador UTF-8 (BOM) para compatibilidad total con acentos y la Ñ
+    // 5. Agregar el marcador UTF-8 (BOM) para compatibilidad total con Excel
     const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
     
-    // 6. Disparar la descarga automática
+    // 6. Ejecutar la descarga
     const downloadAnchor = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    
-    // Formatear el nombre del archivo con la fecha del día actual
     const fechaHoy = new Date().toISOString().slice(0, 10);
     
     downloadAnchor.setAttribute("href", url);
-    downloadAnchor.setAttribute("download", `R02_Avance_${fechaHoy}.csv`);
+    downloadAnchor.setAttribute("download", `R02_Reporte_Completo_${fechaHoy}.csv`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     
-    // Limpieza de memoria de la pestaña
     document.body.removeChild(downloadAnchor);
     URL.revokeObjectURL(url);
 }
 
+// MODIFICADA: Limpia también el nuevo historial al presionar el botón de borrado total
+function clearLocalStorage() {
+    if(confirm("¿Estás absolutamente seguro de vaciar la memoria? Perderás los registros pendientes y el historial de descargas del día.")) {
+        pendingSync = [];
+        syncedHistory = []; // Limpieza del historial
+        localStorage.clear();
+        if(db) {
+            const tx = db.transaction(STORE_NAME, "readwrite");
+            tx.objectStore(STORE_NAME).clear();
+        }
+        openHistoryScreen();
+        alert("Datos e historial del teléfono eliminados correctamente.");
+    }
+}
 
 function clearLocalStorage() {
     if(confirm("¿Estás absolutamente seguro de vaciar la memoria? Perderás los registros pendientes por subir a Sheets.")) {
