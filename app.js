@@ -12,11 +12,12 @@ const AUTHORIZED_CURPS = {
 };
 
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
+let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
 let currentUser = null;
 let previousScreen = 'screen-welcome';
 
 // =========================================================================
-// INITIALIZACIÓN DE INDEXEDDB (Base de Datos Local para 50,000 registros)
+// INITIALIZACIÓN DE INDEXEDDB (Base de Datos Local para soporte masivo)
 // =========================================================================
 const DB_NAME = "R02_DB";
 const DB_VERSION = 1;
@@ -44,9 +45,9 @@ request.onerror = (e) => {
     console.error("Error al abrir IndexedDB:", e.target.error);
 };
 
-// NAVEGACIÓN ENTRE PANTALLAS (ACTUALIZADA PARA PRECARGA DE MEMORIA)
+// NAVEGACIÓN GENERAL ENTRE PANTALLAS
 function changeScreen(screenId) {
-    if(screenId !== 'screen-history') {
+    if (screenId !== 'screen-history') {
         previousScreen = screenId;
     }
     
@@ -58,7 +59,6 @@ function changeScreen(screenId) {
     document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
     document.getElementById(screenId).classList.remove('hidden');
 }
-
 // =========================================================================
 // PANTALLA 1: ACCESO POR CURP
 // =========================================================================
@@ -74,7 +74,7 @@ function login() {
 }
 
 // =========================================================================
-// PANTALLA 2: DESCARGA MASIVA POR BLOQUES (Soporta 50k filas de Sheets)
+// PANTALLA 2: DESCARGA MASIVA POR BLOQUES (Soporta universo de Sheets)
 // =========================================================================
 async function downloadAllDataMassive() {
     const btn = document.getElementById('btn-massive-download');
@@ -82,7 +82,7 @@ async function downloadAllDataMassive() {
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
     
-    if(!db) return alert("La base de datos local aún no está lista. Reintente en un segundo.");
+    if (!db) return alert("La base de datos local aún no está lista. Reintente en un segundo.");
     
     btn.disabled = true;
     progressContainer.style.display = "block";
@@ -111,7 +111,7 @@ async function downloadAllDataMassive() {
                 const store = tx.objectStore(STORE_NAME);
                 
                 data.records.forEach(record => {
-                    if(record.CURP) {
+                    if (record.CURP) {
                         record.CURP = String(record.CURP).replace(/ /g, "").toUpperCase().trim();
                         store.put(record); 
                         totalCargados++;
@@ -124,8 +124,8 @@ async function downloadAllDataMassive() {
             isDone = data.done;
             offset = data.nextOffset;
             
-            // Render de progreso real basado en el avance del offset
-            let percentage = Math.min(100, Math.round((offset / 50000) * 100));
+            // Render de progreso real basado en el avance del offset sobre un estimado de 20k
+            let percentage = Math.min(100, Math.round((offset / 25000) * 100));
             progressBar.style.width = `${percentage}%`;
         }
         
@@ -134,51 +134,32 @@ async function downloadAllDataMassive() {
     } catch (error) {
         console.error(error);
         alert("Ocurrió un error en la transferencia de datos. Verifica tu conexión de red.");
-    } finally {
-        btn.disabled = false;
-    }
+    } window.setTimeout(() => { btn.disabled = false; }, 1000);
 }
-
 // =========================================================================
-// PANTALLA 3: BUSCADOR MULTICRITERIO INTEGRAL
+// PANTALLA 3: BUSCADOR MULTICRITERIO INTEGRAL (MEMORIA CACHÉ RAM)
 // =========================================================================
-
-// Matriz en memoria RAM para búsquedas instantáneas y estables
 let localMemoryDatabase = [];
 
-/**
- * Carga todo el contenido de IndexedDB a la memoria RAM del teléfono
- */
 function preloadDatabaseToMemory() {
     if (!db) return;
-    
     const tx = db.transaction(STORE_NAME, "readonly");
     const store = tx.objectStore(STORE_NAME);
     const requestGetAll = store.getAll(); 
 
     requestGetAll.onsuccess = (e) => {
         localMemoryDatabase = e.target.result || [];
-        console.log(`Base de datos de ${localMemoryDatabase.length} registros cargada con éxito en la memoria RAM.`);
-    };
-
-    requestGetAll.onerror = (err) => {
-        console.error("Error al precargar la base de datos:", err);
+        console.log(`Base de datos de ${localMemoryDatabase.length} registros precargada en RAM.`);
     };
 }
 
-/**
- * Buscador de alto rendimiento protegido contra valores nulos o vacíos
- */
 function searchData() {
     const query = document.getElementById('search-input').value.toLowerCase().trim();
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = "";
 
     if (query.length < 3) return;
-
-    if (localMemoryDatabase.length === 0) {
-        preloadDatabaseToMemory();
-    }
+    if (localMemoryDatabase.length === 0) preloadDatabaseToMemory();
 
     let matchesFound = 0;
 
@@ -192,25 +173,13 @@ function searchData() {
         const apPaterno = item.AP_PATERNO ? String(item.AP_PATERNO).toLowerCase() : "";
         const apMaterno = item.AP_MATERNO ? String(item.AP_MATERNO).toLowerCase() : "";
 
-        const match = calle.includes(query) || 
-                      nombre.includes(query) || 
-                      curp.includes(query) || 
-                      apPaterno.includes(query) || 
-                      apMaterno.includes(query);
+        const match = calle.includes(query) || nombre.includes(query) || curp.includes(query) || apPaterno.includes(query) || apMaterno.includes(query);
 
         if (match) {
             if (matchesFound < 30) {
                 const div = document.createElement('div');
                 div.className = "result-item";
-                
-                const displayNombre = item.NOMBRE || '';
-                const displayPaterno = item.AP_PATERNO || '';
-                const displayMaterno = item.AP_MATERNO || '';
-                const displayCurp = item.CURP || '';
-                const displayCalle = item.CALLE || 'No registrada';
-
-                div.innerHTML = `<strong>${displayNombre} ${displayPaterno} ${displayMaterno}</strong><br><small>CURP: ${displayCurp} | Calle: ${displayCalle}</small>`;
-                
+                div.innerHTML = `<strong>${item.NOMBRE || ''} ${item.AP_PATERNO || ''} ${item.AP_MATERNO || ''}</strong><br><small>CURP: ${item.CURP || ''} | Calle: ${item.CALLE || 'No registrada'}</small>`;
                 div.onclick = () => openForm(item);
                 resultsContainer.appendChild(div);
             }
@@ -224,7 +193,7 @@ function searchData() {
 }
 
 // =========================================================================
-// PANTALLA 4: RELLENO DE FORMULARIO Y CAPTURA GPS REFORZADA CON SINTAXIS FIJA
+// PANTALLA 4: RELLENO DE FORMULARIO Y CAPTURA GPS ESTANDARIZADA
 // =========================================================================
 function openForm(item) {
     document.getElementById('f-curp').value = item.CURP || '';
@@ -249,53 +218,37 @@ function openForm(item) {
     document.getElementById('f-lat').value = "Buscando satélite...";
     document.getElementById('f-lon').value = "Buscando satélite...";
 
-    const gpsOptions = {
-        enableHighAccuracy: true,
-        timeout: 15000,          
-        maximumAge: 0            
-    };
+    const gpsOptions = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
 
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                let rawLat = position.coords.latitude.toFixed(6);
-                let rawLon = position.coords.longitude.toFixed(6);
-                
-                let cleanLat = String(rawLat).replace(",", ".");
-                let cleanLon = String(rawLon).replace(",", ".");
-
+                let cleanLat = String(position.coords.latitude.toFixed(6)).replace(",", ".");
+                let cleanLon = String(position.coords.longitude.toFixed(6)).replace(",", ".");
                 document.getElementById('f-lat').value = cleanLat;
                 document.getElementById('f-lon').value = cleanLon;
-                console.log("GPS Enganchado con punto:", cleanLat, cleanLon);
             },
             (error) => { 
-                console.error("Error de GPS:", error);
                 document.getElementById('f-lat').value = "ERROR";
                 document.getElementById('f-lon').value = "ERROR";
-                
-                if(error.code === 1) alert("⚠️ Error: Has denegado el permiso de GPS a la aplicación. Actívalo en tu navegador.");
-                if(error.code === 2) alert("⚠️ Error: El celular no puede determinar la ubicación actual.");
-                if(error.code === 3) alert("⚠️ Error: Se agotó el tiempo de espera del GPS.");
+                alert("Atención: No se pudo obtener la georreferencia automática. Asegúrese de otorgar permisos de ubicación.");
             },
             gpsOptions
         );
     } else {
         document.getElementById('f-lat').value = "NO COMPATIBLE";
         document.getElementById('f-lon').value = "NO COMPATIBLE";
-        alert("Este celular no cuenta con soporte de hardware para localización GPS.");
     }
-    
     changeScreen('screen-form');
 }
 
 function saveData(event) {
     event.preventDefault();
-    
     const latValue = document.getElementById('f-lat').value;
     const lonValue = document.getElementById('f-lon').value;
 
     if (latValue.includes("Buscando") || latValue === "" || latValue === "ERROR" || latValue === "NO COMPATIBLE") {
-        alert("🛑 BLOQUEO DE SEGURIDAD: No se puede guardar el registro sin la georreferencia del domicilio.");
+        alert("🛑 BLOQUEO: No se puede guardar el registro sin la georreferencia del domicilio.");
         return; 
     }
     
@@ -330,101 +283,22 @@ function saveData(event) {
     localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
 
     alert("Confirmación: Modificación guardada localmente.");
-    
-    document.getElementById('search-input').value = "";
-    document.getElementById('search-results').innerHTML = "";
-    changeScreen('screen-search');
-}
-
-// =========================================================================
-// PANTALLA 4: RELLENO DE FORMULARIO Y OBTENCIÓN AUTOMÁTICA DE GPS
-// =========================================================================
-    // Disparar Georreferencia nativa en tiempo real al abrir el expediente
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                // CORRECCIÓN DEFINITIVA: Convertimos a texto y forzamos el uso de PUNTO decimal en vez de COMA
-                let rawLat = position.coords.latitude.toFixed(6);
-                let rawLon = position.coords.longitude.toFixed(6);
-                
-                // Reemplazamos la coma por el punto si la configuración regional del celular la alteró
-                let cleanLat = String(rawLat).replace(",", ".");
-                let cleanLon = String(rawLon).replace(",", ".");
-
-                document.getElementById('f-lat').value = cleanLat;
-                document.getElementById('f-lon').value = cleanLon;
-                
-                console.log("GPS Formateado con punto con éxito:", cleanLat, cleanLon);
-            },
-            (error) => { 
-                console.error("Error de GPS:", error);
-                document.getElementById('f-lat').value = "ERROR";
-                document.getElementById('f-lon').value = "ERROR";
-                
-                if(error.code === 1) alert("⚠️ Error: Has denegado el permiso de GPS a la aplicación. Actívalo en la barra del navegador.");
-                if(error.code === 2) alert("⚠️ Error: El celular no puede determinar la ubicación actual. Verifica que estés a cielo abierto.");
-                if(error.code === 3) alert("⚠️ Error: Se agotó el tiempo de espera del GPS. Intenta cerrar y abrir el registro nuevamente.");
-            },
-            gpsOptions
-        );
-    } else {
-        document.getElementById('f-lat').value = "NO COMPATIBLE";
-        document.getElementById('f-lon').value = "NO COMPATIBLE";
-        alert("Este celular no cuenta con soporte de hardware para localización GPS.");
-    }
-
-function saveData(event) {
-    event.preventDefault();
-    
-    const record = {
-        CURP: document.getElementById('f-curp').value,
-        ID: document.getElementById('f-id').value,
-        NOMBRE: document.getElementById('f-nombre').value,
-        AP_PATERNO: document.getElementById('f-paterno').value,
-        AP_MATERNO: document.getElementById('f-materno').value,
-        TEL_FIJO: document.getElementById('f-telfijo').value,
-        TEL_CEL: document.getElementById('f-telcel').value,
-        MUNICIPIO: document.getElementById('f-municipio').value,
-        LOCALIDAD: document.getElementById('f-localidad').value,
-        SECCION: document.getElementById('f-seccion').value,
-        COLONIA: document.getElementById('f-colonia').value,
-        CP: document.getElementById('f-cp').value,
-        CALLE: document.getElementById('f-calle').value,
-        NUM_EXT: document.getElementById('f-numext').value,
-        REFERENCIA: document.getElementById('f-referencia').value,
-        SITUACION: document.getElementById('f-situacion').value,
-        CUSAL: document.getElementById('f-causal').value,
-        Latitud: document.getElementById('f-lat').value,
-        Longitud: document.getElementById('f-lon').value,
-        // Datos de auditoría obligatorios para Sheets
-        FECHA_MODIFICACION: new Date().toLocaleString("es-MX"),
-        USUARIO_MODIFICA: currentUser.name
-    };
-
-    // Actualizar el cambio de forma inmediata en la base de datos IndexedDB local
-    const txUpdate = db.transaction(STORE_NAME, "readwrite");
-    txUpdate.objectStore(STORE_NAME).put(record);
-
-    // Almacenar en la cola temporal para envío posterior hacia la nube
-    pendingSync.push(record);
-    localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
-
-    alert("Confirmación: Modificación guardada localmente en la memoria interna del teléfono.");
-    
-    // Limpiar el buscador y retornar a la pantalla 3 para la siguiente visita
     document.getElementById('search-input').value = "";
     document.getElementById('search-results').innerHTML = "";
     changeScreen('screen-search');
 }
 // =========================================================================
-// PANTALLA 5: CONTROL DE BITÁCORA Y SINCRONIZACIÓN COLA OFFLINE
+// PANTALLA 5: HISTORIAL DINÁMICO Y REPORTES UNIFICADOS
 // =========================================================================
 function openHistoryScreen() {
+    // CORRECCIÓN VITAL: Cambia de pantalla primero para evitar bloqueos gráficos
+    changeScreen('screen-history');
+
     document.getElementById('pending-count').innerText = pendingSync.length;
     const logList = document.getElementById('history-log');
     logList.innerHTML = "";
 
-    // 1. Mostrar registros pendientes (En color normal)
+    // 1. Mostrar registros pendientes
     pendingSync.forEach((item) => {
         const div = document.createElement('div');
         div.className = "result-item";
@@ -436,29 +310,20 @@ function openHistoryScreen() {
     syncedHistory.forEach((item) => {
         const div = document.createElement('div');
         div.className = "result-item";
-        div.style.opacity = "0.6"; // Sutilmente más claro por estar archivado
+        div.style.opacity = "0.6"; 
         div.innerHTML = `<strong>✅ ${item.NOMBRE} (${item.CURP})</strong><br><small style="color:green;">Sincronizado con Sheets con éxito</small>`;
         logList.appendChild(div);
     });
-
-    changeScreen('screen-history');
 }
-
 
 function goBackFromHistory() {
     changeScreen(previousScreen);
 }
 
-// =========================================================================
-// HISTORIAL DE RESPALDO PARA VISITAS YA SINCRONIZADAS
-// =========================================================================
-let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
-
-// MODIFICADA: Mueve los registros al historial local tras sincronizar con éxito
 async function syncWithSheets() {
-    if(pendingSync.length === 0) return alert("No tienes registros pendientes de sincronizar en la cola.");
+    if (pendingSync.length === 0) return alert("No tienes registros pendientes de sincronizar en la cola.");
 
-    alert("Conectando y sincronizando con Google Sheets de forma masiva...");
+    alert("Conectando y sincronizando con Google Sheets en bloque...");
     try {
         const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
@@ -470,16 +335,15 @@ async function syncWithSheets() {
         const result = await response.json();
 
         if (result.status === "success") {
-            // RESPALDO COMPLEMENTARIO: Guardamos los registros en el historial sincronizado del día
+            // Mover a bitácora histórica local antes de limpiar la cola temporal
             syncedHistory = syncedHistory.concat(pendingSync);
             localStorage.setItem('syncedHistory', JSON.stringify(syncedHistory));
 
-            // Vaciar la lista temporal de pendientes
             pendingSync = [];
             localStorage.removeItem('pendingSync');
             
             openHistoryScreen();
-            alert(`¡Excelente! Sincronización realizada en Sheets: ${result.message}\nLos registros quedan respaldados para descarga local.`);
+            alert(`¡Excelente! Sincronización realizada en Sheets: ${result.message}`);
         } else {
             alert(`Error retornado del servidor: ${result.message}`);
         }
@@ -489,31 +353,25 @@ async function syncWithSheets() {
     }
 }
 
-// MODIFICADA: Une los registros pendientes y los sincronizados en un solo reporte CSV
 function downloadBackupCSV() {
-    // UNIÓN DE CANDIDATOS: Consolidamos todo el trabajo acumulado en el día
     const allVisitsOfDay = pendingSync.concat(syncedHistory);
 
     if (allVisitsOfDay.length === 0) {
-        return alert("No tienes ningún registro de visita (ni pendiente ni sincronizado) en el teléfono para exportar hoy.");
+        return alert("No tienes ningún registro de visita en el teléfono para exportar hoy.");
     }
 
-    // 1. Definir los encabezados idénticos a las columnas de tu Sheets
     const headers = [
         "CURP", "ID", "NOMBRE", "AP_PATERNO", "AP_MATERNO", "TEL_FIJO", "TEL_CEL", 
         "MUNICIPIO", "LOCALIDAD", "SECCION", "COLONIA", "CP", "CALLE", "NUM_EXT", 
         "REFERENCIA", "SITUACION", "CUSAL", "Latitud", "Longitud", "FECHA_MODIFICACION", "USUARIO_MODIFICA"
     ];
 
-    // 2. Títulos de las columnas
     let csvRows = [headers.join(",")];
 
-    // 3. Recorrer el universo consolidado de visitas
     allVisitsOfDay.forEach(record => {
         const values = headers.map(header => {
             let val = record[header] !== undefined ? record[header] : "";
             let valStr = String(val).trim();
-            
             if (valStr.includes(",") || valStr.includes("\n") || valStr.includes('"')) {
                 valStr = `"${valStr.replace(/"/g, '""')}"`;
             }
@@ -522,13 +380,9 @@ function downloadBackupCSV() {
         csvRows.push(values.join(","));
     });
 
-    // 4. Unir líneas con saltos de renglón
     const csvContent = csvRows.join("\n");
-
-    // 5. Agregar el marcador UTF-8 (BOM) para compatibilidad total con Excel
     const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
     
-    // 6. Ejecutar la descarga
     const downloadAnchor = document.createElement('a');
     const url = URL.createObjectURL(blob);
     const fechaHoy = new Date().toISOString().slice(0, 10);
@@ -542,13 +396,12 @@ function downloadBackupCSV() {
     URL.revokeObjectURL(url);
 }
 
-// MODIFICADA: Limpia también el nuevo historial al presionar el botón de borrado total
 function clearLocalStorage() {
-    if(confirm("¿Estás absolutamente seguro de vaciar la memoria? Perderás los registros pendientes y el historial de descargas del día.")) {
+    if (confirm("¿Estás absolutamente seguro de vaciar la memoria? Perderás los registros pendientes y el historial de descargas del día.")) {
         pendingSync = [];
-        syncedHistory = []; // Limpieza del historial
+        syncedHistory = []; 
         localStorage.clear();
-        if(db) {
+        if (db) {
             const tx = db.transaction(STORE_NAME, "readwrite");
             tx.objectStore(STORE_NAME).clear();
         }
@@ -557,26 +410,12 @@ function clearLocalStorage() {
     }
 }
 
-function clearLocalStorage() {
-    if(confirm("¿Estás absolutamente seguro de vaciar la memoria? Perderás los registros pendientes por subir a Sheets.")) {
-        pendingSync = [];
-        localStorage.clear();
-        if(db) {
-            const tx = db.transaction(STORE_NAME, "readwrite");
-            tx.objectStore(STORE_NAME).clear();
-        }
-        openHistoryScreen();
-        alert("Datos del teléfono eliminados.");
-    }
-}
-
-// =========================================================================
-// REGISTRO DEL SERVICE WORKER PARA CAPACIDAD DE INCIO 100% OFFLINE
-// =========================================================================
+// ACTIVACIÓN DEL SERVICE WORKER PWA
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('Service Worker de R02 registrado con éxito.', reg))
-            .catch(err => console.error('Error de registro del Service Worker:', err));
+            .then(reg => console.log('Service Worker registrado.', reg))
+            .catch(err => console.error('Error de Service Worker:', err));
     });
 }
+
