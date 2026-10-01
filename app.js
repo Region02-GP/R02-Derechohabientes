@@ -236,50 +236,39 @@ function searchData() {
 // =========================================================================
 // PANTALLA 4: RELLENO DE FORMULARIO Y OBTENCIÓN AUTOMÁTICA DE GPS
 // =========================================================================
-function openForm(item) {
-    document.getElementById('f-curp').value = item.CURP || '';
-    document.getElementById('f-id').value = item.ID || '';
-    document.getElementById('f-nombre').value = item.NOMBRE || '';
-    document.getElementById('f-paterno').value = item.AP_PATERNO || '';
-    document.getElementById('f-materno').value = item.AP_MATERNO || '';
-    document.getElementById('f-situacion').value = item.SITUACION || '';
-    document.getElementById('f-causal').value = item.CUSAL || '';
-    
-    document.getElementById('f-telfijo').value = item.TEL_FIJO || '';
-    document.getElementById('f-telcel').value = item.TEL_CEL || '';
-    document.getElementById('f-municipio').value = item.MUNICIPIO || '';
-    document.getElementById('f-localidad').value = item.LOCALIDAD || '';
-    document.getElementById('f-seccion').value = item.SECCION || '';
-    document.getElementById('f-colonia').value = item.COLONIA || '';
-    document.getElementById('f-cp').value = item.CP || '';
-    document.getElementById('f-calle').value = item.CALLE || '';
-    document.getElementById('f-numext').value = item.NUM_EXT || '';
-    document.getElementById('f-referencia').value = item.REFERENCIA || '';
-
-    // Limpieza previa de los campos GPS
-    document.getElementById('f-lat').value = "Obteniendo...";
-    document.getElementById('f-lon').value = "Obteniendo...";
-
     // Disparar Georreferencia nativa en tiempo real al abrir el expediente
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                document.getElementById('f-lat').value = position.coords.latitude;
-                document.getElementById('f-lon').value = position.coords.longitude;
+                // CORRECCIÓN DEFINITIVA: Convertimos a texto y forzamos el uso de PUNTO decimal en vez de COMA
+                let rawLat = position.coords.latitude.toFixed(6);
+                let rawLon = position.coords.longitude.toFixed(6);
+                
+                // Reemplazamos la coma por el punto si la configuración regional del celular la alteró
+                let cleanLat = String(rawLat).replace(",", ".");
+                let cleanLon = String(rawLon).replace(",", ".");
+
+                document.getElementById('f-lat').value = cleanLat;
+                document.getElementById('f-lon').value = cleanLon;
+                
+                console.log("GPS Formateado con punto con éxito:", cleanLat, cleanLon);
             },
             (error) => { 
-                console.error(error);
-                document.getElementById('f-lat').value = "";
-                document.getElementById('f-lon').value = "";
-                alert("Atención: No se pudo obtener la ubicación GPS de forma automática."); 
+                console.error("Error de GPS:", error);
+                document.getElementById('f-lat').value = "ERROR";
+                document.getElementById('f-lon').value = "ERROR";
+                
+                if(error.code === 1) alert("⚠️ Error: Has denegado el permiso de GPS a la aplicación. Actívalo en la barra del navegador.");
+                if(error.code === 2) alert("⚠️ Error: El celular no puede determinar la ubicación actual. Verifica que estés a cielo abierto.");
+                if(error.code === 3) alert("⚠️ Error: Se agotó el tiempo de espera del GPS. Intenta cerrar y abrir el registro nuevamente.");
             },
-            { enableHighAccuracy: true, timeout: 8000 }
+            gpsOptions
         );
     } else {
-        alert("Tu celular no cuenta con soporte de hardware para localización GPS.");
+        document.getElementById('f-lat').value = "NO COMPATIBLE";
+        document.getElementById('f-lon').value = "NO COMPATIBLE";
+        alert("Este celular no cuenta con soporte de hardware para localización GPS.");
     }
-    changeScreen('screen-form');
-}
 
 function saveData(event) {
     event.preventDefault();
