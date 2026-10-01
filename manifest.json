@@ -1,1 +1,22 @@
+{
+  "short_name": "R02-Derechos",
+  "name": "R02-Derechohabientes",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#621132",
+  "theme_color": "#621132",
+  "display": "standalone",
+  "orientation": "portrait"
+}
 
