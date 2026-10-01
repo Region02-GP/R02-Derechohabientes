@@ -3,7 +3,7 @@
 // =========================================================================
 
 // URL del Web App de Google Apps Script (Sustituye con tu URL exacta de producción)
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwcgjwxZjS3k32Y3Ne4zOLhLH5Kxc-Gx0IFOdfM1RigNJ-GD6ev6_JE7N0YBwZZseS/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPj-3FTGf4OsMyLgZcpRDJux_Zx4933Bg_lec0RzA2lOuMUn86Skn0anGwZzhYLPJt/exec";
 
 // CURPs Autorizadas en Código para la Pantalla de Acceso (Pantalla 1)
 const AUTHORIZED_CURPS = {
