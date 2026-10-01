@@ -467,15 +467,62 @@ async function syncWithSheets() {
     }
 }
 
-function downloadBackup() {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(pendingSync));
+// =========================================================================
+// EXPORTAR AVANCE DEL DÍA DIRECTO A EXCEL / CSV (ÚNICA OPCIÓN DE RESPALDO)
+// =========================================================================
+function downloadBackupCSV() {
+    if (pendingSync.length === 0) {
+        return alert("No tienes registros de visitas guardados en el teléfono para exportar el día de hoy.");
+    }
+
+    // 1. Definir de forma estricta los encabezados idénticos a las columnas de tu Sheets
+    const headers = [
+        "CURP", "ID", "NOMBRE", "AP_PATERNO", "AP_MATERNO", "TEL_FIJO", "TEL_CEL", 
+        "MUNICIPIO", "LOCALIDAD", "SECCION", "COLONIA", "CP", "CALLE", "NUM_EXT", 
+        "REFERENCIA", "SITUACION", "CUSAL", "Latitud", "Longitud", "FECHA_MODIFICACION", "USUARIO_MODIFICA"
+    ];
+
+    // 2. Crear la primera línea del archivo con los títulos de las columnas
+    let csvRows = [headers.join(",")];
+
+    // 3. Recorrer los registros pendientes y transformarlos en renglones de texto limpios
+    pendingSync.forEach(record => {
+        const values = headers.map(header => {
+            let val = record[header] !== undefined ? record[header] : "";
+            let valStr = String(val).trim();
+            
+            // PROTECCIÓN DE EXCEL: Envolver entre comillas si el campo contiene comas o saltos de línea
+            if (valStr.includes(",") || valStr.includes("\n") || valStr.includes('"')) {
+                valStr = `"${valStr.replace(/"/g, '""')}"`;
+            }
+            return valStr;
+        });
+        csvRows.push(values.join(","));
+    });
+
+    // 4. Unir todas las líneas con un salto de renglón estándar
+    const csvContent = csvRows.join("\n");
+
+    // 5. Agregar el marcador UTF-8 (BOM) para compatibilidad total con acentos y la Ñ
+    const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+    // 6. Disparar la descarga automática
     const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", "R02_cambios_pendientes.json");
+    const url = URL.createObjectURL(blob);
+    
+    // Formatear el nombre del archivo con la fecha del día actual
+    const fechaHoy = new Date().toISOString().slice(0, 10);
+    
+    downloadAnchor.setAttribute("href", url);
+    downloadAnchor.setAttribute("download", `R02_Avance_${fechaHoy}.csv`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
-    downloadAnchor.remove();
+    
+    // Limpieza de memoria de la pestaña
+    document.body.removeChild(downloadAnchor);
+    URL.revokeObjectURL(url);
 }
+
 
 function clearLocalStorage() {
     if(confirm("¿Estás absolutamente seguro de vaciar la memoria? Perderás los registros pendientes por subir a Sheets.")) {
