@@ -135,12 +135,16 @@ async function downloadAllDataMassive() {
 // =========================================================================
 // PANTALLA 3: BUSCADOR MULTICRITERIO FUERA DE LÍNEA
 // =========================================================================
+// =========================================================================
+// PANTALLA 3: BUSCADOR MULTICRITERIO FUERA DE LÍNEA (CORREGIDO PARA 20K)
+// =========================================================================
 function searchData() {
     const query = document.getElementById('search-input').value.toLowerCase().trim();
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = "";
 
-    if(query.length < 3) return; // Requiere 3 letras mínimo para optimizar velocidad visual
+    // Requiere un mínimo de 3 letras para iniciar el barrido masivo
+    if(query.length < 3) return; 
 
     const tx = db.transaction(STORE_NAME, "readonly");
     const store = tx.objectStore(STORE_NAME);
@@ -152,7 +156,7 @@ function searchData() {
         if (cursor) {
             const item = cursor.value;
             
-            // Búsqueda simultánea cruzada en: CALLE, NOMBRE, CURP, AP PATERNO, AP MATERNO
+            // Búsqueda simultánea cruzada en los 5 campos requeridos
             const match = 
                 (item.CALLE && item.CALLE.toLowerCase().includes(query)) ||
                 (item.NOMBRE && item.NOMBRE.toLowerCase().includes(query)) ||
@@ -161,17 +165,25 @@ function searchData() {
                 (item.AP_MATERNO && item.AP_MATERNO.toLowerCase().includes(query));
 
             if (match) {
-                const div = document.createElement('div');
-                div.className = "result-item";
-                div.innerHTML = `<strong>${item.NOMBRE} ${item.AP_PATERNO} ${item.AP_MATERNO || ''}</strong><br><small>CURP: ${item.CURP} | Calle: ${item.CALLE || 'No registrada'}</small>`;
-                div.onclick = () => openForm(item);
-                resultsContainer.appendChild(div);
+                // Solo insertamos en la interfaz gráfica si no hemos superado el límite visual de 30
+                if (matchesFound < 30) {
+                    const div = document.createElement('div');
+                    div.className = "result-item";
+                    div.innerHTML = `<strong>${item.NOMBRE} ${item.AP_PATERNO} ${item.AP_MATERNO || ''}</strong><br><small>CURP: ${item.CURP} | Calle: ${item.CALLE || 'No registrada'}</small>`;
+                    div.onclick = () => openForm(item);
+                    resultsContainer.appendChild(div);
+                }
                 matchesFound++;
             }
 
-            // Límite de 30 resultados mostrados a la vez en pantalla para no trabar el render de UI
-            if (matchesFound < 30) {
-                cursor.continue();
+            // CORRECCIÓN VITAL: El cursor SIEMPRE continúa avanzando por las 20,000 filas de la base local
+            cursor.continue();
+        } else {
+            // Se ejecuta de forma automática cuando el cursor termina de revisar el último registro
+            if (matchesFound === 0) {
+                resultsContainer.innerHTML = "<div class='result-item' style='color: gray; text-align: center;'>No se encontraron derechohabientes que coincidan.</div>";
+            } else if (matchesFound > 30) {
+                console.log(`Búsqueda terminada. Se encontraron ${matchesFound} coincidencias, mostrando las primeras 30.`);
             }
         }
     };
