@@ -191,23 +191,36 @@ async function syncWithSheets() {
     if(pendingSync.length === 0) return alert("No hay datos pendientes por sincronizar.");
 
     alert("Sincronizando registros con Google Sheets...");
+    
     try {
+        // Quitamos 'no-cors' y enviamos como texto plano estructurado en JSON 
+        // Esta es la única forma en que los navegadores móviles permiten enviar datos a Google sin errores de CORS.
         const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
-            mode: 'no-cors', // Depende del setup de tu Apps Script
-            headers: { 'Content-Type': 'application/json' },
+            redirect: 'follow', // Obliga al navegador a seguir la redirección interna de Google
+            headers: { 
+                'Content-Type': 'text/plain;charset=utf-8' 
+            },
             body: JSON.stringify({ action: "sync", records: pendingSync })
         });
 
-        // Limpiar cola local al tener éxito
-        pendingSync = [];
-        localStorage.removeItem('pendingSync');
-        openHistoryScreen();
-        alert("¡Sincronización completa y exitosa!");
+        const result = await response.json();
+
+        if (result.status === "success") {
+            // Limpiar cola local al tener éxito real reportado por Google
+            pendingSync = [];
+            localStorage.removeItem('pendingSync');
+            openHistoryScreen();
+            alert(`¡Sincronización completa! ${result.message}`);
+        } else {
+            alert(`Error al guardar en Sheets: ${result.message}`);
+        }
     } catch (e) {
-        alert("Fallo la conexión. Los datos siguen resguardados en el celular.");
+        console.error(e);
+        alert("Hubo un problema de red al conectar con Google Sheets. Los datos siguen resguardados de forma segura en el celular.");
     }
 }
+
 
 function downloadBackup() {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(pendingSync));
