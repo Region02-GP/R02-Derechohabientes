@@ -424,15 +424,26 @@ function openHistoryScreen() {
     const logList = document.getElementById('history-log');
     logList.innerHTML = "";
 
+    // 1. Mostrar registros pendientes (En color normal)
     pendingSync.forEach((item) => {
         const div = document.createElement('div');
         div.className = "result-item";
-        div.innerHTML = `<strong>${item.NOMBRE} (${item.CURP})</strong><br><small>Modificado: ${item.FECHA_MODIFICACION} por ${item.USUARIO_MODIFICA}</small>`;
+        div.innerHTML = `<strong>⏳ ${item.NOMBRE} (${item.CURP})</strong><br><small>Pendiente de subir | Modificado: ${item.FECHA_MODIFICACION}</small>`;
+        logList.appendChild(div);
+    });
+
+    // 2. Mostrar registros ya sincronizados (Con marca verde y opacidad)
+    syncedHistory.forEach((item) => {
+        const div = document.createElement('div');
+        div.className = "result-item";
+        div.style.opacity = "0.6"; // Sutilmente más claro por estar archivado
+        div.innerHTML = `<strong>✅ ${item.NOMBRE} (${item.CURP})</strong><br><small style="color:green;">Sincronizado con Sheets con éxito</small>`;
         logList.appendChild(div);
     });
 
     changeScreen('screen-history');
 }
+
 
 function goBackFromHistory() {
     changeScreen(previousScreen);
