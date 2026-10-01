@@ -41,20 +41,32 @@ async function downloadDataByColonia() {
 
     alert(`Buscando y descargando registros de la colonia: ${colonia}...`);
     
+    // Añadimos una marca de tiempo para evitar que el navegador guarde una respuesta vacía en caché
+    const url = `${GOOGLE_SCRIPT_URL}?action=getColonia&colonia=${encodeURIComponent(colonia)}&_=${new Date().getTime()}`;
+
     try {
-        // Consultar a Google Sheets mediante Apps Script mandando el filtro
-        const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=getColonia&colonia=${encodeURIComponent(colonia)}`);
+        // Quitamos parámetros restrictivos para permitir la redirección segura de Google
+        const response = await fetch(url);
+        
+        if (!response.ok) throw new Error("Respuesta de red no válida");
+        
         const data = await response.json();
         
+        if (data.error) {
+            alert(`Error del servidor: ${data.error}`);
+            return;
+        }
+
         database = data;
         localStorage.setItem('localDatabase', JSON.stringify(database));
         alert(`Éxito: Se cargaron ${database.length} registros al teléfono.`);
     } catch (e) {
-        // En caso de fallar o simulación si no se configura la URL todavía
-        alert("Conexión no disponible. Usando datos de respaldo si existen.");
+        console.error("Error detallado de conexión:", e);
+        alert("Conexión no disponible con Google Sheets. Usando datos de respaldo si existen.");
         database = JSON.parse(localStorage.getItem('localDatabase')) || [];
     }
 }
+
 
 // PANTALLA 3: BUSCADOR MULTICRITERIO
 function searchData() {
