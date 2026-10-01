@@ -81,16 +81,17 @@ async function downloadAllDataMassive() {
     progressContainer.style.display = "block";
     
     let offset = 0;
-    let limit = 10000; // Bloques de 10k filas por viaje de red para evitar caídas
+    let limit = 10000; 
     let isDone = false;
+    let totalCargados = 0;
     
-    // Limpieza total antes de sobreescribir la base local
+    // Limpieza total antes de sobreescribir para evitar duplicados en el teléfono
     const txClear = db.transaction(STORE_NAME, "readwrite");
     txClear.objectStore(STORE_NAME).clear();
     
     try {
         while (!isDone) {
-            progressText.innerText = `Descargando registros desde fila ${offset}...`;
+            progressText.innerText = `Descargando registros: ${totalCargados} acumulados...`;
             
             const url = `${GOOGLE_SCRIPT_URL}?action=getAllData&offset=${offset}&limit=${limit}&_=${new Date().getTime()}`;
             const response = await fetch(url);
@@ -104,9 +105,9 @@ async function downloadAllDataMassive() {
                 
                 data.records.forEach(record => {
                     if(record.CURP) {
-                        // Forzar a limpiar espacios raros en la CURP llave
                         record.CURP = String(record.CURP).replace(/ /g, "").toUpperCase().trim();
                         store.put(record); 
+                        totalCargados++;
                     }
                 });
                 
@@ -116,20 +117,21 @@ async function downloadAllDataMassive() {
             isDone = data.done;
             offset = data.nextOffset;
             
-            // Render aproximado de progreso basado en estimado de 50,000 filas
+            // Render de progreso real basado en el avance del offset
             let percentage = Math.min(100, Math.round((offset / 50000) * 100));
             progressBar.style.width = `${percentage}%`;
         }
         
-        progressText.innerText = "¡Descarga e inyección completas! Datos listos para trabajar offline.";
-        alert("Éxito: El universo de derechohabientes se guardó permanentemente en tu teléfono.");
+        progressText.innerText = `¡Descarga completa! ${totalCargados} derechohabientes listos offline.`;
+        alert(`Éxito: Se han guardado ${totalCargados} registros en la memoria interna.`);
     } catch (error) {
         console.error(error);
-        alert("Ocurrió un error en la descarga masiva de datos. Revisa tu conexión a internet.");
+        alert("Ocurrió un error en la transferencia de datos. Verifica tu conexión de red.");
     } finally {
         btn.disabled = false;
     }
 }
+
 // =========================================================================
 // PANTALLA 3: BUSCADOR MULTICRITERIO FUERA DE LÍNEA
 // =========================================================================
