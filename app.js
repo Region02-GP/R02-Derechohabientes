@@ -11,7 +11,7 @@ const AUTHORIZED_CURPS = {
 };
 
 // URL del Web App de Google Apps Script
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxK-u3b_4esANdd1jNr0OXApCr1QsTK0P6pPJA2lIOsUi3jhUxZZN5nOC6BVFffNyg/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzIGJX2GJ3Je7ROWaTur9YN0MYfMa-4JqJgv5FbWNgjqWsRBvFqiX8F5M1XSbvcf7eq/exec";
 
 function changeScreen(screenId) {
     // Rastrear pantalla anterior para navegación de regreso desde el historial
