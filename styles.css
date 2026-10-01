@@ -1,1 +1,110 @@
+/* Paleta Institucional: Guinda Formal */
+:root {
+    --primary-color: #621132; /* Guinda */
+    --primary-light: #851c44;
+    --secondary-color: #D4C19C; /* Dorado / Crema formal */
+    --text-color: #333333;
+    --bg-color: #f4f4f4;
+    --white: #ffffff;
+    --disabled-bg: #e9ecef;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+}
+
+.main-header {
+    background-color: var(--primary-color);
+    color: var(--white);
+    text-align: center;
+    padding: 15px;
+    border-bottom: 4px solid var(--secondary-color);
+}
+
+.app-container {
+    max-width: 500px;
+    margin: 20px auto;
+    padding: 15px;
+}
+
+.app-screen {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.hidden { display: none !important; }
+
+h2 { color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; }
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+input[type="text"], input[type="tel"], input[type="number"], textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+.text-disabled input {
+    background-color: var(--disabled-bg);
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+button {
+    background-color: var(--primary-color);
+    color: var(--white);
+    border: none;
+    padding: 12px;
+    width: 100%;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 10px;
+}
+
+button:hover { background-color: var(--primary-light); }
+.btn-secondary { background-color: #4a5568; }
+.btn-back { background-color: #718096; }
+.btn-danger { background-color: #9b2c2c; }
+.btn-sync { background-color: #2f855a; }
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.results-list, .log-list {
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin: 15px 0;
+}
+
+.result-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+.result-item:hover { background-color: #f7fafc; }
 
