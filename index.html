@@ -1,1 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R02-Derechohabientes</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+    <!-- ENCABEZADO GENERAL -->
+    <header class="main-header">
+        <h1>R02-Derechohabientes</h1>
+    </header>
+
+    <main class="app-container">
+        
+        <!-- PANTALLA 1: ACCESO POR CURP -->
+        <section id="screen-login" class="app-screen">
+            <h2>Acceso al Sistema</h2>
+            <div class="form-group">
+                <label for="login-curp">Ingrese su CURP Autorizada:</label>
+                <input type="text" id="login-curp" maxlength="18" placeholder="18 dígitos" style="text-transform:uppercase">
+            </div>
+            <button onclick="login()">Ingresar</button>
+        </section>
+
+        <!-- PANTALLA 2: BIENVENIDA Y CARGA POR COLONIA -->
+        <section id="screen-welcome" class="app-screen hidden">
+            <h2 id="welcome-message">Bienvenido</h2>
+            <div class="card">
+                <h3>Descargar Datos para Trabajo Offline</h3>
+                <div class="form-group">
+                    <label for="filter-colonia">Seleccionar o escribir Colonia:</label>
+                    <input type="text" id="filter-colonia" placeholder="Ej. Centro">
+                </div>
+                <button onclick="downloadDataByColonia()" class="btn-secondary">Cargar Datos al Teléfono</button>
+            </div>
+            <div class="nav-buttons">
+                <button onclick="changeScreen('screen-search')">Ir a Búsqueda</button>
+                <button onclick="openHistoryScreen()">Historial y Sincronización</button>
+            </div>
+        </section>
+
+        <!-- PANTALLA 3: BUSCADOR MULTI-CRITERIO -->
+        <section id="screen-search" class="app-screen hidden">
+            <h2>Búsqueda de Derechohabientes</h2>
+            <div class="form-group">
+                <input type="text" id="search-input" oninput="searchData()" placeholder="Buscar por Calle, Nombre, CURP o Apellidos...">
+            </div>
+            <div id="search-results" class="results-list">
+                <!-- Los resultados aparecerán dinámicamente aquí -->
+            </div>
+            <button onclick="changeScreen('screen-welcome')" class="btn-back">Volver al Menú</button>
+        </section>
+
+        <!-- PANTALLA 4: FORMULARIO DE EDICIÓN Y CAPTURA GPS -->
+        <section id="screen-form" class="app-screen hidden">
+            <h2>Actualización de Domicilio</h2>
+            <form id="edit-form" onsubmit="saveData(event)">
+                <!-- Datos No Editables -->
+                <div class="form-grid text-disabled">
+                    <div><label>CURP:</label><input type="text" id="f-curp" readonly></div>
+                    <div><label>ID:</label><input type="text" id="f-id" readonly></div>
+                    <div><label>Nombre:</label><input type="text" id="f-nombre" readonly></div>
+                    <div><label>Ap. Paterno:</label><input type="text" id="f-paterno" readonly></div>
+                    <div><label>Ap. Materno:</label><input type="text" id="f-materno" readonly></div>
+                    <div><label>Situación:</label><input type="text" id="f-situacion" readonly></div>
+                    <div><label>Causal:</label><input type="text" id="f-causal" readonly></div>
+                </div>
+                <hr>
+                <!-- Datos Editables y Obligatorios -->
+                <div class="form-group">
+                    <label>Teléfono Fijo (10 dígitos):</label>
+                    <input type="tel" id="f-telfijo" pattern="[0-9]{10}" maxlength="10">
+                </div>
+                <div class="form-group">
+                    <label>Teléfono Celular (10 dígitos):</label>
+                    <input type="tel" id="f-telcel" pattern="[0-9]{10}" maxlength="10">
+                </div>
+                <div class="form-group">
+                    <label>Municipio:</label>
+                    <input type="text" id="f-municipio">
+                </div>
+                <div class="form-group">
+                    <label>Localidad *:</label>
+                    <input type="text" id="f-localidad" required>
+                </div>
+                <div class="form-group">
+                    <label>Sección (Hasta 4 números) *:</label>
+                    <input type="number" id="f-seccion" max="9999" required>
+                </div>
+                <div class="form-group">
+                    <label>Colonia:</label>
+                    <input type="text" id="f-colonia">
+                </div>
+                <div class="form-group">
+                    <label>Código Postal (5 dígitos):</label>
+                    <input type="text" id="f-cp" pattern="[0-9]{5}" maxlength="5">
+                </div>
+                <div class="form-group">
+                    <label>Calle:</label>
+                    <input type="text" id="f-calle">
+                </div>
+                <div class="form-group">
+                    <label>Núm. Ext:</label>
+                    <input type="text" id="f-numext">
+                </div>
+                <div class="form-group">
+                    <label>Referencia:</label>
+                    <textarea id="f-referencia" rows="3"></textarea>
+                </div>
+                <hr>
+                <!-- Geolocalización automática -->
+                <div class="form-grid text-disabled">
+                    <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
+                    <div><label>Longitud GPS:</label><input type="text" id="f-lon" readonly></div>
+                </div>
+
+                <button type="submit">Guardar Localmente</button>
+                <button type="button" onclick="changeScreen('screen-search')" class="btn-back">Cancelar</button>
+            </form>
+        </section>
+
+        <!-- PANTALLA 5: HISTORIAL, CONTROL OFFLINE Y ACCIONES -->
+        <section id="screen-history" class="app-screen hidden">
+            <h2>Historial y Sincronización</h2>
+            <div class="metrics">
+                <p>Cambios pendientes por sincronizar: <strong id="pending-count">0</strong></p>
+            </div>
+            <div class="action-buttons-stack">
+                <button onclick="syncWithSheets()" class="btn-sync">🔄 Sincronizar con Google Sheets</button>
+                <button onclick="downloadBackup()" class="btn-download">📥 Descargar Respaldo Local (JSON)</button>
+                <button onclick="clearLocalStorage()" class="btn-danger">🗑️ Borrar Datos del Teléfono</button>
+            </div>
+            <hr>
+            <h3>Registro de Visitas Realizadas</h3>
+            <div id="history-log" class="log-list">
+                <!-- Bitácora de modificaciones locales -->
+            </div>
+            <button onclick="goBackFromHistory()" class="btn-back">Volver</button>
+        </section>
+
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
 
