@@ -133,60 +133,97 @@ async function downloadAllDataMassive() {
 }
 
 // =========================================================================
-// PANTALLA 3: BUSCADOR MULTICRITERIO FUERA DE LÍNEA
+// PANTALLA 3: BUSCADOR MULTICRITERIO INTEGRAL (OPTIMIZADO PARA 20,000 REGISTROS)
 // =========================================================================
-// =========================================================================
-// PANTALLA 3: BUSCADOR MULTICRITERIO FUERA DE LÍNEA (CORREGIDO PARA 20K)
-// =========================================================================
+
+// Matriz en memoria RAM para búsquedas instantáneas y estables
+let localMemoryDatabase = [];
+
+/**
+ * Carga todo el contenido de IndexedDB a la memoria RAM del teléfono para evitar que
+ * registros rotos detengan la búsqueda. Se ejecuta automáticamente al abrir la pantalla de búsqueda.
+ */
+function preloadDatabaseToMemory() {
+    if (!db) return;
+    
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+    const requestGetAll = store.getAll(); // Extrae los 20,000 registros en un solo viaje limpio
+
+    requestGetAll.onsuccess = (e) => {
+        localMemoryDatabase = e.target.result || [];
+        console.log(`Base de datos de ${localMemoryDatabase.length} registros cargada con éxito en la memoria RAM.`);
+    };
+
+    requestGetAll.onerror = (err) => {
+        console.error("Error al precargar la base de datos:", err);
+    };
+}
+
+/**
+ * Buscador de alto rendimiento protegido contra valores nulos o vacíos en Sheets
+ */
 function searchData() {
     const query = document.getElementById('search-input').value.toLowerCase().trim();
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = "";
 
     // Requiere un mínimo de 3 letras para iniciar el barrido masivo
-    if(query.length < 3) return; 
+    if (query.length < 3) return;
 
-    const tx = db.transaction(STORE_NAME, "readonly");
-    const store = tx.objectStore(STORE_NAME);
-    const requestCursor = store.openCursor();
+    // Si por alguna razón la memoria RAM se vació, intentamos recargarla
+    if (localMemoryDatabase.length === 0) {
+        preloadDatabaseToMemory();
+    }
+
     let matchesFound = 0;
 
-    requestCursor.onsuccess = (e) => {
-        const cursor = e.target.result;
-        if (cursor) {
-            const item = cursor.value;
-            
-            // Búsqueda simultánea cruzada en los 5 campos requeridos
-            const match = 
-                (item.CALLE && item.CALLE.toLowerCase().includes(query)) ||
-                (item.NOMBRE && item.NOMBRE.toLowerCase().includes(query)) ||
-                (item.CURP && item.CURP.toLowerCase().includes(query)) ||
-                (item.AP_PATERNO && item.AP_PATERNO.toLowerCase().includes(query)) ||
-                (item.AP_MATERNO && item.AP_MATERNO.toLowerCase().includes(query));
+    // Recorremos la matriz en memoria de forma ultra rápida y segura
+    for (let i = 0; i < localMemoryDatabase.length; i++) {
+        const item = localMemoryDatabase[i];
+        if (!item) continue;
 
-            if (match) {
-                // Solo insertamos en la interfaz gráfica si no hemos superado el límite visual de 30
-                if (matchesFound < 30) {
-                    const div = document.createElement('div');
-                    div.className = "result-item";
-                    div.innerHTML = `<strong>${item.NOMBRE} ${item.AP_PATERNO} ${item.AP_MATERNO || ''}</strong><br><small>CURP: ${item.CURP} | Calle: ${item.CALLE || 'No registrada'}</small>`;
-                    div.onclick = () => openForm(item);
-                    resultsContainer.appendChild(div);
-                }
-                matchesFound++;
-            }
+        // PROTECCIÓN VITAL: Convertimos a String seguro y limpiamos espacios para evitar errores de tipo null/undefined
+        const calle = item.CALLE ? String(item.CALLE).toLowerCase() : "";
+        const nombre = item.NOMBRE ? String(item.NOMBRE).toLowerCase() : "";
+        const curp = item.CURP ? String(item.CURP).toLowerCase() : "";
+        const apPaterno = item.AP_PATERNO ? String(item.AP_PATERNO).toLowerCase() : "";
+        const apMaterno = item.AP_MATERNO ? String(item.AP_MATERNO).toLowerCase() : "";
 
-            // CORRECCIÓN VITAL: El cursor SIEMPRE continúa avanzando por las 20,000 filas de la base local
-            cursor.continue();
-        } else {
-            // Se ejecuta de forma automática cuando el cursor termina de revisar el último registro
-            if (matchesFound === 0) {
-                resultsContainer.innerHTML = "<div class='result-item' style='color: gray; text-align: center;'>No se encontraron derechohabientes que coincidan.</div>";
-            } else if (matchesFound > 30) {
-                console.log(`Búsqueda terminada. Se encontraron ${matchesFound} coincidencias, mostrando las primeras 30.`);
+        // Búsqueda simultánea cruzada en los 5 campos requeridos
+        const match = calle.includes(query) || 
+                      nombre.includes(query) || 
+                      curp.includes(query) || 
+                      apPaterno.includes(query) || 
+                      apMaterno.includes(query);
+
+        if (match) {
+            // Mostramos un máximo de 30 resultados visuales para no saturar la pantalla del celular
+            if (matchesFound < 30) {
+                const div = document.createElement('div');
+                div.className = "result-item";
+                
+                // Formateamos los nombres para la interfaz
+                const displayNombre = item.NOMBRE || '';
+                const displayPaterno = item.AP_PATERNO || '';
+                const displayMaterno = item.AP_MATERNO || '';
+                const displayCurp = item.CURP || '';
+                const displayCalle = item.CALLE || 'No registrada';
+
+                div.innerHTML = `<strong>${displayNombre} ${displayPaterno} ${displayMaterno}</strong><br><small>CURP: ${displayCurp} | Calle: ${displayCalle}</small>`;
+                
+                // Evento para abrir el formulario al dar clic
+                div.onclick = () => openForm(item);
+                resultsContainer.appendChild(div);
             }
+            matchesFound++;
         }
-    };
+    }
+
+    // Mensaje en caso de no encontrar ninguna coincidencia
+    if (matchesFound === 0) {
+        resultsContainer.innerHTML = "<div class='result-item' style='color: gray; text-align: center;'>No se encontraron derechohabientes que coincidan.</div>";
+    }
 }
 
 // =========================================================================
