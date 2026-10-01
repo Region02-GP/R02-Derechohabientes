@@ -135,11 +135,12 @@
             <div class="metrics">
                 <p>Cambios pendientes por sincronizar: <strong id="pending-count">0</strong></p>
             </div>
-            <div class="action-buttons-stack">
-                <button onclick="syncWithSheets()" class="btn-sync">🔄 Sincronizar con Google Sheets</button>
-                <button onclick="downloadBackup()" class="btn-download">📥 Descargar Respaldo Local (JSON)</button>
-                <button onclick="clearLocalStorage()" class="btn-danger">🗑️ Borrar Datos del Teléfono</button>
-            </div>
+           <div class="action-buttons-stack">
+    <button type="button" onclick="syncWithSheets()" class="btn-sync">🔄 Sincronizar con Google Sheets</button>
+    <button type="button" onclick="downloadBackupCSV()" class="btn-sync" style="background-color: #1d7243;">📊 Descargar Avance del Día (Excel / CSV)</button>
+    <button type="button" onclick="clearLocalStorage()" class="btn-danger">🗑️ Borrar Datos del Teléfono</button>
+</div>
+
             <hr>
             <h3>Registro de Visitas Realizadas</h3>
             <div id="history-log" class="log-list">
