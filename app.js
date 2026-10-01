@@ -252,8 +252,12 @@ function saveData(event) {
         return; 
     }
     
+    // Recuperamos el índice de fila guardado previamente en el objeto original
+    const targetCurp = document.getElementById('f-curp').value;
+    const originalRecord = localMemoryDatabase.find(r => r.CURP === targetCurp) || {};
+
     const record = {
-        CURP: document.getElementById('f-curp').value,
+        CURP: targetCurp,
         ID: document.getElementById('f-id').value,
         NOMBRE: document.getElementById('f-nombre').value,
         AP_PATERNO: document.getElementById('f-paterno').value,
@@ -273,8 +277,24 @@ function saveData(event) {
         Latitud: latValue,
         Longitud: lonValue,
         FECHA_MODIFICACION: new Date().toLocaleString("es-MX"),
-        USUARIO_MODIFICA: currentUser.name
+        USUARIO_MODIFICA: currentUser.name,
+        
+        // CONEXIÓN DIRECTA: Mantenemos el número de fila original que le asignó Sheets
+        SHEETS_ROW_INDEX: originalRecord.SHEETS_ROW_INDEX || ""
     };
+
+    const txUpdate = db.transaction(STORE_NAME, "readwrite");
+    txUpdate.objectStore(STORE_NAME).put(record);
+
+    pendingSync.push(record);
+    localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
+
+    alert("Confirmación: Modificación guardada localmente.");
+    document.getElementById('search-input').value = "";
+    document.getElementById('search-results').innerHTML = "";
+    changeScreen('screen-search');
+}
+
 
     const txUpdate = db.transaction(STORE_NAME, "readwrite");
     txUpdate.objectStore(STORE_NAME).put(record);
