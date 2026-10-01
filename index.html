@@ -26,22 +26,27 @@
             <button onclick="login()">Ingresar</button>
         </section>
 
-        <!-- PANTALLA 2: BIENVENIDA Y CARGA POR COLONIA -->
-        <section id="screen-welcome" class="app-screen hidden">
-            <h2 id="welcome-message">Bienvenido</h2>
-            <div class="card">
-                <h3>Descargar Datos para Trabajo Offline</h3>
-                <div class="form-group">
-                    <label for="filter-colonia">Seleccionar o escribir Colonia:</label>
-                    <input type="text" id="filter-colonia" placeholder="Ej. Centro">
-                </div>
-                <button onclick="downloadDataByColonia()" class="btn-secondary">Cargar Datos al Teléfono</button>
-            </div>
-            <div class="nav-buttons">
-                <button onclick="changeScreen('screen-search')">Ir a Búsqueda</button>
-                <button onclick="openHistoryScreen()">Historial y Sincronización</button>
-            </div>
-        </section>
+       <!-- PANTALLA 2: BIENVENIDA Y CARGA TOTAL MASIVA -->
+<section id="screen-welcome" class="app-screen hidden">
+    <h2 id="welcome-message">Bienvenido</h2>
+    <div class="card">
+        <h3>Sincronización Inicial de Base de Datos</h3>
+        <p style="font-size:13px; color:#555;">Descarga los 50,000 registros al teléfono para trabajar totalmente sin internet.</p>
+        
+        <!-- BARRA DE PROGRESO DE DESCARGA -->
+        <div id="progress-container" style="display:none; background:#eee; border-radius:4px; margin:10px 0;">
+            <div id="progress-bar" style="background:var(--primary-color); width:0%; height:15px; border-radius:4px; transition:width 0.2s;"></div>
+        </div>
+        <p id="progress-text" style="font-size:12px; font-weight:bold; color:var(--primary-color);"></p>
+
+        <button onclick="downloadAllDataMassive()" id="btn-massive-download" class="btn-secondary">📥 Descargar Base Completa</button>
+    </div>
+    <div class="nav-buttons">
+        <button onclick="changeScreen('screen-search')">Ir a Búsqueda</button>
+        <button onclick="openHistoryScreen()">Historial y Sincronización</button>
+    </div>
+</section>
+
 
         <!-- PANTALLA 3: BUSCADOR MULTI-CRITERIO -->
         <section id="screen-search" class="app-screen hidden">
