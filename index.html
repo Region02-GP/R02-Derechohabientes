@@ -16,58 +16,62 @@
 
     <main class="app-container">
         
-        <!-- PANTALLA 1: ACCESO POR CURP -->
+        <!-- PANTALLA 1: ACCESO POR CURP AUTHORIZED -->
         <section id="screen-login" class="app-screen">
             <h2>Acceso al Sistema</h2>
             <div class="form-group">
                 <label for="login-curp">Ingrese su CURP Autorizada:</label>
                 <input type="text" id="login-curp" maxlength="18" placeholder="18 dígitos" style="text-transform:uppercase">
             </div>
-            <button onclick="login()">Ingresar</button>
+            <button type="button" onclick="login()">Ingresar</button>
         </section>
-<!-- PANTALLA 2: BIENVENIDA Y CARGA TOTAL MASIVA -->
-<section id="screen-welcome" class="app-screen hidden">
-    <h2 id="welcome-message">Bienvenido</h2>
-    <div class="card">
-        <h3>Sincronización Inicial de Base de Datos</h3>
-        <p style="font-size:13px; color:#555;">Descarga los 50,000 registros al teléfono para trabajar totalmente sin internet.</p>
-        
-        <!-- ELEMENTOS QUE DEBEN COINCIDIR EXACTAMENTE EN NOMBRE -->
-        <div id="progress-container" style="display:none; background:#eee; border-radius:4px; margin:10px 0;">
-            <div id="progress-bar" style="background:var(--primary-color); width:0%; height:15px; border-radius:4px; transition:width 0.2s;"></div>
-        </div>
-        <p id="progress-text" style="font-size:12px; font-weight:bold; color:var(--primary-color);"></p>
 
-        <!-- El evento onclick debe llamar exactamente a downloadAllDataMassive() -->
-        <button type="button" onclick="downloadAllDataMassive()" id="btn-massive-download" class="btn-secondary">📥 Descargar Base Completa</button>
-    </div>
-    <div class="nav-buttons">
-    <button type="button" onclick="changeScreen('screen-search')">Ir a Búsqueda</button>
-    <!-- Asegúrate de que tenga type="button" y llame exactamente a openHistoryScreen() -->
-    <button type="button" onclick="openHistoryScreen()">Historial y Sincronización</button>
-</div>
+        <!-- PANTALLA 2: BIENVENIDA Y CARGA TOTAL MASIVA -->
+        <section id="screen-welcome" class="app-screen hidden">
+            <h2 id="welcome-message">Bienvenido</h2>
+            <div class="card">
+                <h3>Sincronización Inicial de Base de Datos</h3>
+                <p style="font-size:13px; color:#555; margin-bottom:15px;">Descarga los registros al teléfono para trabajar totalmente sin internet en campo.</p>
+                
+                <!-- CONTENEDOR Y BARRA DE PROGRESO DE DESCARGA MASIVA -->
+                <div id="progress-container" style="display:none; background:#eee; border-radius:4px; margin:10px 0; padding:2px;">
+                    <div id="progress-bar" style="background:var(--primary-color); width:0%; height:15px; border-radius:4px; transition:width 0.2s;"></div>
+                </div>
+                <p id="progress-text" style="font-size:12px; font-weight:bold; color:var(--primary-color); margin-bottom:15px;"></p>
 
-</section>
+                <button type="button" onclick="downloadAllDataMassive()" id="btn-massive-download" class="btn-secondary">📥 Descargar Base Completa</button>
+            </div>
+            
+            <div class="nav-buttons">
+                <button type="button" onclick="changeScreen('screen-search')">Ir a Búsqueda</button>
+                <button type="button" onclick="openHistoryScreen()">Historial y Sincronización</button>
+            </div>
+        </section>
 
-
-
-        <!-- PANTALLA 3: BUSCADOR MULTI-CRITERIO -->
+        <!-- PANTALLA 3: BUSCADOR MULTI-CRITERIO EN MEMORIA RAM -->
         <section id="screen-search" class="app-screen hidden">
             <h2>Búsqueda de Derechohabientes</h2>
             <div class="form-group">
                 <input type="text" id="search-input" oninput="searchData()" placeholder="Buscar por Calle, Nombre, CURP o Apellidos...">
             </div>
+            
+            <!-- CONTENEDOR DONDE SE INYECTAN LOS RESULTADOS DE INDEXEDDB -->
             <div id="search-results" class="results-list">
                 <!-- Los resultados aparecerán dinámicamente aquí -->
             </div>
-            <button onclick="changeScreen('screen-welcome')" class="btn-back">Volver al Menú</button>
+            
+            <div class="nav-buttons-stack">
+                <button type="button" onclick="openHistoryScreen()" class="btn-secondary">Historial y Sincronización</button>
+                <button type="button" onclick="changeScreen('screen-welcome')" class="btn-back">Volver al Menú</button>
+            </div>
         </section>
 
-        <!-- PANTALLA 4: FORMULARIO DE EDICIÓN Y CAPTURA GPS -->
+        <!-- PANTALLA 4: FORMULARIO DE EDICIÓN Y CAPTURA GPS AUTOMÁTICA -->
         <section id="screen-form" class="app-screen hidden">
             <h2>Actualización de Domicilio</h2>
             <form id="edit-form" onsubmit="saveData(event)">
-                <!-- Datos No Editables -->
+                
+                <!-- Datos No Editables (Bloqueados por diseño) -->
                 <div class="form-grid text-disabled">
                     <div><label>CURP:</label><input type="text" id="f-curp" readonly></div>
                     <div><label>ID:</label><input type="text" id="f-id" readonly></div>
@@ -77,7 +81,8 @@
                     <div><label>Situación:</label><input type="text" id="f-situacion" readonly></div>
                     <div><label>Causal:</label><input type="text" id="f-causal" readonly></div>
                 </div>
-                <hr>
+                <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+                
                 <!-- Datos Editables y Obligatorios -->
                 <div class="form-group">
                     <label>Teléfono Fijo (10 dígitos):</label>
@@ -119,36 +124,40 @@
                     <label>Referencia:</label>
                     <textarea id="f-referencia" rows="3"></textarea>
                 </div>
-                <hr>
-                <!-- Geolocalización automática -->
+                <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+                
+                <!-- Geolocalización en Tiempo Real -->
                 <div class="form-grid text-disabled">
                     <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
                     <div><label>Longitud GPS:</label><input type="text" id="f-lon" readonly></div>
                 </div>
 
-                <button type="submit">Guardar Localmente</button>
+                <button type="submit" style="margin-top: 20px;">Guardar Localmente</button>
                 <button type="button" onclick="changeScreen('screen-search')" class="btn-back">Cancelar</button>
             </form>
         </section>
 
-        <!-- PANTALLA 5: HISTORIAL, CONTROL OFFLINE Y ACCIONES -->
+        <!-- PANTALLA 5: HISTORIAL, CONTROL OFFLINE Y REPORTES EXCEL/CSV -->
         <section id="screen-history" class="app-screen hidden">
             <h2>Historial y Sincronización</h2>
-            <div class="metrics">
-                <p>Cambios pendientes por sincronizar: <strong id="pending-count">0</strong></p>
+            <div class="metrics" style="background:#f7fafc; padding:15px; border-radius:4px; margin-bottom:15px; border-left:4px solid var(--primary-color);">
+                <p style="margin:0; font-size:15px;">Cambios pendientes por subir: <strong id="pending-count">0</strong></p>
             </div>
-           <div class="action-buttons-stack">
-    <button type="button" onclick="syncWithSheets()" class="btn-sync">🔄 Sincronizar con Google Sheets</button>
-    <button type="button" onclick="downloadBackupCSV()" class="btn-sync" style="background-color: #1d7243;">📊 Descargar Avance del Día (Excel / CSV)</button>
-    <button type="button" onclick="clearLocalStorage()" class="btn-danger">🗑️ Borrar Datos del Teléfono</button>
-</div>
-
-            <hr>
-            <h3>Registro de Visitas Realizadas</h3>
+            
+            <div class="action-buttons-stack">
+                <button type="button" onclick="syncWithSheets()" class="btn-sync">🔄 Sincronizar con Google Sheets</button>
+                <button type="button" onclick="downloadBackupCSV()" class="btn-sync" style="background-color: #1d7243;">📊 Descargar Avance del Día (Excel / CSV)</button>
+                <button type="button" onclick="clearLocalStorage()" class="btn-danger">🗑️ Borrar Datos del Teléfono</button>
+            </div>
+            <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+            
+            <h3>Registro de Visitas del Día</h3>
+            <!-- BITÁCORA DINÁMICA DE REGISTROS PENDIENTES Y COMPLETADOS -->
             <div id="history-log" class="log-list">
-                <!-- Bitácora de modificaciones locales -->
+                <!-- Se inyecta la bitácora desde JS -->
             </div>
-            <button onclick="goBackFromHistory()" class="btn-back">Volver</button>
+            
+            <button type="button" onclick="goBackFromHistory()" class="btn-back">Volver</button>
         </section>
 
     </main>
@@ -156,4 +165,3 @@
     <script src="app.js"></script>
 </body>
 </html>
-
