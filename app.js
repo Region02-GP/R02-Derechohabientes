@@ -44,14 +44,21 @@ request.onerror = (e) => {
     console.error("Error al abrir IndexedDB:", e.target.error);
 };
 
-// NAVEGACIÓN ENTRE PANTALLAS
+// NAVEGACIÓN ENTRE PANTALLAS (ACTUALIZADA PARA PRECARGA DE MEMORIA)
 function changeScreen(screenId) {
     if(screenId !== 'screen-history') {
         previousScreen = screenId;
     }
+    
+    // Si el usuario va hacia la pantalla de búsqueda, precargamos los datos en la RAM
+    if (screenId === 'screen-search') {
+        preloadDatabaseToMemory();
+    }
+    
     document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
     document.getElementById(screenId).classList.remove('hidden');
 }
+
 // =========================================================================
 // PANTALLA 1: ACCESO POR CURP
 // =========================================================================
