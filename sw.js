@@ -1,5 +1,5 @@
 // REEMPLAZA LA PRIMERA LÍNEA DE sw.js CON ESTO (Cambiamos v1 por v2):
-const CACHE_NAME = 'r02-v2';
+const CACHE_NAME = 'r02-v3';
 
 const ASSETS = [
   './',
