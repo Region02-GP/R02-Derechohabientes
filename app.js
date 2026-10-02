@@ -210,16 +210,32 @@ function searchData() {
                 // Asignar clase CSS común o clase de visitado
                 div.className = fueVisitado ? "result-item status-visitado" : "result-item";
                 
-                const displayNombre = item.NOMBRE || '';
-                const displayPaterno = item.AP_PATERNO || '';
-                const displayMaterno = item.AP_MATERNO || '';
-                const displayCurp = item.CURP || '';
-                const displayCalle = item.CALLE || 'No registrada';
+                // Extracción segura de los campos solicitados protegiendo contra valores nulos o vacíos
+                const displayNombre = item.NOMBRE ? String(item.NOMBRE).trim() : '';
+                const displayPaterno = item.AP_PATERNO ? String(item.AP_PATERNO).trim() : '';
+                const displayMaterno = item.AP_MATERNO ? String(item.AP_MATERNO).trim() : '';
+                
+                const displayCurp = item.CURP ? String(item.CURP).trim() : 'SIN CURP';
+                
+                const displayCalle = item.CALLE ? String(item.CALLE).trim() : 'Calle no reg.';
+                const displayNumExt = item.NUM_EXT ? `No. ${String(item.NUM_EXT).trim()}` : 'S/N';
+                const displayColonia = item.COLONIA ? String(item.COLONIA).trim() : 'Colonia no reg.';
                 
                 // Texto de ayuda si ya fue actualizado
-                const indicadorTexto = fueVisitado ? '<br><small style="color:#236947; font-weight:bold;">✓ Información Actualizada / Con GPS</small>' : '';
+                const indicadorTexto = fueVisitado ? ' <span style="color:#236947; font-weight:bold; font-size:12px; margin-left:5px;">✓ Actualizado</span>' : '';
 
-                div.innerHTML = `<strong>${displayNombre} ${displayPaterno} ${displayMaterno}</strong>${indicadorTexto}<br><small>CURP: ${displayCurp} | Calle: ${displayCalle}</small>`;
+                // INYECCIÓN VISUAL REESTRUCTURADA CON TODOS LOS DATOS REQUERIDOS
+                div.innerHTML = `
+                    <div style="font-size:16px; font-weight:700; color:var(--dark-color); margin-bottom:2px;">
+                        ${displayNombre} ${displayPaterno} ${displayMaterno}${indicadorTexto}
+                    </div>
+                    <div style="font-size:13px; font-weight:600; color:var(--primary-color); margin-bottom:4px; letter-spacing:0.3px;">
+                        CURP: ${displayCurp}
+                    </div>
+                    <div style="font-size:13px; color:#555555;">
+                        📍 ${displayCalle}, ${displayNumExt}, Col. ${displayColonia}
+                    </div>
+                `;
                 
                 div.onclick = () => openForm(item);
                 resultsContainer.appendChild(div);
@@ -232,6 +248,7 @@ function searchData() {
         resultsContainer.innerHTML = "<div class='result-item' style='color: gray; text-align: center;'>No se encontraron derechohabientes que coincidan.</div>";
     }
 }
+
 
 // =========================================================================
 // PANTALLA 4: FORMULARIO DE EDICIÓN Y CAPTURA GPS ESTANDARIZADA
