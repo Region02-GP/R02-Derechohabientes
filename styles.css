@@ -318,3 +318,13 @@ button:active {
     gap: 4px;
     margin-top: 10px;
 }
+/* =========================================================================
+   REGLA ADICIONAL: FILA DE BOTONES UNIFICADOS (EXCEL / BORRAR)
+   ========================================================================= */
+.button-row-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Divide el espacio exactamente a la mitad */
+    gap: 10px;                     /* Separación elegante entre ambos botones */
+    margin-top: 10px;              /* Espaciado superior respecto a Sincronizar */
+}
+
