@@ -211,6 +211,8 @@ function searchData() {
 // MÓDULO 4: INTERFAZ DINÁMICA (PINTADO VERDE/ROJO Y ACTIVADOR DE CLICS)
 // =========================================================================
 function ejecutarRenderTarjetas(records, container) {
+    container.innerHTML = ""; // Asegurar limpieza del contenedor antes de dibujar
+    
     records.forEach(item => {
         const div = document.createElement('div');
         
@@ -243,6 +245,7 @@ function ejecutarRenderTarjetas(records, container) {
                 ' <span style="color:#236947; font-weight:bold; font-size:12px; margin-left:5px;">✓ Actualizado</span>';
         }
 
+        // TEXTO PURO: Removemos el icono gráfico para evitar falsos positivos de recursos 404
         div.innerHTML = `
             <div style="font-size:16px; font-weight:700; color:var(--dark-color); margin-bottom:2px;">
                 ${displayNombre} ${displayPaterno} ${displayMaterno}${indicadorTexto}
@@ -251,15 +254,19 @@ function ejecutarRenderTarjetas(records, container) {
                 CURP: ${displayCurp}
             </div>
             <div style="font-size:13px; color:#555555;">
-                📍 ${displayCalle}, ${displayNumExt}, Col. ${displayColonia}
+                Dom: ${displayCalle}, ${displayNumExt}, Col. ${displayColonia}
             </div>
         `;
         
-        // VINCULACIÓN INMEDIATA: Ejecuta de forma directa el Módulo 5
-        div.onclick = function() { openForm(item); };
+        // Asignación explícita segura de clic para saltar a la Pantalla 4
+        div.addEventListener('click', function() {
+            openForm(item);
+        });
+        
         container.appendChild(div);
     });
 }
+
 
 // =========================================================================
 // MÓDULO 5: PANTALLA 4 (CONTROL DE CAMPOS, GPS Y GUARDADO LOCAL CORREGIDO)
