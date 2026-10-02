@@ -1,12 +1,15 @@
-/* Paleta Institucional: Guinda Formal */
+/* Paleta Institucional Corregida: Guinda, Negro y Dorado Formal */
 :root {
-    --primary-color: #621132; /* Guinda */
-    --primary-light: #851c44;
-    --secondary-color: #D4C19C; /* Dorado / Crema formal */
-    --text-color: #333333;
-    --bg-color: #f4f4f4;
+    --primary-color: #621132;   /* Guinda Formal */
+    --primary-light: #851c44;   /* Guinda Claro (Hover) */
+    --secondary-color: #BC955C; /* Dorado Institucional */
+    --secondary-dark: #987242;  /* Dorado Oscuro (Hover) */
+    --dark-color: #1F1F1F;       /* Negro Elegante */
+    --dark-light: #333333;      /* Gris Oscuro */
+    --text-color: #2D3748;
+    --bg-color: #F7FAFC;
     --white: #ffffff;
-    --disabled-bg: #e9ecef;
+    --disabled-bg: #EDF2F7;
 }
 
 body {
@@ -15,96 +18,188 @@ body {
     color: var(--text-color);
     margin: 0;
     padding: 0;
+    line-height: 1.5;
 }
 
 .main-header {
     background-color: var(--primary-color);
     color: var(--white);
     text-align: center;
-    padding: 15px;
+    padding: 18px;
     border-bottom: 4px solid var(--secondary-color);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.main-header h1 {
+    margin: 0;
+    font-size: 22px;
+    letter-spacing: 0.5px;
 }
 
 .app-container {
-    max-width: 500px;
-    margin: 20px auto;
-    padding: 15px;
+    max-width: 480px;
+    margin: 15px auto;
+    padding: 10px;
+    box-sizing: border-box;
 }
 
 .app-screen {
     background: var(--white);
-    padding: 20px;
+    padding: 22px;
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    border: 1px solid #E2E8F0;
 }
 
 .hidden { display: none !important; }
 
-h2 { color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; }
+h2 { 
+    color: var(--primary-color); 
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+/* BARRA DE HERRAMIENTAS PANTALLA 3 */
+.screen-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 8px;
+}
+.screen-toolbar h2 { margin: 0; border: none; }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 16px;
 }
 
 .form-group label {
     display: block;
     font-weight: 600;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: var(--dark-light);
 }
 
 input[type="text"], input[type="tel"], input[type="number"], textarea {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    padding: 11px 14px;
+    border: 1px solid #CBD5E0;
+    border-radius: 6px;
     box-sizing: border-box;
     font-size: 16px;
+    background-color: #FCFDFE;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus, textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(98, 17, 50, 0.15);
+    outline: none;
 }
 
 .text-disabled input {
     background-color: var(--disabled-bg);
-    color: #6c757d;
+    color: #4A5568;
     cursor: not-allowed;
+    border-color: #E2E8F0;
 }
 
+/* BOTONES CON NUEVA IDENTIDAD DE COLOR */
 button {
     background-color: var(--primary-color);
     color: var(--white);
     border: none;
-    padding: 12px;
+    padding: 13px;
     width: 100%;
-    border-radius: 4px;
+    border-radius: 6px;
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
-    transition: background 0.2s;
-    margin-top: 10px;
+    transition: background-color 0.2s, transform 0.1s;
+    margin-top: 8px;
 }
 
+button:active { transform: scale(0.98); }
 button:hover { background-color: var(--primary-light); }
-.btn-secondary { background-color: #4a5568; }
-.btn-back { background-color: #718096; }
-.btn-danger { background-color: #9b2c2c; }
-.btn-sync { background-color: #2f855a; }
+
+.btn-secondary { 
+    background-color: var(--dark-color); 
+}
+.btn-secondary:hover { background-color: var(--dark-light); }
+
+.btn-back { 
+    background-color: #718096; 
+}
+.btn-back:hover { background-color: #4A5568; }
+
+.btn-danger { 
+    background-color: #9B2C2C; 
+}
+.btn-danger:hover { background-color: #742A2A; }
+
+.btn-sync { 
+    background-color: #2F855A; 
+}
+.btn-sync:hover { background-color: #22543D; }
+
+/* NUEVO BOTÓN EXCEL: DORADO Y NEGRO */
+.btn-excel-gold {
+    background-color: var(--dark-color);
+    color: var(--secondary-color);
+    border: 2px solid var(--secondary-color);
+}
+.btn-excel-gold:hover {
+    background-color: var(--secondary-color);
+    color: var(--dark-color);
+}
+
+/* BOTÓN DE LA BARRA DE HERRAMIENTAS (PANTALLA 3) */
+.btn-toolbar-history {
+    width: auto;
+    margin: 0;
+    padding: 6px 14px;
+    font-size: 14px;
+    background-color: var(--dark-color);
+    color: var(--secondary-color);
+    border: 1px solid var(--secondary-color);
+}
+.btn-toolbar-history:hover {
+    background-color: var(--secondary-color);
+    color: var(--dark-color);
+}
 
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 12px;
 }
 
 .results-list, .log-list {
-    max-height: 250px;
+    max-height: 280px;
     overflow-y: auto;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
     margin: 15px 0;
+    background: #FFF;
 }
 
 .result-item {
-    padding: 10px;
-    border-bottom: 1px solid #eee;
+    padding: 12px 16px;
+    border-bottom: 1px solid #EDF2F7;
     cursor: pointer;
+    transition: background-color 0.15s;
 }
-.result-item:hover { background-color: #f7fafc; }
+.result-item:hover { background-color: #F7FAFC; }
+.result-item:last-child { border-bottom: none; }
 
+.card {
+    background: #FFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 15px;
+}
+.card h3 { margin-top: 0; color: var(--dark-color); font-size: 16px; }
