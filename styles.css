@@ -370,3 +370,55 @@ button:active {
     color: #14532D !important;
 }
 
+/* =========================================================================
+   SELECTOR VERTICAL DE ESTATUS (PANTALLA 4)
+   ========================================================================= */
+.status-vertical-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.btn-status-opt {
+    background-color: #F7FAFC;
+    color: var(--dark-color);
+    border: 2px solid #CBD5E0;
+    box-shadow: var(--shadow-soft);
+    text-align: left;
+    padding: 12px 20px;
+    font-size: 15px;
+    margin-top: 0;
+}
+/* Estados encendidos */
+.btn-status-opt.active-localizado {
+    background: #E6F4EA !important;
+    border-color: #137333 !important;
+    color: #137333 !important;
+    box-shadow: 0 0 0 3px rgba(19, 115, 51, 0.2);
+}
+.btn-status-opt.active-nolocalizado {
+    background: #FCE8E6 !important;
+    border-color: #C5221F !important;
+    color: #C5221F !important;
+    box-shadow: 0 0 0 3px rgba(197, 34, 31, 0.2);
+}
+
+/* =========================================================================
+   INDICADORES COLORIDOS EN PANEL DE BÚSQUEDA (VERDE / ROJO)
+   ========================================================================= */
+.status-visitado {
+    border-left: 6px solid #236947 !important;
+    background-color: #F0FDF4;
+}
+.status-visitado:hover { background-color: #DCFCE7 !important; }
+
+.status-no-localizado {
+    border-left: 6px solid #9B2C2C !important;
+    background-color: #FEF2F2; /* Fondo sutilmente rojo claro */
+}
+.status-no-localizado:hover { background-color: #FEE2E2 !important; }
+
+/* Deshabilitar inputs visualmente */
+.form-disabled-wrapper {
+    opacity: 0.5;
+    pointer-events: none; /* Bloquea clics y escrituras */
+}
