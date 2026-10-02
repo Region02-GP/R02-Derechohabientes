@@ -13,9 +13,19 @@ export default function App() {
   const [busqueda, setBusqueda] = useState('');
   const [seleccionado, setSeleccionado] = useState(null);
   
-  // Estado para el candado de acceso obligatorio por CURP
+  // ========================================================
+  // BASE DE DATOS DE BRIGADISTAS AUTORIZADOS (LOGIN INTERNO)
+  // ========================================================
+  const BRIGADISTAS_AUTORIZADOS = [
+    { curp: "CURPBRIGADISTA11111", nombre: "Juan Pérez Martínez" },
+    { curp: "CURPBRIGADISTA22222", nombre: "María Gómez López" },
+    { curp: "CURPCOORDINADOR333", nombre: "Carlos Rodríguez" }
+  ];
+
+  // Estados para el Acceso y Bienvenida Personalizada
   const [curpAcceso, setCurpAcceso] = useState('');
   const [haAccedido, setHaAccedido] = useState(false);
+  const [nombreBrigadista, setNombreBrigadista] = useState('');
 
   // Campos del formulario vinculados a tus columnas de Sheets
   const [situacion, setSituacion] = useState('LOCALIZADO');
@@ -28,7 +38,7 @@ export default function App() {
       setDerechohabientes(data);
       setFiltrados(data);
     } catch (error) {
-      Alert.alert("R02", "Error de conexión con la base de datos.");
+      Alert.alert("R02", "Error al descargar el padrón desde Google Sheets.");
     } finally {
       setLoading(false);
     }
@@ -38,7 +48,7 @@ export default function App() {
     cargarDatos();
   }, []);
 
-  // Función que revisa si la CURP existe en la base de datos para abrir la App
+  // Función que busca la CURP del brigadista adentro del código
   const manejarAcceso = () => {
     const curpLimpia = curpAcceso.trim().toUpperCase();
     
@@ -47,15 +57,14 @@ export default function App() {
       return;
     }
 
-    // Compara la CURP ingresada contra todas las CURPs de la columna A de tu Sheet
-    const usuarioValido = derechohabientes.some(item => 
-      item.curp && item.curp.trim().toUpperCase() === curpLimpia
-    );
+    // Buscamos si la CURP ingresada coincide con los brigadistas del Bloque 2
+    const brigadistaEncontrado = BRIGADISTAS_AUTORIZADOS.find(u => u.curp === curpLimpia);
 
-    if (usuarioValido) {
+    if (brigadistaEncontrado) {
+      setNombreBrigadista(brigadistaEncontrado.nombre); // Extrae el nombre para el saludo
       setHaAccedido(true);
     } else {
-      Alert.alert("Acceso Denegado", "La CURP ingresada no se encuentra registrada en el padrón autorizado.");
+      Alert.alert("Acceso Denegado", "Esta CURP no está autorizada para operar la aplicación R02.");
     }
   };
 
@@ -83,15 +92,13 @@ export default function App() {
   };
   const guardarDatos = async () => {
     if (!causal.trim()) {
-      Alert.alert("R02-Derechohabientes", "Por favor introduce el nuevo domicilio o justificación en el campo de Notas.");
+      Alert.alert("R02-Derechohabientes", "Por favor introduce las notas o el nuevo domicilio.");
       return;
     }
 
-    // Cerramos el formulario de inmediato para agilizar el trabajo en campo
     const copiaSeleccionado = { ...seleccionado };
     setSeleccionado(null); 
     
-    // Actualizamos el color del registro en el celular al instante
     setFiltrados(prev => prev.map(item => 
       item.rowNum === copiaSeleccionado.rowNum ? { ...item, situacion: situacion } : item
     ));
@@ -107,10 +114,9 @@ export default function App() {
         longitude = loc.coords.longitude.toString();
       }
     } catch (e) {
-      console.log("Error obteniendo ubicación rápida");
+      console.log("Error de ubicación rápida");
     }
 
-    // Envío en segundo plano a las columnas P, Q, X e Y de tu Sheets
     fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -121,29 +127,27 @@ export default function App() {
         lat: latitude,
         lng: longitude
       })
-    }).catch(err => console.log("Guardado retrasado por red"));
+    }).catch(err => console.log("Guardado en cola por red"));
 
     setCausal('');
     setSituacion('LOCALIZADO');
   };
-  // PANTALLA DE CARGA INICIAL
   if (loading && !haAccedido) {
     return (
       <SafeAreaView style={styles.loginCentrado}>
         <ActivityIndicator size="large" color="#ffffff" />
-        <Text style={{ color: '#ffffff', marginTop: 15, fontWeight: '600' }}>Sincronizando Padrón R02...</Text>
+        <Text style={{ color: '#ffffff', marginTop: 15, fontWeight: '600' }}>Sincronizando Padrón R02-Derechohabientes...</Text>
       </SafeAreaView>
     );
   }
 
-  // PANTALLA DE INICIO DE SESIÓN POR CURP
   if (!haAccedido) {
     return (
       <SafeAreaView style={styles.loginCentrado}>
         <View style={styles.loginTarjeta}>
           <Text style={styles.loginSiglas}>R02</Text>
           <Text style={styles.loginTituloSub}>Control de Territorio</Text>
-          <Text style={styles.loginInstruccion}>Ingresa tu CURP para validar tu acceso al sistema:</Text>
+          <Text style={styles.loginInstruccion}>Ingresa tu CURP para validar tu acceso como Brigadista:</Text>
           <TextInput 
             style={[styles.input, styles.loginInputMargin]} 
             placeholder="CURP DE 18 DÍGITOS" 
@@ -161,13 +165,16 @@ export default function App() {
     );
   }
 
-  // APLICACIÓN DESBLOQUEADA (LISTADO Y BUSCADOR)
   return (
     <SafeAreaView style={styles.container}>
+      {/* Mensaje de bienvenida personalizado con el nombre del Brigadista autorizado */}
       <View style={styles.headerApp}>
-        <Text style={styles.titulo}>R02 - Derechohabientes</Text>
-        <TouchableOpacity style={styles.botonSalir} onPress={() => { setHaAccedido(false); setCurpAcceso(''); }}>
-          <Text style={styles.textoSalir}>Cerrar Sesión</Text>
+        <View style={{ flex: 1, paddingRight: 10 }}>
+          <Text style={styles.titulo}>R02 - Territorio</Text>
+          <Text style={styles.bienvenida}>Bienvenido(a): <Text style={{fontWeight:'700'}}>{nombreBrigadista}</Text></Text>
+        </View>
+        <TouchableOpacity style={styles.botonSalir} onPress={() => { setHaAccedido(false); setCurpAcceso(''); setNombreBrigadista(''); }}>
+          <Text style={styles.textoSalir}>Salir</Text>
         </TouchableOpacity>
       </View>
       
@@ -210,7 +217,7 @@ export default function App() {
             ))}
           </View>
           <Text style={styles.label}>CAUSAL (Nuevo Domicilio / Observaciones):</Text>
-          <TextInput style={[styles.input, styles.textArea]} placeholder="Introduce la nueva dirección completa..." value={causal} onChangeText={setCausal} multiline={true} numberOfLines={4} />
+          <TextInput style={[styles.input, styles.textArea]} placeholder="Introduce la nueva dirección completa o motivo..." value={causal} onChangeText={setCausal} multiline={true} numberOfLines={4} />
           <View style={styles.botonesContainer}>
             <TouchableOpacity style={[styles.boton, styles.botonGuardar]} onPress={guardarDatos}><Text style={styles.botonTexto}>Guardar en Territorio</Text></TouchableOpacity>
             <TouchableOpacity style={[styles.boton, styles.botonCancelar]} onPress={() => setSeleccionado(null)}><Text style={styles.botonTexto}>Regresar a la lista</Text></TouchableOpacity>
@@ -222,10 +229,11 @@ export default function App() {
 }
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f3f4f6', paddingHorizontal: 15 },
-  headerApp: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, marginBottom: 10 },
+  headerApp: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, marginBottom: 15 },
   titulo: { fontSize: 20, fontWeight: '800', color: '#621132' },
-  botonSalir: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6, backgroundColor: '#e5e7eb' },
-  textoSalir: { fontSize: 12, color: '#4b5563', fontWeight: '600' },
+  bienvenida: { fontSize: 13, color: '#4b5563', marginTop: 2 },
+  botonSalir: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 6, backgroundColor: '#e5e7eb' },
+  textoSalir: { fontSize: 13, color: '#4b5563', fontWeight: '600' },
   loginCentrado: { flex: 1, backgroundColor: '#621132', justifyContent: 'center', alignItems: 'center', padding: 20 },
   loginTarjeta: { backgroundColor: '#ffffff', width: '100%', padding: 25, borderRadius: 16, alignItems: 'center', elevation: 5 },
   loginSiglas: { fontSize: 42, fontWeight: '900', color: '#621132', marginBottom: 2 },
