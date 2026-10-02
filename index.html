@@ -1,59 +1,123 @@
+      <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Base de Datos - Google Sheets</title>
+    <script src="https://tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+
+    <div class="max-w-6xl mx-auto p-6">
+        <!-- Encabezado -->
+        <header class="bg-white rounded-xl shadow-md p-6 mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">📊 Gestor de Base de Datos (50k Registros)</h1>
+            <p class="text-gray-600 mt-2">Acceso directo a tu Google Sheet sin configurar APIs ni consolas complejas.</p>
+        </header>
+
+        <!-- Configuración Inicial -->
+        <section id="config-section" class="bg-white rounded-xl shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">🔗 Enlace de tu Google Sheet</h2>
+            <div class="w-full">
+                <label class="block text-sm font-medium text-gray-600">Pega la URL completa de tu hoja de cálculo:</label>
+                <input type="text" id="sheet-url" placeholder="https://google.com" class="mt-1 block w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <button onclick="cargarDatosDirectos()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md transition">
+                Cargar Datos de Campo
+            </button>
+        </section>
+
+        <!-- Panel de Control Principal (Oculto hasta conectar) -->
+        <section id="main-panel" class="hidden bg-white rounded-xl shadow-md p-6 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-center border-b pb-4 mb-4">
+                <h2 class="text-xl font-semibold text-gray-700">🔍 Buscador y Editor en Tiempo Real</h2>
+                <div class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium" id="total-registros">
+                    Cargando filas...
+                </div>
+            </div>
+
+            <!-- Filtros de búsqueda -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600">Columna de búsqueda:</label>
+                    <select id="buscar-columna" class="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-white">
+                        <!-- Se llena dinámicamente -->
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-600">Escribe el término de búsqueda:</label>
+                    <input type="text" id="buscar-input" oninput="filtrarDatos()" placeholder="Ej. Juan Pérez o ID_3948..." class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                </div>
+            </div>
+
+            <!-- Tabla de Resultados -->
+            <div class="overflow-x-auto border border-gray-200 rounded-lg max-h-[400px] overflow-y-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50 sticky top-0" id="tabla-cabecera">
+                        <!-- Se llena dinámicamente -->
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200 text-sm" id="tabla-cuerpo">
+                        <tr>
+                            <td colspan="100" class="text-center py-8 text-gray-500">Usa el buscador superior para filtrar registros...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script>
         let datosOriginales = [];
         let cabeceras = [];
 
-        // Esta función se ejecuta sola apenas se abre la página en el navegador
+        // Auto-conexión por URL si les pasas el enlace preparado
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
-            const apiKeyParam = urlParams.get('key');
-            const sheetIdParam = urlParams.get('sheet');
-
-            // Si los datos vienen en el enlace, los rellena y conecta solos
-            if (apiKeyParam && sheetIdParam) {
-                document.getElementById('api-key').value = apiKeyParam;
-                document.getElementById('sheet-id').value = sheetIdParam;
-                
-                // Oculta el panel de configuración para que el usuario no vea cosas técnicas
+            const sheetParam = urlParams.get('sheet_url');
+            if (sheetParam) {
+                document.getElementById('sheet-url').value = decodeURIComponent(sheetParam);
                 document.getElementById('config-section').classList.add('hidden');
-                
-                // Conecta de inmediato de forma transparente
-                conectarYLimpiar();
+                cargarDatosDirectos();
             }
         }
 
-        async function conectarYLimpiar() {
-            const sheetId = document.getElementById('sheet-id').value.trim();
-            const apiKey = document.getElementById('api-key').value.trim();
-
-            if(!sheetId || !apiKey) {
-                alert("Por favor, rellena el ID del Sheet y tu API Key.");
-                return;
-            }
+        async function cargarDatosDirectos() {
+            const urlInput = document.getElementById('sheet-url').value.trim();
+            if(!urlInput) return alert("Por favor, pega la URL de tu Google Sheet.");
 
             try {
-                const url = `https://googleapis.com{sheetId}/values/Sheet1!A1:Z55000?key=${apiKey}`;
-                const response = await fetch(url);
-                const data = await response.json();
+                // Extraer el ID de la planilla desde la URL de forma inteligente
+                const matches = urlInput.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                if(!matches) throw new Error("La URL introducida no parece un enlace válido de Google Sheets.");
+                const sheetId = matches[1];
 
-                if(data.error) throw new Error(data.error.message);
-                if(!data.values || data.values.length === 0) return alert("Hoja vacía.");
+                // Convertimos la petición a formato CSV (Es público, rápido y nativo de Google)
+                const urlCsv = `https://google.com{sheetId}/export?format=csv`;
+                
+                const response = await fetch(urlCsv);
+                if(!response.ok) throw new Error("No se pudo acceder al archivo. Asegúrate de que esté compartido como 'Cualquier persona con el enlace puede ver'.");
+                
+                const textoCsv = await response.text();
+                
+                // Procesar las filas del CSV de forma simple
+                const filas = textoCsv.split("\n").map(f => f.split(","));
+                
+                cabeceras = filas[0].map(c => c.replace(/"/g, "").trim());
+                datosOriginales = filas.slice(1).map(f => f.map(celda => celda.replace(/"/g, "").trim()));
 
-                cabeceras = data.values[0];
-                datosOriginales = data.values.slice(1);
+                // Rellenar selector de columnas
+                document.getElementById('buscar-columna').innerHTML = cabeceras.map((c, i) => `<option value="${i}">${c}</option>`).join('');
 
-                const selectCol = document.getElementById('buscar-columna');
-                selectCol.innerHTML = cabeceras.map((c, i) => `<option value="${i}">${c}</option>`).join('');
+                // Renderizar cabecera de tabla
+                document.getElementById('tabla-cabecera').innerHTML = `<tr>${cabeceras.map(c => `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase bg-gray-50">\${c}</th>`).join('')}</tr>`;
 
-                const thArr = cabeceras.map(c => `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">${c}</th>`);
-                thArr.push('<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Acciones</th>');
-                document.getElementById('tabla-cabecera').innerHTML = `<tr>${thArr.join('')}</tr>`;
-
+                // Mostrar panel principal
                 document.getElementById('total-registros').innerText = `Total filas cargadas: ${datosOriginales.length.toLocaleString()}`;
                 document.getElementById('main-panel').classList.remove('hidden');
 
             } catch (err) {
-                // Si falla el auto-logueo, vuelve a mostrar el panel de configuración para revisar errores
                 document.getElementById('config-section').classList.remove('hidden');
-                alert("Error al conectar: " + err.message);
+                alert("Error: " + err.message);
             }
         }
 
@@ -63,46 +127,28 @@
             const cuerpo = document.getElementById('tabla-cuerpo');
 
             if(!query) {
-                cuerpo.innerHTML = `<tr><td colspan="100" class="text-center py-8 text-gray-500">Escribe en el buscador para filtrar registros rápidamente...</td></tr>`;
+                cuerpo.innerHTML = `<tr><td colspan="100" class="text-center py-8 text-gray-500">Escribe en el buscador para filtrar registros...</td></tr>`;
                 return;
             }
 
             const filtrados = [];
             for(let i=0; i<datosOriginales.length; i++) {
                 const fila = datosOriginales[i];
-                const celdaValor = fila[colIndex] ? String(fila[colIndex]).toLowerCase() : "";
-                if(celdaValor.includes(query)) {
-                    filtrados.push({ originalIndex: i, valores: fila });
+                if(fila[colIndex] && fila[colIndex].toLowerCase().includes(query)) {
+                    filtrados.push(fila);
                 }
-                if(filtrados.length >= 25) break; // Bajamos a 25 para que en celulares vuele de rápido
+                if(filtrados.length >= 30) break; // Límite para rendimiento en celulares de campo
             }
 
             if(filtrados.length === 0) {
-                cuerpo.innerHTML = `<tr><td colspan="100" class="text-center py-8 text-gray-500">No se encontraron coincidencias.</td></tr>`;
+                cuerpo.innerHTML = `<tr><td colspan="100" class="text-center py-8 text-gray-500">No hay coincidencias.</td></tr>`;
                 return;
             }
 
-            cuerpo.innerHTML = filtrados.map(item => {
-                const tds = cabeceras.map((_, cIdx) => {
-                    const val = item.valores[cIdx] || "";
-                    return `<td class="px-4 py-3 text-gray-700 border-b min-w-[120px]" contenteditable="true" onblur="guardarCeldaLocal(${item.originalIndex}, ${cIdx}, this)">${val}</td>`;
-                }).join('');
-                
-                return `<tr class="hover:bg-gray-50">
-                    ${tds}
-                    <td class="px-4 py-3 whitespace-nowrap border-b">
-                        <button onclick="guardarFilaEnSheets(${item.originalIndex})" class="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-1.5 rounded shadow-sm transition">Actualizar Fila</button>
-                    </td>
-                </tr>`;
+            cuerpo.innerHTML = filtrados.map(fila => {
+                return `<tr class="hover:bg-gray-50">${cabeceras.map((_, cIdx) => `<td class="px-4 py-3 text-gray-700 border-b">\${fila[cIdx] || ""}</td>`).join('')}</tr>`;
             }).join('');
         }
-
-        function guardarCeldaLocal(filaIdx, colIdx, elemento) {
-            datosOriginales[filaIdx][colIdx] = elemento.innerText.trim();
-        }
-
-        async function guardarFilaEnSheets(filaIdx) {
-            const numFilaSheets = filaIdx + 2; 
-            alert("Modificación guardada localmente en la fila " + numFilaSheets);
-        }
-
+    </script>
+</body>
+</html>
