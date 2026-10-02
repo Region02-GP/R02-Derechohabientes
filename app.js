@@ -3,7 +3,7 @@
 // =========================================================================
 
 // URL del Web App de Google Apps Script 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbymgNDgXSWjA63lGxyoGlPYbKP6RzhQuewOA62BvuQ-GPY5TSuHcgKQY5nbXv8za75A/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbySOKFBEVWn3sAbX0OooLSdVzh16XRM1GzrKcg_--5CAIQPtMkuyUBbj8BME57qQAMT/exec";
 
 // CURPs Autorizadas en Código para la Pantalla de Acceso (Pantalla 1)
 const AUTHORIZED_CURPS = {
@@ -100,8 +100,18 @@ async function downloadAllDataMassive() {
         while (!isDone) {
             progressText.innerText = `Descargando registros: ${totalCargados} acumulados...`;
             
+                       // LOCALIZA ESTA SECCIÓN DENTRO DE downloadAllDataMassive() EN app.js:
             const url = `${GOOGLE_SCRIPT_URL}?action=getAllData&offset=${offset}&limit=${limit}&_=${new Date().getTime()}`;
             const response = await fetch(url);
+            
+            if (!response.ok) throw new Error("Fallo en la respuesta del servidor Google.");
+            
+            // CORRECCIÓN DE SEGURIDAD: Leemos como texto primero y luego convertimos a objeto JSON
+            const textData = await response.text();
+            const data = JSON.parse(textData);
+            
+            if (data.records && data.records.length > 0) {
+
             
             if (!response.ok) throw new Error("Fallo en la respuesta del servidor Google.");
             const data = await response.json();
