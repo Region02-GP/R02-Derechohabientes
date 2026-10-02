@@ -22,23 +22,22 @@ export default function App() {
     { curp: "CURPCOORDINADOR333", nombre: "Carlos Rodríguez" }
   ];
 
-  // Estados para el Candado de Acceso por CURP
+  // Estados independientes para el candado de acceso
   const [curpAcceso, setCurpAcceso] = useState('');
   const [haAccedido, setHaAccedido] = useState(false);
   const [nombreBrigadista, setNombreBrigadista] = useState('');
 
-  // Campos del formulario vinculados a tus columnas originales de la Sheets
+  // Campos de tus columnas originales de Sheets
   const [situacion, setSituacion] = useState('LOCALIZADO');
   const [causal, setCausal] = useState('');
   const cargarDatos = async () => {
-    setLoading(true);
     try {
       const response = await fetch(API_URL);
       const data = await response.json();
       setDerechohabientes(data);
       setFiltrados(data);
     } catch (error) {
-      Alert.alert("R02", "Error al descargar el padrón desde Google Sheets.");
+      console.log("Descarga inicial en proceso...");
     } finally {
       setLoading(false);
     }
@@ -47,24 +46,6 @@ export default function App() {
   useEffect(() => {
     cargarDatos();
   }, []);
-
-  const manejarAcceso = () => {
-    const curpLimpia = curpAcceso.trim().toUpperCase();
-    
-    if (curpLimpia.length !== 18) {
-      Alert.alert("Acceso Denegado", "Por favor, ingresa una CURP válida de 18 caracteres.");
-      return;
-    }
-
-    const brigadistaEncontrado = BRIGADISTAS_AUTORIZADOS.find(u => u.curp === curpLimpia);
-
-    if (brigadistaEncontrado) {
-      setNombreBrigadista(brigadistaEncontrado.nombre); // Guarda el nombre para el saludo
-      setHaAccedido(true);
-    } else {
-      Alert.alert("Acceso Denegado", "Esta CURP no está autorizada para operar la aplicación R02.");
-    }
-  };
 
   const handleBuscar = (text) => {
     setBusqueda(text);
@@ -88,6 +69,25 @@ export default function App() {
     });
     setFiltrados(filtrados);
   };
+  // Validación de acceso instantánea (No espera a Google Sheets)
+  const manejarAcceso = () => {
+    const curpLimpia = curpAcceso.trim().toUpperCase();
+    
+    if (curpLimpia.length !== 18) {
+      Alert.alert("Acceso Denegado", "Por favor, ingresa una CURP válida de 18 caracteres.");
+      return;
+    }
+
+    const brigadistaEncontrado = BRIGADISTAS_AUTORIZADOS.find(u => u.curp === curpLimpia);
+
+    if (brigadistaEncontrado) {
+      setNombreBrigadista(brigadistaEncontrado.nombre); // Asigna el saludo personalizado
+      setHaAccedido(true);
+    } else {
+      Alert.alert("Acceso Denegado", "Esta CURP no está autorizada en el sistema R02.");
+    }
+  };
+
   const guardarDatos = async () => {
     if (!causal.trim()) {
       Alert.alert("R02-Derechohabientes", "Por favor introduce las notas o el nuevo domicilio.");
@@ -128,15 +128,7 @@ export default function App() {
     setCausal('');
     setSituacion('LOCALIZADO');
   };
-  if (loading && !haAccedido) {
-    return (
-      <SafeAreaView style={styles.loginCentrado}>
-        <ActivityIndicator size="large" color="#ffffff" />
-        <Text style={{ color: '#ffffff', marginTop: 15, fontWeight: '600' }}>Sincronizando Padrón R02-Derechohabientes...</Text>
-      </SafeAreaView>
-    );
-  }
-
+  // PANTALLA 1: CANDADO DE INICIO DE SESIÓN DIRECTO
   if (!haAccedido) {
     return (
       <SafeAreaView style={styles.loginCentrado}>
@@ -161,6 +153,7 @@ export default function App() {
     );
   }
 
+  // PANTALLA 2: APLICACIÓN DESBLOQUEADA
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerApp}>
@@ -173,7 +166,12 @@ export default function App() {
         </TouchableOpacity>
       </View>
       
-      {!seleccionado && (
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#621132" />
+          <Text style={{ marginTop: 10, color: '#4b5563' }}>Descargando base de datos...</Text>
+        </View>
+      ) : !seleccionado ? (
         <>
           <TextInput style={styles.buscador} placeholder="Buscar por ID, Nombre o CURP..." value={busqueda} onChangeText={handleBuscar} autoCapitalize="none" autoCorrect={false} />
           <FlatList 
@@ -196,9 +194,7 @@ export default function App() {
             )}
           />
         </>
-      )}
-
-      {seleccionado && (
+      ) : (
         <ScrollView style={styles.formularioContainer}>
           <Text style={styles.formTitulo}>Actualizar Datos en Territorio</Text>
           <Text style={styles.nombreDerecho}>{seleccionado.nombre}</Text>
@@ -212,7 +208,7 @@ export default function App() {
             ))}
           </View>
           <Text style={styles.label}>CAUSAL (Nuevo Domicilio / Observaciones):</Text>
-          <TextInput style={[styles.input, styles.textArea]} placeholder="Introduce la nueva dirección completa o motivo..." value={causal} onChangeText={setCausal} multiline={true} numberOfLines={4} />
+          <TextInput style={[styles.input, styles.textArea]} placeholder="Introduce la nueva dirección completa..." value={causal} onChangeText={setCausal} multiline={true} numberOfLines={4} />
           <View style={styles.botonesContainer}>
             <TouchableOpacity style={[styles.boton, styles.botonGuardar]} onPress={guardarDatos}><Text style={styles.botonTexto}>Guardar en Territorio</Text></TouchableOpacity>
             <TouchableOpacity style={[styles.boton, styles.botonCancelar]} onPress={() => setSeleccionado(null)}><Text style={styles.botonTexto}>Regresar a la lista</Text></TouchableOpacity>
