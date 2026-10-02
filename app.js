@@ -74,7 +74,7 @@ function login() {
 }
 
 // =========================================================================
-// PANTALLA 2: DESCARGA MASIVA POR BLOQUES (Con captura de índice de fila)
+// PANTALLA 2: DESCARGA MASIVA PROTEGIDA (BLINDADA CONTRA ERRORES DE RED)
 // =========================================================================
 async function downloadAllDataMassive() {
     const btn = document.getElementById('btn-massive-download');
@@ -88,7 +88,7 @@ async function downloadAllDataMassive() {
     progressContainer.style.display = "block";
     
     let offset = 0;
-    let limit = 10000; 
+    let limit = 10000; // Paquetes óptimos de 10k para no saturar el navegador
     let isDone = false;
     let totalCargados = 0;
     
@@ -100,40 +100,46 @@ async function downloadAllDataMassive() {
         while (!isDone) {
             progressText.innerText = `Descargando registros: ${totalCargados} acumulados...`;
             
-                       // LOCALIZA ESTA SECCIÓN DENTRO DE downloadAllDataMassive() EN app.js:
+            // Forzamos saltar cachés del navegador con una marca de tiempo unica
             const url = `${GOOGLE_SCRIPT_URL}?action=getAllData&offset=${offset}&limit=${limit}&_=${new Date().getTime()}`;
             const response = await fetch(url);
             
-            if (!response.ok) throw new Error("Fallo en la respuesta del servidor Google.");
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
             
-            // CORRECCIÓN DE SEGURIDAD: Leemos como texto primero y luego convertimos a objeto JSON
+            // LEER COMO TEXTO SEGURO Y CONVERTIR A OBJETO
             const textData = await response.text();
-            const data = JSON.parse(textData);
+            let data;
             
-            if (data.records && data.records.length > 0) {
-
+            try {
+                data = JSON.parse(textData);
+            } catch (jsonParseError) {
+                console.error("Respuesta no válida del servidor Google (No es JSON):", textData);
+                throw new Error("El servidor de Google devolvió un formato corrompido.");
+            }
             
-            if (!response.ok) throw new Error("Fallo en la respuesta del servidor Google.");
-            const data = await response.json();
-            
-            if (data.records && data.records.length > 0) {
+            // Validar que la estructura interna contenga los registros
+            if (data && data.records && data.records.length > 0) {
                 const tx = db.transaction(STORE_NAME, "readwrite");
                 const store = tx.objectStore(STORE_NAME);
                 
                 data.records.forEach(record => {
-                    if (record.CURP) {
+                    // Validamos que el registro tenga una CURP válida antes de inyectar en disco
+                    if (record && record.CURP) {
                         record.CURP = String(record.CURP).replace(/ /g, "").toUpperCase().trim();
                         store.put(record); 
                         totalCargados++;
                     }
                 });
                 
+                // Esperar a que la transacción en el disco duro local termine por completo
                 await new Promise((resolve) => { tx.oncomplete = resolve; });
             }
             
-            isDone = data.done;
-            offset = data.nextOffset;
+            // Actualizar variables de control del ciclo while
+            isDone = data.done === true || data.records.length === 0;
+            offset = data.nextOffset || (offset + limit);
             
+            // Animación de progreso visual basada en un universo estimado de 25,000 filas
             let percentage = Math.min(100, Math.round((offset / 25000) * 100));
             progressBar.style.width = `${percentage}%`;
         }
@@ -141,12 +147,14 @@ async function downloadAllDataMassive() {
         progressText.innerText = `¡Descarga completa! ${totalCargados} derechohabientes listos offline.`;
         alert(`Éxito: Se han guardado ${totalCargados} registros en la memoria interna.`);
     } catch (error) {
-        console.error(error);
-        alert("Ocurrió un error en la transferencia de datos. Verifica tu conexión de red.");
+        console.error("Error detallado durante la descarga masiva:", error);
+        alert(`Error en la transferencia: ${error.message}\nVerifica la consola para más detalles.`);
     } finally {
+        // Retraso de seguridad antes de reactivar el botón para evitar clics dobles catastróficos
         window.setTimeout(() => { btn.disabled = false; }, 1000);
     }
 }
+
 // =========================================================================
 // PANTALLA 3: BUSCADOR MULTICRITERIO INTEGRAL (MEMORIA RAM)
 // =========================================================================
