@@ -258,7 +258,7 @@ function renderSearchCards(records, container) {
     });
 }
 // =========================================================================
-// MÓDULO 5: PANTALLA 4 (CONTROL DE CAMPOS, GPS Y GUARDADO LOCAL)
+// MÓDULO 5: PANTALLA 4 (CONTROL DE CAMPOS, GPS Y GUARDADO LOCAL CORREGIDO)
 // =========================================================================
 function setVisitStatus(status) {
     currentSelectedStatus = status;
@@ -288,7 +288,7 @@ function openForm(item) {
     document.getElementById('f-id').value = item.ID || '';
     document.getElementById('f-nombre').value = item.NOMBRE || '';
     document.getElementById('f-paterno').value = item.AP_PATERNO || '';
-    document.getElementById('f-materno').value = item.AP_MATERNO || '';
+    document.getElementById('f-materno').value = item.AP_MATERNO || ''; // Verificado
     document.getElementById('f-situacion').value = item.SITUACION || '';
     document.getElementById('f-causal').value = item.CUSAL || '';
     
@@ -328,6 +328,7 @@ function openForm(item) {
         document.getElementById('f-lon').value = "NO COMPATIBLE";
     }
 
+    // Configurar estado inicial del selector dinámico al abrir expediente
     document.getElementById('f-motivo').value = item.MOTIVO_NO_LOCALIZADO || item.motivo_no_localizado || '';
     setVisitStatus(item.ESTATUS_VISITA || item.estatus_visita || 'LOCALIZADO');
 }
@@ -357,7 +358,7 @@ function saveData(event) {
         ID: document.getElementById('f-id').value,
         NOMBRE: document.getElementById('f-nombre').value,
         AP_PATERNO: document.getElementById('f-paterno').value,
-        AP_MATERMO: document.getElementById('f-materno').value,
+        AP_MATERNO: document.getElementById('f-materno').value, // CORREGIDO DE AP_MATERMO A AP_MATERNO
         TEL_FIJO: document.getElementById('f-telfijo').value,
         TEL_CEL: document.getElementById('f-telcel').value,
         MUNICIPIO: document.getElementById('f-municipio').value,
@@ -393,6 +394,7 @@ function saveData(event) {
     document.getElementById('search-results').innerHTML = "";
     changeScreen('screen-search');
 }
+
 // =========================================================================
 // MÓDULO 6: PANTALLA 5 (HISTORIAL, SINCRONIZACIÓN Y EXPORTACIÓN EXCEL)
 // =========================================================================
