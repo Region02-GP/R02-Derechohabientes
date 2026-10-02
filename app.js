@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, TextInput, FlatList, TouchableOpacity, Activity
 import * as Location from 'expo-location';
 
 // ==========================================
-// CONFIGURACIÓN DE CONEXIÓN
+// CONFIGURACIÓN DE CONEXIÓN ORIGINAL
 // ==========================================
 const API_URL = "https://script.google.com/macros/s/AKfycbymIkArKj52jhVXvM8uGTkYETU1Q8Ikbqbu--BdUO0BcTAYrFZ4SPb6r9UOMsjH5RC1/exec"; // <-- COLOCA AQUÍ TU URL /exec
 export default function App() {
@@ -22,12 +22,12 @@ export default function App() {
     { curp: "CURPCOORDINADOR333", nombre: "Carlos Rodríguez" }
   ];
 
-  // Estados para el Acceso y Bienvenida Personalizada
+  // Estados para el Candado de Acceso por CURP
   const [curpAcceso, setCurpAcceso] = useState('');
   const [haAccedido, setHaAccedido] = useState(false);
   const [nombreBrigadista, setNombreBrigadista] = useState('');
 
-  // Campos del formulario vinculados a tus columnas de Sheets
+  // Campos del formulario vinculados a tus columnas originales de la Sheets
   const [situacion, setSituacion] = useState('LOCALIZADO');
   const [causal, setCausal] = useState('');
   const cargarDatos = async () => {
@@ -48,7 +48,6 @@ export default function App() {
     cargarDatos();
   }, []);
 
-  // Función que busca la CURP del brigadista adentro del código
   const manejarAcceso = () => {
     const curpLimpia = curpAcceso.trim().toUpperCase();
     
@@ -60,7 +59,7 @@ export default function App() {
     const brigadistaEncontrado = BRIGADISTAS_AUTORIZADOS.find(u => u.curp === curpLimpia);
 
     if (brigadistaEncontrado) {
-      setNombreBrigadista(brigadistaEncontrado.nombre); // Extrae el nombre para el saludo
+      setNombreBrigadista(brigadistaEncontrado.nombre); // Guarda el nombre para el saludo
       setHaAccedido(true);
     } else {
       Alert.alert("Acceso Denegado", "Esta CURP no está autorizada para operar la aplicación R02.");
@@ -112,9 +111,7 @@ export default function App() {
         latitude = loc.coords.latitude.toString();
         longitude = loc.coords.longitude.toString();
       }
-    } catch (e) {
-      console.log("Error de ubicación rápida");
-    }
+    } catch (e) {}
 
     fetch(API_URL, {
       method: 'POST',
