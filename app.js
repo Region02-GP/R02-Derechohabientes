@@ -197,8 +197,30 @@ function searchData() {
         if (match) {
             if (matchesFound < 30) {
                 const div = document.createElement('div');
-                div.className = "result-item";
-                div.innerHTML = `<strong>${item.NOMBRE || ''} ${item.AP_PATERNO || ''} ${item.AP_MATERNO || ''}</strong><br><small>CURP: ${item.CURP || ''} | Calle: ${item.CALLE || 'No registrada'}</small>`;
+                
+                // VALIDACIÓN DE VISITA: Verifica si tiene coordenadas válidas de Sheets o si está en la cola temporal
+                const tieneLat = item.Latitud && item.Latitud !== "" && item.Latitud !== "0" && item.Latitud !== "ERROR";
+                const tieneLon = item.Longitud && item.Longitud !== "" && item.Longitud !== "0" && item.Longitud !== "ERROR";
+                const yaSincronizadoOModificado = tieneLat && tieneLon;
+                
+                // Verificar además si está pendiente en la cola de hoy
+                const estaEnColaPendiente = pendingSync.some(p => p.CURP === item.CURP);
+                const fueVisitado = yaSincronizadoOModificado || estaEnColaPendiente;
+
+                // Asignar clase CSS común o clase de visitado
+                div.className = fueVisitado ? "result-item status-visitado" : "result-item";
+                
+                const displayNombre = item.NOMBRE || '';
+                const displayPaterno = item.AP_PATERNO || '';
+                const displayMaterno = item.AP_MATERNO || '';
+                const displayCurp = item.CURP || '';
+                const displayCalle = item.CALLE || 'No registrada';
+                
+                // Texto de ayuda si ya fue actualizado
+                const indicadorTexto = fueVisitado ? '<br><small style="color:#236947; font-weight:bold;">✓ Información Actualizada / Con GPS</small>' : '';
+
+                div.innerHTML = `<strong>${displayNombre} ${displayPaterno} ${displayMaterno}</strong>${indicadorTexto}<br><small>CURP: ${displayCurp} | Calle: ${displayCalle}</small>`;
+                
                 div.onclick = () => openForm(item);
                 resultsContainer.appendChild(div);
             }
