@@ -299,7 +299,7 @@ function saveData(event) {
     const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp);
     const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
 
-    const record = {
+        const record = {
         CURP: targetCurp,
         ID: document.getElementById('f-id').value,
         NOMBRE: document.getElementById('f-nombre').value,
@@ -317,8 +317,11 @@ function saveData(event) {
         REFERENCIA: document.getElementById('f-referencia').value,
         SITUACION: document.getElementById('f-situacion').value,
         CUSAL: document.getElementById('f-causal').value,
+        
+        // UNIFICACIÓN DE CAMPOS: Forzamos la escritura en el formato de objeto idéntico
         Latitud: latValue,
         Longitud: lonValue,
+        
         FECHA_MODIFICACION: new Date().toLocaleString("es-MX"),
         USUARIO_MODIFICA: currentUser.name,
         SHEETS_ROW_INDEX: originalRecord.SHEETS_ROW_INDEX || ""
