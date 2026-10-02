@@ -181,7 +181,7 @@ export default function App() {
               <TouchableOpacity style={styles.tarjeta} onPress={() => { 
                 setSeleccionado(item); 
                 setSituacion(item.situacion || 'LOCALIZADO');
-                causal(item.causal || '');
+                setCausal(item.causal || ''); // <-- CORREGIDO AQUÍ (Antes causaba el bloqueo)
               }}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.nombre}>{item.nombre || 'Sin Nombre'}</Text>
