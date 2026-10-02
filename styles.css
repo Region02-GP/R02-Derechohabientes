@@ -357,4 +357,16 @@ button:active {
     box-shadow: 0 2px 6px 0 rgba(98, 17, 50, 0.4);
     transform: translateY(1px);
 }
+/* =========================================================================
+   INDICADOR VERDE PARA DERECHOHABIENTES ACTUALIZADOS / VISITADOS
+   ========================================================================= */
+.status-visitado {
+    border-left: 5px solid #236947 !important; /* Borde izquierdo verde institucional */
+    background-color: #F0FDF4;                 /* Fondo sutilmente verde muy claro */
+}
+
+.status-visitado:hover {
+    background-color: #DCFCE7 !important;     /* Cambio de color suave al pasar el cursor */
+    color: #14532D !important;
+}
 
