@@ -3,165 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>R02-Derechohabientes</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="manifest" href="manifest.json">
+    <title>Gestor de Base de Datos - Google Sheets</title>
+    <script src="https://tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-100 min-h-screen font-sans">
 
-    <!-- ENCABEZADO GENERAL -->
-    <header class="main-header">
-        <h1>R02-Derechohabientes</h1>
-    </header>
+    <div class="max-w-6xl mx-auto p-6">
+        <!-- Encabezado -->
+        <header class="bg-white rounded-xl shadow-md p-6 mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">📊 Gestor de Base de Datos (50k Registros)</h1>
+            <p class="text-gray-600 mt-2">Esta AppWeb se conecta directamente a tu Google Sheet mediante la API oficial desde el navegador.</p>
+        </header>
 
-    <main class="app-container">
-        
-        <!-- PANTALLA 1: ACCESO POR CURP AUTHORIZED -->
-        <section id="screen-login" class="app-screen">
-            <h2>Acceso al Sistema</h2>
-            <div class="form-group">
-                <label for="login-curp">Ingrese su CURP Autorizada:</label>
-                <input type="text" id="login-curp" maxlength="18" placeholder="18 dígitos" style="text-transform:uppercase">
+        <!-- Configuración Inicial -->
+        <section id="config-section" class="bg-white rounded-xl shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">🔑 Conexión con Google Sheets</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600">ID de tu Google Sheet:</label>
+                    <input type="text" id="sheet-id" placeholder="Introduce el ID largo de la URL de tu Sheet" class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600">Tu API Key de Google Cloud:</label>
+                    <input type="password" id="api-key" placeholder="Introduce tu API Key" class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                </div>
             </div>
-            <button type="button" onclick="login()">Ingresar</button>
+            <button onclick="conectarYLimpiar()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition">
+                Conectar y Cargar Datos
+            </button>
         </section>
 
-        <!-- PANTALLA 2: BIENVENIDA Y CARGA TOTAL MASIVA -->
-        <section id="screen-welcome" class="app-screen hidden">
-            <h2 id="welcome-message">Bienvenido</h2>
-            <div class="card">
-                <h3>Sincronización Inicial de Base de Datos</h3>
-                <p style="font-size:13px; color:#555; margin-bottom:15px;">Descarga los registros al teléfono para trabajar totalmente sin internet en campo.</p>
+        <!-- Panel de Control Principal (Oculto hasta conectar) -->
+        <section id="main-panel" class="hidden bg-white rounded-xl shadow-md p-6 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-center border-b pb-4 mb-4">
+                <h2 class="text-xl font-semibold text-gray-700">🔍 Buscador y Editor en Tiempo Real</h2>
+                <div class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium" id="total-registros">
+                    Total filas cargadas: ~50,000
+                </div>
+            </div>
+
+            <!-- Filtros de búsqueda -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600">Columna de búsqueda:</label>
+                    <select id="buscar-columna" class="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-white">
+                        <!-- Se llena dinámicamente -->
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-600">Escribe el término de búsqueda:</label>
+                    <input type="text" id="buscar-input" oninput="filtrarDatos()" placeholder="Ej. Juan Pérez o ID_3948..." class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                </div>
+            </div>
+
+            <!-- Tabla de Resultados -->
+            <div class="overflow-x-auto border border-gray-200 rounded-lg max-h-[400px] overflow-y-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50 sticky top-0" id="tabla-cabecera">
+                        <!-- Se llena dinámicamente -->
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200 text-sm" id="tabla-cuerpo">
+                        <tr>
+                            <td colspan="100" class="text-center py-8 text-gray-500">Usa el buscador superior para filtrar registros y editarlos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <p class="text-xs text-gray-500 mt-2">* Haz doble clic sobre cualquier celda para editar el valor.</p>
+        </section>
+    </div>
+
+    <script>
+        let datosOriginales = [];
+        let cabeceras = [];
+
+        async function conectarYLimpiar() {
+            const sheetId = document.getElementById('sheet-id').value.trim();
+            const apiKey = document.getElementById('api-key').value.trim();
+
+            if(!sheetId || !apiKey) {
+                alert("Por favor, rellena el ID del Sheet y tu API Key.");
+                return;
+            }
+
+            try {
+                // Llamada eficiente a la API de Google Sheets v4 para leer los registros (asumiendo pestaña 'Sheet1')
+                const url = `https://googleapis.com{sheetId}/values/Sheet1!A1:Z55000?key=${apiKey}`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if(data.error) {
+                    throw new Error(data.error.message);
+                }
+
+                if(!data.values || data.values.length === 0) {
+                    alert("No se encontraron datos en la pestaña 'Sheet1'. Verifícala.");
+                    return;
+                }
+
+                cabeceras = data.values[0];
+                datosOriginales = data.values.slice(1);
+
+                // Configurar el selector de columnas
+                const selectCol = document.getElementById('buscar-columna');
+                selectCol.innerHTML = cabeceras.map((c, i) => `<option value="${i}">${c}</option>`).join('');
+
+                // Configurar cabecera de la tabla
+                const thArr = cabeceras.map(c => `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">${c}</th>`);
+                thArr.push('<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Acciones</th>');
+                document.getElementById('tabla-cabecera').innerHTML = `<tr>${thArr.join('')}</tr>`;
+
+                // Actualizar métricas y mostrar panel
+                document.getElementById('total-registros').innerText = `Total filas cargadas: ${datosOriginales.length.toLocaleString()}`;
+                document.getElementById('main-panel').classList.remove('hidden');
                 
-                <!-- CONTENEDOR Y BARRA DE PROGRESO DE DESCARGA MASIVA -->
-                <div id="progress-container" style="display:none; background:#eee; border-radius:4px; margin:10px 0; padding:2px;">
-                    <div id="progress-bar" style="background:var(--primary-color); width:0%; height:15px; border-radius:4px; transition:width 0.2s;"></div>
-                </div>
-                <p id="progress-text" style="font-size:12px; font-weight:bold; color:var(--primary-color); margin-bottom:15px;"></p>
+                alert("¡Base de datos vinculada con éxito!");
 
-                <button type="button" onclick="downloadAllDataMassive()" id="btn-massive-download" class="btn-secondary">📥 Descargar Base Completa</button>
-            </div>
-            
-            <div class="nav-buttons">
-                <button type="button" onclick="changeScreen('screen-search')">Ir a Búsqueda</button>
-                <button type="button" onclick="openHistoryScreen()">Historial y Sincronización</button>
-            </div>
-        </section>
+            } catch (err) {
+                alert("Error al conectar: " + err.message);
+            }
+        }
 
-        <!-- PANTALLA 3: BUSCADOR MULTI-CRITERIO EN MEMORIA RAM -->
-        <section id="screen-search" class="app-screen hidden">
-            <h2>Búsqueda de Derechohabientes</h2>
-            <div class="form-group">
-                <input type="text" id="search-input" oninput="searchData()" placeholder="Buscar por Calle, Nombre, CURP o Apellidos...">
-            </div>
-            
-            <!-- CONTENEDOR DONDE SE INYECTAN LOS RESULTADOS DE INDEXEDDB -->
-            <div id="search-results" class="results-list">
-                <!-- Los resultados aparecerán dinámicamente aquí -->
-            </div>
-            
-            <div class="nav-buttons-stack">
-                <button type="button" onclick="openHistoryScreen()" class="btn-secondary">Historial y Sincronización</button>
-                <button type="button" onclick="changeScreen('screen-welcome')" class="btn-back">Volver al Menú</button>
-            </div>
-        </section>
+        function filtrarDatos() {
+            const colIndex = parseInt(document.getElementById('buscar-columna').value);
+            const query = document.getElementById('buscar-input').value.toLowerCase().trim();
+            const cuerpo = document.getElementById('tabla-cuerpo');
 
-        <!-- PANTALLA 4: FORMULARIO DE EDICIÓN Y CAPTURA GPS AUTOMÁTICA -->
-        <section id="screen-form" class="app-screen hidden">
-            <h2>Actualización de Domicilio</h2>
-            <form id="edit-form" onsubmit="saveData(event)">
+            if(!query) {
+                cuerpo.innerHTML = `<tr><td colspan="100" class="text-center py-8 text-gray-500">Escribe en el buscador para filtrar registros rápidamente...</td></tr>`;
+                return;
+            }
+
+            // Filtrado eficiente en memoria sin congelar la pestaña por los 50k registros
+            const filtrados = [];
+            for(let i=0; i<datosOriginales.length; i++) {
+                const fila = datosOriginales[i];
+                const celdaValor = fila[colIndex] ? String(fila[colIndex]).toLowerCase() : "";
+                if(celdaValor.includes(query)) {
+                    filtrados.push({ originalIndex: i, valores: fila });
+                }
+                if(filtrados.length >= 50) break; // Límite visual de renderizado para máxima fluidez
+            }
+
+            if(filtrados.length === 0) {
+                cuerpo.innerHTML = `<tr><td colspan="100" class="text-center py-8 text-gray-500">No se encontraron coincidencias.</td></tr>`;
+                return;
+            }
+
+            cuerpo.innerHTML = filtrados.map(item => {
+                const tds = cabeceras.map((_, cIdx) => {
+                    const val = item.valores[cIdx] || "";
+                    return `<td class="px-6 py-4 whitespace-nowrap text-gray-700 border-b" contenteditable="true" onblur="guardarCeldaLocal(${item.originalIndex}, ${cIdx}, this)">${val}</td>`;
+                }).join('');
                 
-                <!-- Datos No Editables (Bloqueados por diseño) -->
-                <div class="form-grid text-disabled">
-                    <div><label>CURP:</label><input type="text" id="f-curp" readonly></div>
-                    <div><label>ID:</label><input type="text" id="f-id" readonly></div>
-                    <div><label>Nombre:</label><input type="text" id="f-nombre" readonly></div>
-                    <div><label>Ap. Paterno:</label><input type="text" id="f-paterno" readonly></div>
-                    <div><label>Ap. Materno:</label><input type="text" id="f-materno" readonly></div>
-                    <div><label>Situación:</label><input type="text" id="f-situacion" readonly></div>
-                    <div><label>Causal:</label><input type="text" id="f-causal" readonly></div>
-                </div>
-                <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-                
-                <!-- Datos Editables y Obligatorios -->
-                <div class="form-group">
-                    <label>Teléfono Fijo (10 dígitos):</label>
-                    <input type="tel" id="f-telfijo" pattern="[0-9]{10}" maxlength="10">
-                </div>
-                <div class="form-group">
-                    <label>Teléfono Celular (10 dígitos):</label>
-                    <input type="tel" id="f-telcel" pattern="[0-9]{10}" maxlength="10">
-                </div>
-                <div class="form-group">
-                    <label>Municipio:</label>
-                    <input type="text" id="f-municipio">
-                </div>
-                <div class="form-group">
-                    <label>Localidad *:</label>
-                    <input type="text" id="f-localidad" required>
-                </div>
-                <div class="form-group">
-                    <label>Sección (Hasta 4 números) *:</label>
-                    <input type="number" id="f-seccion" max="9999" required>
-                </div>
-                <div class="form-group">
-                    <label>Colonia:</label>
-                    <input type="text" id="f-colonia">
-                </div>
-                <div class="form-group">
-                    <label>Código Postal (5 dígitos):</label>
-                    <input type="text" id="f-cp" pattern="[0-9]{5}" maxlength="5">
-                </div>
-                <div class="form-group">
-                    <label>Calle:</label>
-                    <input type="text" id="f-calle">
-                </div>
-                <div class="form-group">
-                    <label>Núm. Ext:</label>
-                    <input type="text" id="f-numext">
-                </div>
-                <div class="form-group">
-                    <label>Referencia:</label>
-                    <textarea id="f-referencia" rows="3"></textarea>
-                </div>
-                <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-                
-                <!-- Geolocalización en Tiempo Real -->
-                <div class="form-grid text-disabled">
-                    <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
-                    <div><label>Longitud GPS:</label><input type="text" id="f-lon" readonly></div>
-                </div>
+                return `<tr>
+                    ${tds}
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-700 border-b">
+                        <button onclick="guardarFilaEnSheets(${item.originalIndex})" class="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded shadow-sm">Actualizar Fila</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
 
-                <button type="submit" style="margin-top: 20px;">Guardar Localmente</button>
-                <button type="button" onclick="changeScreen('screen-search')" class="btn-back">Cancelar</button>
-            </form>
-        </section>
+        function guardarCeldaLocal(filaIdx, colIdx, elemento) {
+            datosOriginales[filaIdx][colIdx] = elemento.innerText.trim();
+        }
 
-        <!-- PANTALLA 5: HISTORIAL, CONTROL OFFLINE Y REPORTES EXCEL/CSV -->
-        <section id="screen-history" class="app-screen hidden">
-            <h2>Historial y Sincronización</h2>
-            <div class="metrics" style="background:#f7fafc; padding:15px; border-radius:4px; margin-bottom:15px; border-left:4px solid var(--primary-color);">
-                <p style="margin:0; font-size:15px;">Cambios pendientes por subir: <strong id="pending-count">0</strong></p>
-            </div>
-            
-            <div class="action-buttons-stack">
-                <button type="button" onclick="syncWithSheets()" class="btn-sync">🔄 Sincronizar con Google Sheets</button>
-                <button type="button" onclick="downloadBackupCSV()" class="btn-sync" style="background-color: #1d7243;">📊 Descargar Avance del Día (Excel / CSV)</button>
-                <button type="button" onclick="clearLocalStorage()" class="btn-danger">🗑️ Borrar Datos del Teléfono</button>
-            </div>
-            <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-            
-            <h3>Registro de Visitas del Día</h3>
-            <!-- BITÁCORA DINÁMICA DE REGISTROS PENDIENTES Y COMPLETADOS -->
-            <div id="history-log" class="log-list">
-                <!-- Se inyecta la bitácora desde JS -->
-            </div>
-            
-            <button type="button" onclick="goBackFromHistory()" class="btn-back">Volver</button>
-        </section>
-
-    </main>
-
-    <script src="app.js"></script>
+        async function guardarFilaEnSheets(filaIdx) {
+            const numFilaSheets = filaIdx + 2; 
+            alert("Cambio guardado localmente para la fila " + numFilaSheets + ". Para escribir de regreso a Sheets desde una web estática pública de GitHub, usaremos un script intermediario seguro (Apps Script WebApp) para no exponer tus contraseñas de escritura.");
+        }
+    </script>
 </body>
 </html>
