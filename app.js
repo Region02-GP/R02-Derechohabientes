@@ -13,11 +13,11 @@ export default function App() {
   const [busqueda, setBusqueda] = useState('');
   const [seleccionado, setSeleccionado] = useState(null);
   
-  // Estados para el Candado de Acceso por CURP
+  // Estado para el candado de acceso obligatorio por CURP
   const [curpAcceso, setCurpAcceso] = useState('');
   const [haAccedido, setHaAccedido] = useState(false);
 
-  // Campos del Formulario vinculados a tu Excel
+  // Campos del formulario vinculados a tus columnas de Sheets
   const [situacion, setSituacion] = useState('LOCALIZADO');
   const [causal, setCausal] = useState('');
   const cargarDatos = async () => {
@@ -38,13 +38,25 @@ export default function App() {
     cargarDatos();
   }, []);
 
+  // Función que revisa si la CURP existe en la base de datos para abrir la App
   const manejarAcceso = () => {
     const curpLimpia = curpAcceso.trim().toUpperCase();
+    
     if (curpLimpia.length !== 18) {
       Alert.alert("Acceso Denegado", "Por favor, ingresa una CURP válida de 18 caracteres.");
       return;
     }
-    setHaAccedido(true);
+
+    // Compara la CURP ingresada contra todas las CURPs de la columna A de tu Sheet
+    const usuarioValido = derechohabientes.some(item => 
+      item.curp && item.curp.trim().toUpperCase() === curpLimpia
+    );
+
+    if (usuarioValido) {
+      setHaAccedido(true);
+    } else {
+      Alert.alert("Acceso Denegado", "La CURP ingresada no se encuentra registrada en el padrón autorizado.");
+    }
   };
 
   const handleBuscar = (text) => {
@@ -75,9 +87,11 @@ export default function App() {
       return;
     }
 
+    // Cerramos el formulario de inmediato para agilizar el trabajo en campo
     const copiaSeleccionado = { ...seleccionado };
     setSeleccionado(null); 
     
+    // Actualizamos el color del registro en el celular al instante
     setFiltrados(prev => prev.map(item => 
       item.rowNum === copiaSeleccionado.rowNum ? { ...item, situacion: situacion } : item
     ));
@@ -96,6 +110,7 @@ export default function App() {
       console.log("Error obteniendo ubicación rápida");
     }
 
+    // Envío en segundo plano a las columnas P, Q, X e Y de tu Sheets
     fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -111,17 +126,27 @@ export default function App() {
     setCausal('');
     setSituacion('LOCALIZADO');
   };
-  // PANTALLA DE ACCESO (LOGIN)
+  // PANTALLA DE CARGA INICIAL
+  if (loading && !haAccedido) {
+    return (
+      <SafeAreaView style={styles.loginCentrado}>
+        <ActivityIndicator size="large" color="#ffffff" />
+        <Text style={{ color: '#ffffff', marginTop: 15, fontWeight: '600' }}>Sincronizando Padrón R02...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  // PANTALLA DE INICIO DE SESIÓN POR CURP
   if (!haAccedido) {
     return (
       <SafeAreaView style={styles.loginCentrado}>
         <View style={styles.loginTarjeta}>
           <Text style={styles.loginSiglas}>R02</Text>
           <Text style={styles.loginTituloSub}>Control de Territorio</Text>
-          <Text style={styles.loginInstruccion}>Ingresa tu CURP para acceder al padrón de derechohabientes:</Text>
+          <Text style={styles.loginInstruccion}>Ingresa tu CURP para validar tu acceso al sistema:</Text>
           <TextInput 
             style={[styles.input, styles.loginInputMargin]} 
-            placeholder="CURP de 18 caracteres" 
+            placeholder="CURP DE 18 DÍGITOS" 
             value={curpAcceso} 
             onChangeText={setCurpAcceso}
             autoCapitalize="characters"
@@ -129,14 +154,14 @@ export default function App() {
             autoCorrect={false}
           />
           <TouchableOpacity style={[styles.boton, styles.botonGuardar, {width: '100%'}]} onPress={manejarAcceso}>
-            <Text style={styles.botonTexto}>Ingresar a la App</Text>
+            <Text style={styles.botonTexto}>Verificar e Ingresar</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
   }
 
-  // PANTALLA PRINCIPAL (LISTADO Y FORMULARIO)
+  // APLICACIÓN DESBLOQUEADA (LISTADO Y BUSCADOR)
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerApp}>
@@ -149,29 +174,25 @@ export default function App() {
       {!seleccionado && (
         <>
           <TextInput style={styles.buscador} placeholder="Buscar por ID, Nombre o CURP..." value={busqueda} onChangeText={handleBuscar} autoCapitalize="none" autoCorrect={false} />
-          {loading ? (
-            <ActivityIndicator size="large" color="#1e3a8a" style={{ flex: 1 }} />
-          ) : (
-            <FlatList 
-              data={filtrados}
-              keyExtractor={(item) => item.rowNum.toString()}
-              renderItem={({ item }) => (
-                <TouchableOpacity style={styles.tarjeta} onPress={() => { 
-                  setSeleccionado(item); 
-                  setSituacion(item.situacion || 'LOCALIZADO');
-                  setCausal(item.causal || '');
-                }}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.nombre}>{item.nombre || 'Sin Nombre'}</Text>
-                    <Text style={styles.subtexto}><Text style={{fontWeight:'bold'}}>CURP:</Text> {item.curp || 'No registrado'}</Text>
-                    <Text style={styles.subtexto}><Text style={{fontWeight:'bold'}}>Dom:</Text> {item.domicilioActual}</Text>
-                    <Text style={styles.subtexto}><Text style={{fontWeight:'bold'}}>Mpio:</Text> {item.municipio} | <Text style={{fontWeight:'bold'}}>Cel:</Text> {item.telCel}</Text>
-                  </View>
-                  <Text style={styles.badge}>{item.situacion || 'PENDIENTE'}</Text>
-                </TouchableOpacity>
-              )}
-            />
-          )}
+          <FlatList 
+            data={filtrados}
+            keyExtractor={(item) => item.rowNum.toString()}
+            renderItem={({ item }) => (
+              <TouchableOpacity style={styles.tarjeta} onPress={() => { 
+                setSeleccionado(item); 
+                setSituacion(item.situacion || 'LOCALIZADO');
+                setCausal(item.causal || '');
+              }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.nombre}>{item.nombre || 'Sin Nombre'}</Text>
+                  <Text style={styles.subtexto}><Text style={{fontWeight:'bold'}}>CURP:</Text> {item.curp || 'No registrado'}</Text>
+                  <Text style={styles.subtexto}><Text style={{fontWeight:'bold'}}>Dom:</Text> {item.domicilioActual}</Text>
+                  <Text style={styles.subtexto}><Text style={{fontWeight:'bold'}}>Mpio:</Text> {item.municipio} | <Text style={{fontWeight:'bold'}}>Cel:</Text> {item.telCel}</Text>
+                </View>
+                <Text style={styles.badge}>{item.situacion || 'PENDIENTE'}</Text>
+              </TouchableOpacity>
+            )}
+          />
         </>
       )}
 
