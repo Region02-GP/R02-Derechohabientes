@@ -172,79 +172,112 @@ function preloadDatabaseToMemory() {
     };
 }
 
+// =========================================================================
+// PANTALLA 3: BUSCADOR MULTICRITERIO FLEXIBLE Y ORDENADO POR NUM EXT
+// =========================================================================
 function searchData() {
     const query = document.getElementById('search-input').value.toLowerCase().trim();
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = "";
 
+    // Requiere un mínimo de 3 letras para iniciar el barrido en la memoria RAM
     if (query.length < 3) return;
     if (localMemoryDatabase.length === 0) preloadDatabaseToMemory();
 
-    let matchesFound = 0;
+    // FLEXIBILIDAD: Separar la búsqueda en palabras independientes (Tokens)
+    const searchTokens = query.split(/\s+/); 
 
+    let matchedRecords = [];
+
+    // 1. FASE DE FILTRADO MULTI-PALABRA
     for (let i = 0; i < localMemoryDatabase.length; i++) {
         const item = localMemoryDatabase[i];
         if (!item) continue;
 
+        // Aseguramos cadenas de texto limpias y seguras
         const calle = item.CALLE ? String(item.CALLE).toLowerCase() : "";
         const nombre = item.NOMBRE ? String(item.NOMBRE).toLowerCase() : "";
         const curp = item.CURP ? String(item.CURP).toLowerCase() : "";
         const apPaterno = item.AP_PATERNO ? String(item.AP_PATERNO).toLowerCase() : "";
         const apMaterno = item.AP_MATERNO ? String(item.AP_MATERNO).toLowerCase() : "";
 
-        const match = calle.includes(query) || nombre.includes(query) || curp.includes(query) || apPaterno.includes(query) || apMaterno.includes(query);
+        // Unificamos los 5 criterios solicitados en una sola cadena de búsqueda por registro
+        const combinedText = `${nombre} ${apPaterno} ${apMaterno} ${curp} ${calle}`;
 
-        if (match) {
-            if (matchesFound < 30) {
-                const div = document.createElement('div');
-                
-                // VALIDACIÓN DE VISITA: Verifica si tiene coordenadas válidas de Sheets o si está en la cola temporal
-                const tieneLat = item.Latitud && item.Latitud !== "" && item.Latitud !== "0" && item.Latitud !== "ERROR";
-                const tieneLon = item.Longitud && item.Longitud !== "" && item.Longitud !== "0" && item.Longitud !== "ERROR";
-                const yaSincronizadoOModificado = tieneLat && tieneLon;
-                
-                // Verificar además si está pendiente en la cola de hoy
-                const estaEnColaPendiente = pendingSync.some(p => p.CURP === item.CURP);
-                const fueVisitado = yaSincronizadoOModificado || estaEnColaPendiente;
+        // El registro es candidato si TODAS las palabras del buscador están en alguna parte del texto combinado
+        const isMatch = searchTokens.every(token => combinedText.includes(token));
 
-                // Asignar clase CSS común o clase de visitado
-                div.className = fueVisitado ? "result-item status-visitado" : "result-item";
-                
-                // Extracción segura de los campos solicitados protegiendo contra valores nulos o vacíos
-                const displayNombre = item.NOMBRE ? String(item.NOMBRE).trim() : '';
-                const displayPaterno = item.AP_PATERNO ? String(item.AP_PATERNO).trim() : '';
-                const displayMaterno = item.AP_MATERNO ? String(item.AP_MATERNO).trim() : '';
-                
-                const displayCurp = item.CURP ? String(item.CURP).trim() : 'SIN CURP';
-                
-                const displayCalle = item.CALLE ? String(item.CALLE).trim() : 'Calle no reg.';
-                const displayNumExt = item.NUM_EXT ? `No. ${String(item.NUM_EXT).trim()}` : 'S/N';
-                const displayColonia = item.COLONIA ? String(item.COLONIA).trim() : 'Colonia no reg.';
-                
-                // Texto de ayuda si ya fue actualizado
-                const indicadorTexto = fueVisitado ? ' <span style="color:#236947; font-weight:bold; font-size:12px; margin-left:5px;">✓ Actualizado</span>' : '';
-
-                // INYECCIÓN VISUAL REESTRUCTURADA CON TODOS LOS DATOS REQUERIDOS
-                div.innerHTML = `
-                    <div style="font-size:16px; font-weight:700; color:var(--dark-color); margin-bottom:2px;">
-                        ${displayNombre} ${displayPaterno} ${displayMaterno}${indicadorTexto}
-                    </div>
-                    <div style="font-size:13px; font-weight:600; color:var(--primary-color); margin-bottom:4px; letter-spacing:0.3px;">
-                        CURP: ${displayCurp}
-                    </div>
-                    <div style="font-size:13px; color:#555555;">
-                        📍 ${displayCalle}, ${displayNumExt}, Col. ${displayColonia}
-                    </div>
-                `;
-                
-                div.onclick = () => openForm(item);
-                resultsContainer.appendChild(div);
-            }
-            matchesFound++;
+        if (isMatch) {
+            matchedRecords.push(item);
         }
     }
 
-    if (matchesFound === 0) {
+    // 2. FASE DE ORDENAMIENTO NUMÉRICO INTELIGENTE POR NUM_EXT
+    matchedRecords.sort((a, b) => {
+        const valA = a.NUM_EXT ? String(a.NUM_EXT).trim() : "";
+        const valB = b.NUM_EXT ? String(b.NUM_EXT).trim() : "";
+
+        // Extraer el primer número consecutivo encontrado en la celda mediante expresiones regulares
+        const numA = parseInt(valA.match(/\d+/), 10);
+        const numB = parseInt(valB.match(/\d+/), 10);
+
+        // Casos especiales: Si no tienen número o es "S/N", se mandan al final de la lista
+        if (isNaN(numA) && isNaN(numB)) return valA.localeCompare(valB);
+        if (isNaN(numA)) return 1;
+        if (isNaN(numB)) return -1;
+
+        // Si los números base son idénticos (ej. 104 y 104-A), ordenamos alfabéticamente por el texto restante
+        if (numA === numB) {
+            return valA.localeCompare(valB);
+        }
+
+        // Ordenación numérica ascendente estándar (de menor a mayor)
+        return numA - numB;
+    });
+
+    // 3. FASE DE RENDERIZACIÓN EN LA INTERFAZ GRÁFICA (Límite visual de 30 para rendimiento móvil)
+    const recordsToDisplay = matchedRecords.slice(0, 30);
+
+    recordsToDisplay.forEach(item => {
+        const div = document.createElement('div');
+        
+        // Validación de visita previa o actual
+        const tieneLat = item.Latitud && item.Latitud !== "" && item.Latitud !== "0" && item.Latitud !== "ERROR";
+        const tieneLon = item.Longitud && item.Longitud !== "" && item.Longitud !== "0" && item.Longitud !== "ERROR";
+        const yaSincronizadoOModificado = tieneLat && tieneLon;
+        const estaEnColaPendiente = pendingSync.some(p => p.CURP === item.CURP);
+        const fueVisitado = yaSincronizadoOModificado || estaEnColaPendiente;
+
+        div.className = fueVisitado ? "result-item status-visitado" : "result-item";
+        
+        const displayNombre = item.NOMBRE ? String(item.NOMBRE).trim() : '';
+        const displayPaterno = item.AP_PATERNO ? String(item.AP_PATERNO).trim() : '';
+        const displayMaterno = item.AP_MATERNO ? String(item.AP_MATERNO).trim() : '';
+        const displayCurp = item.CURP ? String(item.CURP).trim() : 'SIN CURP';
+        
+        const displayCalle = item.CALLE ? String(item.CALLE).trim() : 'Calle no reg.';
+        const displayNumExt = item.NUM_EXT ? `No. ${String(item.NUM_EXT).trim()}` : 'S/N';
+        const displayColonia = item.COLONIA ? String(item.COLONIA).trim() : 'Colonia no reg.';
+        
+        const indicadorTexto = fueVisitado ? ' <span style="color:#236947; font-weight:bold; font-size:12px; margin-left:5px;">✓ Actualizado</span>' : '';
+
+        div.innerHTML = `
+            <div style="font-size:16px; font-weight:700; color:var(--dark-color); margin-bottom:2px;">
+                ${displayNombre} ${displayPaterno} ${displayMaterno}${indicadorTexto}
+            </div>
+            <div style="font-size:13px; font-weight:600; color:var(--primary-color); margin-bottom:4px; letter-spacing:0.3px;">
+                CURP: ${displayCurp}
+            </div>
+            <div style="font-size:13px; color:#555555;">
+                📍 ${displayCalle}, ${displayNumExt}, Col. ${displayColonia}
+            </div>
+        `;
+        
+        div.onclick = () => openForm(item);
+        resultsContainer.appendChild(div);
+    });
+
+    if (matchedRecords.length === 0) {
         resultsContainer.innerHTML = "<div class='result-item' style='color: gray; text-align: center;'>No se encontraron derechohabientes que coincidan.</div>";
     }
 }
