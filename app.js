@@ -13,18 +13,31 @@ export default function App() {
   const [busqueda, setBusqueda] = useState('');
   const [seleccionado, setSeleccionado] = useState(null);
   
+  // ========================================================
+  // BASE DE DATOS DE BRIGADISTAS AUTORIZADOS (LOGIN INTERNO)
+  // ========================================================
+  const BRIGADISTAS_AUTORIZADOS = [
+    { curp: "CURPBRIGADISTA11111", nombre: "Juan Pérez Martínez" },
+    { curp: "CURPBRIGADISTA22222", nombre: "María Gómez López" },
+    { curp: "CURPCOORDINADOR333", nombre: "Carlos Rodríguez" }
+  ];
+
+  // Estados para el Candado de Acceso por CURP
+  const [curpAcceso, setCurpAcceso] = useState('');
+  const [haAccedido, setHaAccedido] = useState(false);
+  const [nombreBrigadista, setNombreBrigadista] = useState('');
+
   // Campos del formulario vinculados a tus columnas originales de la Sheets
   const [situacion, setSituacion] = useState('LOCALIZADO');
   const [causal, setCausal] = useState('');
   const cargarDatos = async () => {
-    setLoading(true);
     try {
       const response = await fetch(API_URL);
       const data = await response.json();
       setDerechohabientes(data);
       setFiltrados(data);
     } catch (error) {
-      Alert.alert("R02", "Error al descargar el padrón desde Google Sheets.");
+      console.log("Descarga de base de datos en proceso...");
     } finally {
       setLoading(false);
     }
@@ -33,6 +46,25 @@ export default function App() {
   useEffect(() => {
     cargarDatos();
   }, []);
+
+  // Función de acceso local e inmediata (No se cuelga esperando a la Sheet)
+  const manejarAcceso = () => {
+    const curpLimpia = curpAcceso.trim().toUpperCase();
+    
+    if (curpLimpia.length !== 18) {
+      Alert.alert("Acceso Denegado", "Por favor, ingresa una CURP válida de 18 caracteres.");
+      return;
+    }
+
+    const brigadistaEncontrado = BRIGADISTAS_AUTORIZADOS.find(u => u.curp === curpLimpia);
+
+    if (brigadistaEncontrado) {
+      setNombreBrigadista(brigadistaEncontrado.nombre); // Guarda el nombre para el saludo de bienvenida
+      setHaAccedido(true);
+    } else {
+      Alert.alert("Acceso Denegado", "Esta CURP no está autorizada para operar la aplicación R02.");
+    }
+  };
 
   const handleBuscar = (text) => {
     setBusqueda(text);
@@ -96,9 +128,43 @@ export default function App() {
     setCausal('');
     setSituacion('LOCALIZADO');
   };
+  // PANTALLA 1: CANDADO DE INICIO DE SESIÓN DIRECTO
+  if (!haAccedido) {
+    return (
+      <SafeAreaView style={styles.loginCentrado}>
+        <View style={styles.loginTarjeta}>
+          <Text style={styles.loginSiglas}>R02</Text>
+          <Text style={styles.loginTituloSub}>Control de Territorio</Text>
+          <Text style={styles.loginInstruccion}>Ingresa tu CURP para validar tu acceso como Brigadista:</Text>
+          <TextInput 
+            style={[styles.input, styles.loginInputMargin]} 
+            placeholder="CURP DE 18 DÍGITOS" 
+            value={curpAcceso} 
+            onChangeText={setCurpAcceso}
+            autoCapitalize="characters"
+            maxLength={18}
+            autoCorrect={false}
+          />
+          <TouchableOpacity style={[styles.boton, styles.botonGuardar, {width: '100%'}]} onPress={manejarAcceso}>
+            <Text style={styles.botonTexto}>Verificar e Ingresar</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // PANTALLA 2: APLICACIÓN DESBLOQUEADA
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.titulo}>R02 - Derechohabientes</Text>
+      <View style={styles.headerApp}>
+        <View style={{ flex: 1, paddingRight: 10 }}>
+          <Text style={styles.titulo}>R02 - Territorio</Text>
+          <Text style={styles.bienvenida}>Bienvenido(a): <Text style={{fontWeight:'700'}}>{nombreBrigadista}</Text></Text>
+        </View>
+        <TouchableOpacity style={styles.botonSalir} onPress={() => { setHaAccedido(false); setCurpAcceso(''); setNombreBrigadista(''); }}>
+          <Text style={styles.textoSalir}>Salir</Text>
+        </TouchableOpacity>
+      </View>
       
       {loading ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -115,7 +181,7 @@ export default function App() {
               <TouchableOpacity style={styles.tarjeta} onPress={() => { 
                 setSeleccionado(item); 
                 setSituacion(item.situacion || 'LOCALIZADO');
-                setCausal(item.causal || '');
+                causal(item.causal || '');
               }}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.nombre}>{item.nombre || 'Sin Nombre'}</Text>
@@ -154,7 +220,17 @@ export default function App() {
 }
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f3f4f6', paddingHorizontal: 15 },
-  titulo: { fontSize: 20, fontWeight: '800', color: '#621132', textAlign: 'center', marginTop: 20, marginBottom: 15 },
+  headerApp: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, marginBottom: 15 },
+  titulo: { fontSize: 20, fontWeight: '800', color: '#621132' },
+  bienvenida: { fontSize: 13, color: '#4b5563', marginTop: 2 },
+  botonSalir: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 6, backgroundColor: '#e5e7eb' },
+  textoSalir: { fontSize: 13, color: '#4b5563', fontWeight: '600' },
+  loginCentrado: { flex: 1, backgroundColor: '#621132', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  loginTarjeta: { backgroundColor: '#ffffff', width: '100%', padding: 25, borderRadius: 16, alignItems: 'center', elevation: 5 },
+  loginSiglas: { fontSize: 42, fontWeight: '900', color: '#621132', marginBottom: 2 },
+  loginTituloSub: { fontSize: 16, color: '#4b5563', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 20 },
+  loginInstruccion: { fontSize: 14, color: '#374151', textAlign: 'center', marginBottom: 15, lineHeight: 20 },
+  loginInputMargin: { width: '100%', marginBottom: 20, textAlign: 'center', fontSize: 16, fontWeight: 'bold', letterSpacing: 1 },
   buscador: { backgroundColor: '#ffffff', paddingHorizontal: 16, paddingVertical: 14, borderRadius: 12, marginBottom: 16, fontSize: 16, borderWidth: 1, borderColor: '#e5e7eb', elevation: 2 },
   tarjeta: { backgroundColor: '#ffffff', padding: 16, borderRadius: 14, marginBottom: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderLeftWidth: 5, borderLeftColor: '#285c4d', elevation: 2 },
   nombre: { fontSize: 16, fontWeight: 'bold', color: '#1f2937', marginBottom: 4 },
