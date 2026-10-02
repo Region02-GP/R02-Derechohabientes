@@ -175,7 +175,6 @@ function searchData() {
         const apPaterno = item.AP_PATERNO ? String(item.AP_PATERNO).toLowerCase() : "";
         const apMaterno = item.AP_MATERNO ? String(item.AP_MATERNO).toLowerCase() : "";
 
-        // Unificamos todo el domicilio (calle, número y colonia) junto con los datos personales
         const combinedText = `${nombre} ${apPaterno} ${apMaterno} ${curp} ${calle} ${numExt} ${colonia}`;
         const isMatch = searchTokens.every(token => combinedText.includes(token));
 
@@ -202,10 +201,17 @@ function searchData() {
     recordsToDisplay.forEach(item => {
         const div = document.createElement('div');
         
-        const tieneLat = item.Latitud && item.Latitud !== "" && item.Latitud !== "0" && item.Latitud !== "ERROR";
-        const tieneLon = item.Longitud && item.Longitud !== "" && item.Longitud !== "0" && item.Longitud !== "ERROR";
+        // CORRECCIÓN MULTI-VARIANTE: Buscamos el dato sin importar si viene como "Latitud" o "latitud"
+        const coordenadaLat = item.Latitud || item.latitud || "";
+        const coordenadaLon = item.Longitud || item.longitud || "";
+
+        const tieneLat = coordenadaLat !== "" && coordenadaLat !== "0" && coordenadaLat !== "ERROR" && !String(coordenadaLat).includes("Buscando");
+        const tieneLon = coordenadaLon !== "" && coordenadaLon !== "0" && coordenadaLon !== "ERROR" && !String(coordenadaLon).includes("Buscando");
+        
         const yaSincronizadoOModificado = tieneLat && tieneLon;
         const estaEnColaPendiente = pendingSync.some(p => p.CURP === item.CURP);
+        
+        // El registro se considera visitado si ya tenía coordenadas en Sheets o si se editó hoy
         const fueVisitado = yaSincronizadoOModificado || estaEnColaPendiente;
 
         div.className = fueVisitado ? "result-item status-visitado" : "result-item";
