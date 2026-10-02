@@ -15,6 +15,7 @@ let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
 let currentUser = null;
 let previousScreen = 'screen-welcome';
+let currentSelectedStatus = "LOCALIZADO"; // Control dinámico de estatus de visita
 
 // =========================================================================
 // INITIALIZACIÓN DE INDEXEDDB (Base de Datos Local para soporte masivo)
@@ -37,7 +38,7 @@ request.onupgradeneeded = (e) => {
 
 request.onsuccess = (e) => { 
     db = e.target.result; 
-    console.log("IndexedDB inicializada correctamente para soporte masivo.");
+    console.log("IndexedDB inicializada correctamente.");
 };
 
 request.onerror = (e) => {
@@ -56,7 +57,7 @@ function changeScreen(screenId) {
     document.getElementById(screenId).classList.remove('hidden');
 }
 // =========================================================================
-// MÓDULO 2: PANTALLA 1 (LOGIN) Y PANTALLA 2 (DESCARGA)
+// MÓDULO 2: PANTALLA 1 (LOGIN) Y PANTALLA 2 (DESCARGA MASIVA)
 // =========================================================================
 function login() {
     const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
@@ -112,6 +113,10 @@ async function downloadAllDataMassive() {
                 data.records.forEach(record => {
                     if (record && record.CURP) {
                         record.CURP = String(record.CURP).replace(/ /g, "").toUpperCase().trim();
+                        
+                        record["ESTATUS_VISITA"] = record.ESTATUS_VISITA || record.estatus_visita || "";
+                        record["MOTIVO_NO_LOCALIZADO"] = record.MOTIVO_NO_LOCALIZADO || record.motivo_no_localizado || "";
+
                         store.put(record); 
                         totalCargados++;
                     }
@@ -136,7 +141,7 @@ async function downloadAllDataMassive() {
     }
 }
 // =========================================================================
-// MÓDULO 3: PANTALLA 3 (BUSCADOR FLEXIBLE) Y PANTALLA 4 (FORMULARIO Y GPS)
+// MÓDULO 3: PANTALLA 3 (BUSCADOR FLEXIBLE MULTICRITERIO DE DOS COLORES)
 // =========================================================================
 let localMemoryDatabase = [];
 
@@ -178,9 +183,7 @@ function searchData() {
         const combinedText = `${nombre} ${apPaterno} ${apMaterno} ${curp} ${calle} ${numExt} ${colonia}`;
         const isMatch = searchTokens.every(token => combinedText.includes(token));
 
-        if (isMatch) {
-            matchedRecords.push(item);
-        }
+        if (isMatch) { matchedRecords.push(item); }
     }
 
     matchedRecords.sort((a, b) => {
@@ -188,7 +191,6 @@ function searchData() {
         const valB = b.NUM_EXT ? String(b.NUM_EXT).trim() : "";
         const numA = parseInt(valA.match(/\d+/), 10);
         const numB = parseInt(valB.match(/\d+/), 10);
-
         if (isNaN(numA) && isNaN(numB)) return valA.localeCompare(valB);
         if (isNaN(numA)) return 1;
         if (isNaN(numB)) return -1;
@@ -197,24 +199,32 @@ function searchData() {
     });
 
     const recordsToDisplay = matchedRecords.slice(0, 30);
+    renderSearchCards(recordsToDisplay, resultsContainer);
 
-    recordsToDisplay.forEach(item => {
+    if (matchedRecords.length === 0) {
+        resultsContainer.innerHTML = "<div class='result-item' style='color: gray; text-align: center;'>No se encontraron derechohabientes.</div>";
+    }
+}
+// =========================================================================
+// MÓDULO 4: RENDERIZADOR GRÁFICO CON CLASES DE COLOR DINÁMICAS
+// =========================================================================
+function renderSearchCards(records, container) {
+    records.forEach(item => {
         const div = document.createElement('div');
         
-        // CORRECCIÓN MULTI-VARIANTE: Buscamos el dato sin importar si viene como "Latitud" o "latitud"
-        const coordenadaLat = item.Latitud || item.latitud || "";
-        const coordenadaLon = item.Longitud || item.longitud || "";
-
-        const tieneLat = coordenadaLat !== "" && coordenadaLat !== "0" && coordenadaLat !== "ERROR" && !String(coordenadaLat).includes("Buscando");
-        const tieneLon = coordenadaLon !== "" && coordenadaLon !== "0" && coordenadaLon !== "ERROR" && !String(coordenadaLon).includes("Buscando");
-        
-        const yaSincronizadoOModificado = tieneLat && tieneLon;
+        const vEstatus = item.ESTATUS_VISITA || item.estatus_visita || "";
         const estaEnColaPendiente = pendingSync.some(p => p.CURP === item.CURP);
-        
-        // El registro se considera visitado si ya tenía coordenadas en Sheets o si se editó hoy
-        const fueVisitado = yaSincronizadoOModificado || estaEnColaPendiente;
+        const registroModificado = (item.Latitud || item.latitud) && (item.Longitud || item.longitud);
 
-        div.className = fueVisitado ? "result-item status-visitado" : "result-item";
+        if (estaEnColaPendiente || registroModificado) {
+            if (vEstatus === "NO LOCALIZADO") {
+                div.className = "result-item status-no-localizado";
+            } else {
+                div.className = "result-item status-visitado";
+            }
+        } else {
+            div.className = "result-item";
+        }
         
         const displayNombre = item.NOMBRE ? String(item.NOMBRE).trim() : '';
         const displayPaterno = item.AP_PATERNO ? String(item.AP_PATERNO).trim() : '';
@@ -224,7 +234,12 @@ function searchData() {
         const displayNumExt = item.NUM_EXT ? `No. ${String(item.NUM_EXT).trim()}` : 'S/N';
         const displayColonia = item.COLONIA ? String(item.COLONIA).trim() : 'Colonia no reg.';
         
-        const indicadorTexto = fueVisitado ? ' <span style="color:#236947; font-weight:bold; font-size:12px; margin-left:5px;">✓ Actualizado</span>' : '';
+        let indicadorTexto = '';
+        if (estaEnColaPendiente || registroModificado) {
+            indicadorTexto = vEstatus === "NO LOCALIZADO" ? 
+                ' <span style="color:#9B2C2C; font-weight:bold; font-size:12px; margin-left:5px;">✕ No Localizado</span>' : 
+                ' <span style="color:#236947; font-weight:bold; font-size:12px; margin-left:5px;">✓ Actualizado</span>';
+        }
 
         div.innerHTML = `
             <div style="font-size:16px; font-weight:700; color:var(--dark-color); margin-bottom:2px;">
@@ -239,11 +254,32 @@ function searchData() {
         `;
         
         div.onclick = () => openForm(item);
-        resultsContainer.appendChild(div);
+        container.appendChild(div);
     });
+}
+// =========================================================================
+// MÓDULO 5: PANTALLA 4 (CONTROL DE CAMPOS, GPS Y GUARDADO LOCAL)
+// =========================================================================
+function setVisitStatus(status) {
+    currentSelectedStatus = status;
+    const btnLoc = document.getElementById('btn-status-localizado');
+    const btnNoLoc = document.getElementById('btn-status-nolocalizado');
+    const motivoContainer = document.getElementById('motivo-container');
+    const fieldsWrapper = document.getElementById('form-fields-wrapper');
+    const fMotivo = document.getElementById('f-motivo');
 
-    if (matchedRecords.length === 0) {
-        resultsContainer.innerHTML = "<div class='result-item' style='color: gray; text-align: center;'>No se encontraron derechohabientes.</div>";
+    if (status === 'LOCALIZADO') {
+        btnLoc.classList.add('active-localizado');
+        btnNoLoc.classList.remove('active-nolocalizado');
+        motivoContainer.classList.add('hidden');
+        fieldsWrapper.classList.remove('form-disabled-wrapper');
+        fMotivo.required = false;
+    } else {
+        btnNoLoc.classList.add('active-nolocalizado');
+        btnLoc.classList.remove('active-localizado');
+        motivoContainer.classList.remove('hidden');
+        fieldsWrapper.classList.add('form-disabled-wrapper'); 
+        fMotivo.required = true;
     }
 }
 
@@ -283,7 +319,7 @@ function openForm(item) {
             (error) => { 
                 document.getElementById('f-lat').value = "ERROR";
                 document.getElementById('f-lon').value = "ERROR";
-                alert("Atención: Otorgue permisos de ubicación para capturar la georreferencia.");
+                alert("Atención: Active el GPS para capturar la ubicación de la visita.");
             },
             gpsOptions
         );
@@ -291,17 +327,25 @@ function openForm(item) {
         document.getElementById('f-lat').value = "NO COMPATIBLE";
         document.getElementById('f-lon').value = "NO COMPATIBLE";
     }
-    changeScreen('screen-form');
+
+    document.getElementById('f-motivo').value = item.MOTIVO_NO_LOCALIZADO || item.motivo_no_localizado || '';
+    setVisitStatus(item.ESTATUS_VISITA || item.estatus_visita || 'LOCALIZADO');
 }
 
 function saveData(event) {
     event.preventDefault();
     const latValue = document.getElementById('f-lat').value;
     const lonValue = document.getElementById('f-lon').value;
+    const motivoValue = document.getElementById('f-motivo').value.trim();
 
     if (latValue.includes("Buscando") || latValue === "" || latValue === "ERROR" || latValue === "NO COMPATIBLE") {
         alert("🛑 BLOQUEO: No se puede guardar el registro sin la georreferencia del domicilio.");
         return; 
+    }
+
+    if (currentSelectedStatus === "NO LOCALIZADO" && motivoValue === "") {
+        alert("🛑 BLOQUEO: Escriba el motivo por el cual no fue localizado.");
+        return;
     }
     
     const targetCurp = document.getElementById('f-curp').value;
@@ -313,7 +357,7 @@ function saveData(event) {
         ID: document.getElementById('f-id').value,
         NOMBRE: document.getElementById('f-nombre').value,
         AP_PATERNO: document.getElementById('f-paterno').value,
-        AP_MATERNO: document.getElementById('f-materno').value,
+        AP_MATERMO: document.getElementById('f-materno').value,
         TEL_FIJO: document.getElementById('f-telfijo').value,
         TEL_CEL: document.getElementById('f-telcel').value,
         MUNICIPIO: document.getElementById('f-municipio').value,
@@ -330,17 +374,16 @@ function saveData(event) {
         Longitud: lonValue,
         FECHA_MODIFICACION: new Date().toLocaleString("es-MX"),
         USUARIO_MODIFICA: currentUser.name,
-        SHEETS_ROW_INDEX: originalRecord.SHEETS_ROW_INDEX || ""
+        SHEETS_ROW_INDEX: originalRecord.SHEETS_ROW_INDEX || "",
+        ESTATUS_VISITA: currentSelectedStatus,
+        MOTIVO_NO_LOCALIZADO: currentSelectedStatus === "NO LOCALIZADO" ? motivoValue : ""
     };
 
     const txUpdate = db.transaction(STORE_NAME, "readwrite");
     txUpdate.objectStore(STORE_NAME).put(record);
 
-    if (memoryIndex !== -1) {
-        localMemoryDatabase[memoryIndex] = record;
-    } else {
-        localMemoryDatabase.push(record);
-    }
+    if (memoryIndex !== -1) { localMemoryDatabase[memoryIndex] = record; } 
+    else { localMemoryDatabase.push(record); }
 
     pendingSync.push(record);
     localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
@@ -351,7 +394,7 @@ function saveData(event) {
     changeScreen('screen-search');
 }
 // =========================================================================
-// MÓDULO 4: PANTALLA 5 (HISTORIAL, SINCRONIZACIÓN Y OFFLINE)
+// MÓDULO 6: PANTALLA 5 (HISTORIAL, SINCRONIZACIÓN Y EXPORTACIÓN EXCEL)
 // =========================================================================
 function openHistoryScreen() {
     changeScreen('screen-history');
@@ -362,7 +405,9 @@ function openHistoryScreen() {
     pendingSync.forEach((item) => {
         const div = document.createElement('div');
         div.className = "result-item";
-        div.innerHTML = `<strong>⏳ ${item.NOMBRE} (${item.CURP})</strong><br><small>Pendiente | Modificado: ${item.FECHA_MODIFICACION}</small>`;
+        const vEstat = item.ESTATUS_VISITA || "LOCALIZADO";
+        const icon = vEstat === "NO LOCALIZADO" ? "❌" : "⏳";
+        div.innerHTML = `<strong>${icon} ${item.NOMBRE} (${item.CURP})</strong><br><small>Pendiente de subir | Estatus: ${vEstat}</small>`;
         logList.appendChild(div);
     });
 
@@ -370,7 +415,9 @@ function openHistoryScreen() {
         const div = document.createElement('div');
         div.className = "result-item";
         div.style.opacity = "0.6"; 
-        div.innerHTML = `<strong>✅ ${item.NOMBRE} (${item.CURP})</strong><br><small style="color:green;">Sincronizado con Sheets con éxito</small>`;
+        const vEstat = item.ESTATUS_VISITA || "LOCALIZADO";
+        const icon = vEstat === "NO LOCALIZADO" ? "🛑" : "✅";
+        div.innerHTML = `<strong>${icon} ${item.NOMBRE} (${item.CURP})</strong><br><small style="color:green;">Sincronizado con Sheets con éxito | Estatus: ${vEstat}</small>`;
         logList.appendChild(div);
     });
 }
@@ -421,7 +468,8 @@ function downloadBackupCSV() {
     const headers = [
         "CURP", "ID", "NOMBRE", "AP_PATERNO", "AP_MATERNO", "TEL_FIJO", "TEL_CEL", 
         "MUNICIPIO", "LOCALIDAD", "SECCION", "COLONIA", "CP", "CALLE", "NUM_EXT", 
-        "REFERENCIA", "SITUACION", "CUSAL", "Latitud", "Longitud", "FECHA_MODIFICACION", "USUARIO_MODIFICA"
+        "REFERENCIA", "SITUACION", "CUSAL", "Latitud", "Longitud", "FECHA_MODIFICACION", 
+        "USUARIO_MODIFICA", "ESTATUS_VISITA", "MOTIVO_NO_LOCALIZADO"
     ];
 
     let csvRows = [headers.join(",")];
