@@ -148,17 +148,17 @@
                 <p style="margin:0; font-size:15px;">Cambios pendientes por subir: <strong id="pending-count">0</strong></p>
             </div>
             
-            <!-- Cola de botones con el nuevo estilo dorado y negro -->
-                        <!-- Contenedor con distribución optimizada y botones unificados -->
-                        <!-- Contenedor vertical con botones del mismo estilo Negro y Dorado -->
+                       <!-- Contenedor con distribución horizontal y botón de sincronizar guinda -->
             <div class="action-buttons-stack">
-                <button type="button" onclick="syncWithSheets()" class="btn-sync">🔄 Sincronizar con Google Sheets</button>
+                <!-- Cambiamos la clase btn-sync por btn-primary-guinda -->
+                <button type="button" onclick="syncWithSheets()" class="btn-primary-guinda">🔄 Sincronizar con Google Sheets</button>
                 
-                <!-- Ambos botones ahora comparten la misma clase premium y van verticales -->
-                <button type="button" onclick="downloadBackupCSV()" class="btn-excel-gold">📊 Descargar Avance del Día</button>
-                <button type="button" onclick="clearLocalStorage()" class="btn-excel-gold">🗑️ Borrar Datos del Teléfono</button>
+                <!-- Fila de dos columnas para los botones horizontales de Respaldo y Limpieza -->
+                <div class="button-row-grid">
+                    <button type="button" onclick="downloadBackupCSV()" class="btn-excel-gold" style="margin-top:0;">📊 Descargar Avance</button>
+                    <button type="button" onclick="clearLocalStorage()" class="btn-excel-gold" style="margin-top:0;">🗑️ Borrar Datos</button>
+                </div>
             </div>
-
 
             <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
             
