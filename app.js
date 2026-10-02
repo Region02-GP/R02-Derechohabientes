@@ -57,7 +57,6 @@ export default function App() {
       return;
     }
 
-    // Buscamos si la CURP ingresada coincide con los brigadistas del Bloque 2
     const brigadistaEncontrado = BRIGADISTAS_AUTORIZADOS.find(u => u.curp === curpLimpia);
 
     if (brigadistaEncontrado) {
@@ -167,7 +166,6 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Mensaje de bienvenida personalizado con el nombre del Brigadista autorizado */}
       <View style={styles.headerApp}>
         <View style={{ flex: 1, paddingRight: 10 }}>
           <Text style={styles.titulo}>R02 - Territorio</Text>
