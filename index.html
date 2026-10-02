@@ -1,154 +1,168 @@
-      <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor de Base de Datos - Google Sheets</title>
-    <script src="https://tailwindcss.com"></script>
+    <title>R02-Derechohabientes</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
 </head>
-<body class="bg-gray-100 min-h-screen font-sans">
+<body>
 
-    <div class="max-w-6xl mx-auto p-6">
-        <!-- Encabezado -->
-        <header class="bg-white rounded-xl shadow-md p-6 mb-6">
-            <h1 class="text-3xl font-bold text-gray-800">📊 Gestor de Base de Datos (50k Registros)</h1>
-            <p class="text-gray-600 mt-2">Acceso directo a tu Google Sheet sin configurar APIs ni consolas complejas.</p>
-        </header>
+    <!-- ENCABEZADO GENERAL CON ESTILO INSTITUCIONAL -->
+    <header class="main-header">
+        <h1>R02-Derechohabientes</h1>
+    </header>
 
-        <!-- Configuración Inicial -->
-        <section id="config-section" class="bg-white rounded-xl shadow-md p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-700 mb-4">🔗 Enlace de tu Google Sheet</h2>
-            <div class="w-full">
-                <label class="block text-sm font-medium text-gray-600">Pega la URL completa de tu hoja de cálculo:</label>
-                <input type="text" id="sheet-url" placeholder="https://google.com" class="mt-1 block w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+    <main class="app-container">
+        
+        <!-- PANTALLA 1: ACCESO POR CURP AUTHORIZED -->
+        <section id="screen-login" class="app-screen">
+            <h2>Acceso al Sistema</h2>
+            <div class="form-group">
+                <label for="login-curp">Ingrese su CURP Autorizada:</label>
+                <input type="text" id="login-curp" maxlength="18" placeholder="18 dígitos" style="text-transform:uppercase">
             </div>
-            <button onclick="cargarDatosDirectos()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md transition">
-                Cargar Datos de Campo
-            </button>
+            <button type="button" onclick="login()">Ingresar</button>
         </section>
 
-        <!-- Panel de Control Principal (Oculto hasta conectar) -->
-        <section id="main-panel" class="hidden bg-white rounded-xl shadow-md p-6 mb-6">
-            <div class="flex flex-col md:flex-row justify-between items-center border-b pb-4 mb-4">
-                <h2 class="text-xl font-semibold text-gray-700">🔍 Buscador y Editor en Tiempo Real</h2>
-                <div class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium" id="total-registros">
-                    Cargando filas...
+        <!-- PANTALLA 2: BIENVENIDA Y CARGA TOTAL MASIVA INDEXADA -->
+        <section id="screen-welcome" class="app-screen hidden">
+            <h2 id="welcome-message">Bienvenido</h2>
+            <div class="card">
+                <h3>Sincronización Inicial de Base de Datos</h3>
+                <p style="font-size:13px; color:#555; margin-bottom:15px;">Descarga los registros al teléfono para trabajar totalmente sin internet en campo.</p>
+                
+                <!-- CONTENEDOR Y BARRA DE PROGRESO DE DESCARGA MASIVA -->
+                <div id="progress-container" style="display:none; background:#eee; border-radius:4px; margin:10px 0; padding:2px;">
+                    <div id="progress-bar" style="background:var(--primary-color); width:0%; height:15px; border-radius:4px; transition:width 0.2s;"></div>
                 </div>
-            </div>
+                <p id="progress-text" style="font-size:12px; font-weight:bold; color:var(--primary-color); margin-bottom:15px;"></p>
 
-            <!-- Filtros de búsqueda -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-600">Columna de búsqueda:</label>
-                    <select id="buscar-columna" class="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-white">
-                        <!-- Se llena dinámicamente -->
-                    </select>
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-600">Escribe el término de búsqueda:</label>
-                    <input type="text" id="buscar-input" oninput="filtrarDatos()" placeholder="Ej. Juan Pérez o ID_3948..." class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                </div>
+                <button type="button" onclick="downloadAllDataMassive()" id="btn-massive-download" class="btn-secondary">📥 Descargar Base Completa</button>
             </div>
-
-            <!-- Tabla de Resultados -->
-            <div class="overflow-x-auto border border-gray-200 rounded-lg max-h-[400px] overflow-y-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50 sticky top-0" id="tabla-cabecera">
-                        <!-- Se llena dinámicamente -->
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200 text-sm" id="tabla-cuerpo">
-                        <tr>
-                            <td colspan="100" class="text-center py-8 text-gray-500">Usa el buscador superior para filtrar registros...</td>
-                        </tr>
-                    </tbody>
-                </table>
+            
+            <!-- VINCULACIÓN CORREGIDA: type="button" para prevenir recargas accidentales -->
+            <div class="nav-buttons">
+                <button type="button" onclick="changeScreen('screen-search')">Ir a Búsqueda</button>
+                <button type="button" onclick="openHistoryScreen()">Historial y Sincronización</button>
             </div>
         </section>
-    </div>
 
-    <script>
-        let datosOriginales = [];
-        let cabeceras = [];
+        <!-- PANTALLA 3: BUSCADOR MULTI-CRITERIO EN MEMORIA RAM CACHÉ -->
+        <section id="screen-search" class="app-screen hidden">
+            <h2>Búsqueda de Derechohabientes</h2>
+            <div class="form-group">
+                <input type="text" id="search-input" oninput="searchData()" placeholder="Buscar por Calle, Nombre, CURP o Apellidos...">
+            </div>
+            
+            <!-- CONTENEDOR DINÁMICO DONDE SE INYECTAN LOS RESULTADOS DE BÚSQUEDA -->
+            <div id="search-results" class="results-list">
+                <!-- Los resultados aparecerán dinámicamente aquí -->
+            </div>
+            
+            <div class="nav-buttons-stack">
+                <button type="button" onclick="openHistoryScreen()" class="btn-secondary">Historial y Sincronización</button>
+                <button type="button" onclick="changeScreen('screen-welcome')" class="btn-back">Volver al Menú</button>
+            </div>
+        </section>
 
-        // Auto-conexión por URL si les pasas el enlace preparado
-        window.onload = function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const sheetParam = urlParams.get('sheet_url');
-            if (sheetParam) {
-                document.getElementById('sheet-url').value = decodeURIComponent(sheetParam);
-                document.getElementById('config-section').classList.add('hidden');
-                cargarDatosDirectos();
-            }
-        }
-
-        async function cargarDatosDirectos() {
-            const urlInput = document.getElementById('sheet-url').value.trim();
-            if(!urlInput) return alert("Por favor, pega la URL de tu Google Sheet.");
-
-            try {
-                // Extraer el ID de la planilla desde la URL de forma inteligente
-                const matches = urlInput.match(/\/d\/([a-zA-Z0-9-_]+)/);
-                if(!matches) throw new Error("La URL introducida no parece un enlace válido de Google Sheets.");
-                const sheetId = matches[1];
-
-                // Convertimos la petición a formato CSV (Es público, rápido y nativo de Google)
-                const urlCsv = `https://google.com{sheetId}/export?format=csv`;
+        <!-- PANTALLA 4: FORMULARIO DE EDICIÓN Y CAPTURA GPS AUTOMÁTICA -->
+        <section id="screen-form" class="app-screen hidden">
+            <h2>Actualización de Domicilio</h2>
+            <form id="edit-form" onsubmit="saveData(event)">
                 
-                const response = await fetch(urlCsv);
-                if(!response.ok) throw new Error("No se pudo acceder al archivo. Asegúrate de que esté compartido como 'Cualquier persona con el enlace puede ver'.");
+                <!-- Datos No Editables (Bloqueados por Diseño del Formulario) -->
+                <div class="form-grid text-disabled">
+                    <div><label>CURP:</label><input type="text" id="f-curp" readonly></div>
+                    <div><label>ID:</label><input type="text" id="f-id" readonly></div>
+                    <div><label>Nombre:</label><input type="text" id="f-nombre" readonly></div>
+                    <div><label>Ap. Paterno:</label><input type="text" id="f-paterno" readonly></div>
+                    <div><label>Ap. Materno:</label><input type="text" id="f-materno" readonly></div>
+                    <div><label>Situación:</label><input type="text" id="f-situacion" readonly></div>
+                    <div><label>Causal:</label><input type="text" id="f-causal" readonly></div>
+                </div>
+                <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
                 
-                const textoCsv = await response.text();
+                <!-- Datos Editables y Obligatorios -->
+                <div class="form-group">
+                    <label>Teléfono Fijo (10 dígitos):</label>
+                    <input type="tel" id="f-telfijo" pattern="[0-9]{10}" maxlength="10">
+                </div>
+                <div class="form-group">
+                    <label>Teléfono Celular (10 dígitos):</label>
+                    <input type="tel" id="f-telcel" pattern="[0-9]{10}" maxlength="10">
+                </div>
+                <div class="form-group">
+                    <label>Municipio:</label>
+                    <input type="text" id="f-municipio">
+                </div>
+                <div class="form-group">
+                    <label>Localidad *:</label>
+                    <input type="text" id="f-localidad" required>
+                </div>
+                <div class="form-group">
+                    <label>Sección (Hasta 4 números) *:</label>
+                    <input type="number" id="f-seccion" max="9999" required>
+                </div>
+                <div class="form-group">
+                    <label>Colonia:</label>
+                    <input type="text" id="f-colonia">
+                </div>
+                <div class="form-group">
+                    <label>Código Postal (5 dígitos):</label>
+                    <input type="text" id="f-cp" pattern="[0-9]{5}" maxlength="5">
+                </div>
+                <div class="form-group">
+                    <label>Calle:</label>
+                    <input type="text" id="f-calle">
+                </div>
+                <div class="form-group">
+                    <label>Núm. Ext:</label>
+                    <input type="text" id="f-numext">
+                </div>
+                <div class="form-group">
+                    <label>Referencia:</label>
+                    <textarea id="f-referencia" rows="3"></textarea>
+                </div>
+                <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
                 
-                // Procesar las filas del CSV de forma simple
-                const filas = textoCsv.split("\n").map(f => f.split(","));
-                
-                cabeceras = filas[0].map(c => c.replace(/"/g, "").trim());
-                datosOriginales = filas.slice(1).map(f => f.map(celda => celda.replace(/"/g, "").trim()));
+                <!-- Geolocalización en Tiempo Real Protegida -->
+                <div class="form-grid text-disabled">
+                    <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
+                    <div><label>Longitud GPS:</label><input type="text" id="f-lon" readonly></div>
+                </div>
 
-                // Rellenar selector de columnas
-                document.getElementById('buscar-columna').innerHTML = cabeceras.map((c, i) => `<option value="${i}">${c}</option>`).join('');
+                <button type="submit" style="margin-top: 20px;">Guardar Localmente</button>
+                <button type="button" onclick="changeScreen('screen-search')" class="btn-back">Cancelar</button>
+            </form>
+        </section>
 
-                // Renderizar cabecera de tabla
-                document.getElementById('tabla-cabecera').innerHTML = `<tr>${cabeceras.map(c => `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase bg-gray-50">\${c}</th>`).join('')}</tr>`;
+        <!-- PANTALLA 5: HISTORIAL, CONTROL OFFLINE Y REPORTE ÚNICO CSV -->
+        <section id="screen-history" class="app-screen hidden">
+            <h2>Historial y Sincronización</h2>
+            <div class="metrics" style="background:#f7fafc; padding:15px; border-radius:4px; margin-bottom:15px; border-left:4px solid var(--primary-color);">
+                <p style="margin:0; font-size:15px;">Cambios pendientes por subir: <strong id="pending-count">0</strong></p>
+            </div>
+            
+            <div class="action-buttons-stack">
+                <button type="button" onclick="syncWithSheets()" class="btn-sync">🔄 Sincronizar con Google Sheets</button>
+                <button type="button" onclick="downloadBackupCSV()" class="btn-sync" style="background-color: #1d7243;">📊 Descargar Avance del Día (Excel / CSV)</button>
+                <button type="button" onclick="clearLocalStorage()" class="btn-danger">🗑️ Borrar Datos del Teléfono</button>
+            </div>
+            <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+            
+            <h3>Registro de Visitas del Día</h3>
+            <!-- BITÁCORA DINÁMICA DONDE SE INYECTAN LAS VISITAS (⏳ PENDIENTES Y ✅ COMPLETADAS) -->
+            <div id="history-log" class="log-list">
+                <!-- Se inyecta la bitácora desde JS -->
+            </div>
+            
+            <button type="button" onclick="goBackFromHistory()" class="btn-back">Volver</button>
+        </section>
 
-                // Mostrar panel principal
-                document.getElementById('total-registros').innerText = `Total filas cargadas: ${datosOriginales.length.toLocaleString()}`;
-                document.getElementById('main-panel').classList.remove('hidden');
+    </main>
 
-            } catch (err) {
-                document.getElementById('config-section').classList.remove('hidden');
-                alert("Error: " + err.message);
-            }
-        }
-
-        function filtrarDatos() {
-            const colIndex = parseInt(document.getElementById('buscar-columna').value);
-            const query = document.getElementById('buscar-input').value.toLowerCase().trim();
-            const cuerpo = document.getElementById('tabla-cuerpo');
-
-            if(!query) {
-                cuerpo.innerHTML = `<tr><td colspan="100" class="text-center py-8 text-gray-500">Escribe en el buscador para filtrar registros...</td></tr>`;
-                return;
-            }
-
-            const filtrados = [];
-            for(let i=0; i<datosOriginales.length; i++) {
-                const fila = datosOriginales[i];
-                if(fila[colIndex] && fila[colIndex].toLowerCase().includes(query)) {
-                    filtrados.push(fila);
-                }
-                if(filtrados.length >= 30) break; // Límite para rendimiento en celulares de campo
-            }
-
-            if(filtrados.length === 0) {
-                cuerpo.innerHTML = `<tr><td colspan="100" class="text-center py-8 text-gray-500">No hay coincidencias.</td></tr>`;
-                return;
-            }
-
-            cuerpo.innerHTML = filtrados.map(fila => {
-                return `<tr class="hover:bg-gray-50">${cabeceras.map((_, cIdx) => `<td class="px-4 py-3 text-gray-700 border-b">\${fila[cIdx] || ""}</td>`).join('')}</tr>`;
-            }).join('');
-        }
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
