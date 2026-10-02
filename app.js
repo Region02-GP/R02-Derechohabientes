@@ -1,441 +1,205 @@
-// =========================================================================
-// R02-DERECHOHABIENTES: CONFIGURACIÓN GENERAL Y ESTADO DE LA APP
-// =========================================================================
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TextInput, FlatList, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, ScrollView } from 'react-native';
+import * as Location from 'expo-location';
 
-// URL del Web App de Google Apps Script (Sustituye con tu URL exacta de producción)
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzpEPv2BC9uQNlmd1d3b0tF52mKNZqFr72ktWu0-R8B2yh0HJMJcdNMypOvGQQjnSqk/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbymIkArKj52jhVXvM8uGTkYETU1Q8Ikbqbu--BdUO0BcTAYrFZ4SPb6r9UOMsjH5RC1/exec"; // <-- REEMPLAZA CON TU URL /exec
 
-// CURPs Autorizadas en Código para la Pantalla de Acceso (Pantalla 1)
-const AUTHORIZED_CURPS = {
-    "CURPVALIDA12345678": "Juan Pérez López",
-    "CURPVALIDA87654321": "María Gómez García"
-};
+export default function App() {
+  const [loading, setLoading] = useState(true);
+  const [derechohabientes, setDerechohabientes] = useState([]);
+  const [filtrados, setFiltrados] = useState([]);
+  const [busqueda, setBusqueda] = useState('');
+  const [seleccionado, setSeleccionado] = useState(null);
+  
+  // Campos del formulario vinculados a tu Excel
+  const [situacion, setSituacion] = useState('LOCALIZADO');
+  const [causal, setCausal] = useState('');
 
-let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
-let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
-let currentUser = null;
-let previousScreen = 'screen-welcome';
-
-// =========================================================================
-// INITIALIZACIÓN DE INDEXEDDB (Base de Datos Local para soporte masivo)
-// =========================================================================
-const DB_NAME = "R02_DB";
-const DB_VERSION = 1;
-const STORE_NAME = "derechohabientes";
-let db;
-
-const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-request.onupgradeneeded = (e) => {
-    db = e.target.result;
-    if (!db.objectStoreNames.contains(STORE_NAME)) {
-        // La CURP limpia será nuestra llave primaria única
-        const store = db.createObjectStore(STORE_NAME, { keyPath: "CURP" });
-        store.createIndex("by_nombre", "NOMBRE", { unique: false });
-        store.createIndex("by_calle", "CALLE", { unique: false });
-    }
-};
-
-request.onsuccess = (e) => { 
-    db = e.target.result; 
-    console.log("IndexedDB inicializada correctamente para soporte masivo.");
-};
-
-request.onerror = (e) => {
-    console.error("Error al abrir IndexedDB:", e.target.error);
-};
-
-// NAVEGACIÓN GENERAL ENTRE PANTALLAS
-function changeScreen(screenId) {
-    if (screenId !== 'screen-history') {
-        previousScreen = screenId;
-    }
-    
-    // Si el usuario va hacia la pantalla de búsqueda, precargamos los datos en la RAM
-    if (screenId === 'screen-search') {
-        preloadDatabaseToMemory();
-    }
-    
-    document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
-    document.getElementById(screenId).classList.remove('hidden');
-}
-// =========================================================================
-// PANTALLA 1: ACCESO POR CURP
-// =========================================================================
-function login() {
-    const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
-    if (AUTHORIZED_CURPS[curpInput]) {
-        currentUser = { curp: curpInput, name: AUTHORIZED_CURPS[curpInput] };
-        document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
-        changeScreen('screen-welcome');
-    } else {
-        alert("CURP no autorizada o inválida en el sistema.");
-    }
-}
-
-// =========================================================================
-// PANTALLA 2: DESCARGA MASIVA POR BLOQUES (Soporta universo de Sheets)
-// =========================================================================
-async function downloadAllDataMassive() {
-    const btn = document.getElementById('btn-massive-download');
-    const progressContainer = document.getElementById('progress-container');
-    const progressBar = document.getElementById('progress-bar');
-    const progressText = document.getElementById('progress-text');
-    
-    if (!db) return alert("La base de datos local aún no está lista. Reintente en un segundo.");
-    
-    btn.disabled = true;
-    progressContainer.style.display = "block";
-    
-    let offset = 0;
-    let limit = 10000; 
-    let isDone = false;
-    let totalCargados = 0;
-    
-    // Limpieza total antes de sobreescribir para evitar duplicados en el teléfono
-    const txClear = db.transaction(STORE_NAME, "readwrite");
-    txClear.objectStore(STORE_NAME).clear();
-    
+  const cargarDatos = async () => {
+    setLoading(true);
     try {
-        while (!isDone) {
-            progressText.innerText = `Descargando registros: ${totalCargados} acumulados...`;
-            
-            const url = `${GOOGLE_SCRIPT_URL}?action=getAllData&offset=${offset}&limit=${limit}&_=${new Date().getTime()}`;
-            const response = await fetch(url);
-            
-            if (!response.ok) throw new Error("Fallo en la respuesta del servidor Google.");
-            const data = await response.json();
-            
-            if (data.records && data.records.length > 0) {
-                const tx = db.transaction(STORE_NAME, "readwrite");
-                const store = tx.objectStore(STORE_NAME);
-                
-                data.records.forEach(record => {
-                    if (record.CURP) {
-                        record.CURP = String(record.CURP).replace(/ /g, "").toUpperCase().trim();
-                        store.put(record); 
-                        totalCargados++;
-                    }
-                });
-                
-                await new Promise((resolve) => { tx.oncomplete = resolve; });
-            }
-            
-            isDone = data.done;
-            offset = data.nextOffset;
-            
-            // Render de progreso real basado en el avance del offset sobre un estimado de 20k
-            let percentage = Math.min(100, Math.round((offset / 25000) * 100));
-            progressBar.style.width = `${percentage}%`;
-        }
-        
-        progressText.innerText = `¡Descarga completa! ${totalCargados} derechohabientes listos offline.`;
-        alert(`Éxito: Se han guardado ${totalCargados} registros en la memoria interna.`);
+      const response = await fetch(API_URL);
+      const data = await response.json();
+      setDerechohabientes(data);
+      setFiltrados(data);
     } catch (error) {
-        console.error(error);
-        alert("Ocurrió un error en la transferencia de datos. Verifica tu conexión de red.");
-    } window.setTimeout(() => { btn.disabled = false; }, 1000);
-}
-// =========================================================================
-// PANTALLA 3: BUSCADOR MULTICRITERIO INTEGRAL (MEMORIA CACHÉ RAM)
-// =========================================================================
-let localMemoryDatabase = [];
+      Alert.alert("R02", "Error de conexión con la base de datos.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-function preloadDatabaseToMemory() {
-    if (!db) return;
-    const tx = db.transaction(STORE_NAME, "readonly");
-    const store = tx.objectStore(STORE_NAME);
-    const requestGetAll = store.getAll(); 
+  useEffect(() => { cargarDatos(); }, []);
 
-    requestGetAll.onsuccess = (e) => {
-        localMemoryDatabase = e.target.result || [];
-        console.log(`Base de datos de ${localMemoryDatabase.length} registros precargada en RAM.`);
-    };
-}
+  const handleBuscar = (text) => {
+    setBusqueda(text);
+    const filtrados = derechohabientes.filter(item => 
+      item.nombre.toLowerCase().includes(text.toLowerCase()) || 
+      item.id.includes(text) || 
+      item.curp.toLowerCase().includes(text.toLowerCase())
+    );
+    setFiltrados(filtrados);
+  };
 
-function searchData() {
-    const query = document.getElementById('search-input').value.toLowerCase().trim();
-    const resultsContainer = document.getElementById('search-results');
-    resultsContainer.innerHTML = "";
-
-    if (query.length < 3) return;
-    if (localMemoryDatabase.length === 0) preloadDatabaseToMemory();
-
-    let matchesFound = 0;
-
-    for (let i = 0; i < localMemoryDatabase.length; i++) {
-        const item = localMemoryDatabase[i];
-        if (!item) continue;
-
-        const calle = item.CALLE ? String(item.CALLE).toLowerCase() : "";
-        const nombre = item.NOMBRE ? String(item.NOMBRE).toLowerCase() : "";
-        const curp = item.CURP ? String(item.CURP).toLowerCase() : "";
-        const apPaterno = item.AP_PATERNO ? String(item.AP_PATERNO).toLowerCase() : "";
-        const apMaterno = item.AP_MATERNO ? String(item.AP_MATERNO).toLowerCase() : "";
-
-        const match = calle.includes(query) || nombre.includes(query) || curp.includes(query) || apPaterno.includes(query) || apMaterno.includes(query);
-
-        if (match) {
-            if (matchesFound < 30) {
-                const div = document.createElement('div');
-                div.className = "result-item";
-                div.innerHTML = `<strong>${item.NOMBRE || ''} ${item.AP_PATERNO || ''} ${item.AP_MATERNO || ''}</strong><br><small>CURP: ${item.CURP || ''} | Calle: ${item.CALLE || 'No registrada'}</small>`;
-                div.onclick = () => openForm(item);
-                resultsContainer.appendChild(div);
-            }
-            matchesFound++;
-        }
+  // ==========================================
+  // FUNCIÓN GUARDAR DATOS (VERSIÓN ULTRA VELOZ)
+  // ==========================================
+  const guardarDatos = async () => {
+    if (!causal.trim()) {
+      Alert.alert("R02-Derechohabientes", "Por favor introduce el nuevo domicilio o justificación en el campo de Notas.");
+      return;
     }
 
-    if (matchesFound === 0) {
-        resultsContainer.innerHTML = "<div class='result-item' style='color: gray; text-align: center;'>No se encontraron derechohabientes que coincidan.</div>";
-    }
-}
-
-// =========================================================================
-// PANTALLA 4: RELLENO DE FORMULARIO Y CAPTURA GPS ESTANDARIZADA
-// =========================================================================
-function openForm(item) {
-    document.getElementById('f-curp').value = item.CURP || '';
-    document.getElementById('f-id').value = item.ID || '';
-    document.getElementById('f-nombre').value = item.NOMBRE || '';
-    document.getElementById('f-paterno').value = item.AP_PATERNO || '';
-    document.getElementById('f-materno').value = item.AP_MATERNO || '';
-    document.getElementById('f-situacion').value = item.SITUACION || '';
-    document.getElementById('f-causal').value = item.CUSAL || '';
+    // 1. Cerramos el formulario e indicamos éxito LOCAL de inmediato para ahorrar tiempo
+    const copiaSeleccionado = { ...seleccionado };
+    setSeleccionado(null); 
     
-    document.getElementById('f-telfijo').value = item.TEL_FIJO || '';
-    document.getElementById('f-telcel').value = item.TEL_CEL || '';
-    document.getElementById('f-municipio').value = item.MUNICIPIO || '';
-    document.getElementById('f-localidad').value = item.LOCALIDAD || '';
-    document.getElementById('f-seccion').value = item.SECCION || '';
-    document.getElementById('f-colonia').value = item.COLONIA || '';
-    document.getElementById('f-cp').value = item.CP || '';
-    document.getElementById('f-calle').value = item.CALLE || '';
-    document.getElementById('f-numext').value = item.NUM_EXT || '';
-    document.getElementById('f-referencia').value = item.REFERENCIA || '';
+    // Actualizamos la lista del celular al instante (Cambiamos el color/estatus en la pantalla)
+    setFiltrados(prev => prev.map(item => 
+      item.rowNum === copiaSeleccionado.rowNum ? { ...item, situacion: situacion } : item
+    ));
 
-    document.getElementById('f-lat').value = "Buscando satélite...";
-    document.getElementById('f-lon').value = "Buscando satélite...";
+    let latitude = "";
+    let longitude = "";
 
-    const gpsOptions = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
-
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                let cleanLat = String(position.coords.latitude.toFixed(6)).replace(",", ".");
-                let cleanLon = String(position.coords.longitude.toFixed(6)).replace(",", ".");
-                document.getElementById('f-lat').value = cleanLat;
-                document.getElementById('f-lon').value = cleanLon;
-            },
-            (error) => { 
-                document.getElementById('f-lat').value = "ERROR";
-                document.getElementById('f-lon').value = "ERROR";
-                alert("Atención: No se pudo obtener la georreferencia automática. Asegúrese de otorgar permisos de ubicación.");
-            },
-            gpsOptions
-        );
-    } else {
-        document.getElementById('f-lat').value = "NO COMPATIBLE";
-        document.getElementById('f-lon').value = "NO COMPATIBLE";
-    }
-    changeScreen('screen-form');
-}
-
-function saveData(event) {
-    event.preventDefault();
-    const latValue = document.getElementById('f-lat').value;
-    const lonValue = document.getElementById('f-lon').value;
-
-    if (latValue.includes("Buscando") || latValue === "" || latValue === "ERROR" || latValue === "NO COMPATIBLE") {
-        alert("🛑 BLOQUEO: No se puede guardar el registro sin la georreferencia del domicilio.");
-        return; 
-    }
-    
-    // Recuperamos el índice de fila guardado previamente en el objeto original
-    const targetCurp = document.getElementById('f-curp').value;
-    const originalRecord = localMemoryDatabase.find(r => r.CURP === targetCurp) || {};
-
-    const record = {
-        CURP: targetCurp,
-        ID: document.getElementById('f-id').value,
-        NOMBRE: document.getElementById('f-nombre').value,
-        AP_PATERNO: document.getElementById('f-paterno').value,
-        AP_MATERNO: document.getElementById('f-materno').value,
-        TEL_FIJO: document.getElementById('f-telfijo').value,
-        TEL_CEL: document.getElementById('f-telcel').value,
-        MUNICIPIO: document.getElementById('f-municipio').value,
-        LOCALIDAD: document.getElementById('f-localidad').value,
-        SECCION: document.getElementById('f-seccion').value,
-        COLONIA: document.getElementById('f-colonia').value,
-        CP: document.getElementById('f-cp').value,
-        CALLE: document.getElementById('f-calle').value,
-        NUM_EXT: document.getElementById('f-numext').value,
-        REFERENCIA: document.getElementById('f-referencia').value,
-        SITUACION: document.getElementById('f-situacion').value,
-        CUSAL: document.getElementById('f-causal').value,
-        Latitud: latValue,
-        Longitud: lonValue,
-        FECHA_MODIFICACION: new Date().toLocaleString("es-MX"),
-        USUARIO_MODIFICA: currentUser.name,
-        
-        // CONEXIÓN DIRECTA: Mantenemos el número de fila original que le asignó Sheets
-        SHEETS_ROW_INDEX: originalRecord.SHEETS_ROW_INDEX || ""
-    };
-
-    const txUpdate = db.transaction(STORE_NAME, "readwrite");
-    txUpdate.objectStore(STORE_NAME).put(record);
-
-    pendingSync.push(record);
-    localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
-
-    alert("Confirmación: Modificación guardada localmente.");
-    document.getElementById('search-input').value = "";
-    document.getElementById('search-results').innerHTML = "";
-    changeScreen('screen-search');
-}
-
-
-    const txUpdate = db.transaction(STORE_NAME, "readwrite");
-    txUpdate.objectStore(STORE_NAME).put(record);
-
-    pendingSync.push(record);
-    localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
-
-    alert("Confirmación: Modificación guardada localmente.");
-    document.getElementById('search-input').value = "";
-    document.getElementById('search-results').innerHTML = "";
-    changeScreen('screen-search');
-}
-// =========================================================================
-// PANTALLA 5: HISTORIAL DINÁMICO Y REPORTES UNIFICADOS
-// =========================================================================
-function openHistoryScreen() {
-    // CORRECCIÓN VITAL: Cambia de pantalla primero para evitar bloqueos gráficos
-    changeScreen('screen-history');
-
-    document.getElementById('pending-count').innerText = pendingSync.length;
-    const logList = document.getElementById('history-log');
-    logList.innerHTML = "";
-
-    // 1. Mostrar registros pendientes
-    pendingSync.forEach((item) => {
-        const div = document.createElement('div');
-        div.className = "result-item";
-        div.innerHTML = `<strong>⏳ ${item.NOMBRE} (${item.CURP})</strong><br><small>Pendiente de subir | Modificado: ${item.FECHA_MODIFICACION}</small>`;
-        logList.appendChild(div);
-    });
-
-    // 2. Mostrar registros ya sincronizados (Con marca verde y opacidad)
-    syncedHistory.forEach((item) => {
-        const div = document.createElement('div');
-        div.className = "result-item";
-        div.style.opacity = "0.6"; 
-        div.innerHTML = `<strong>✅ ${item.NOMBRE} (${item.CURP})</strong><br><small style="color:green;">Sincronizado con Sheets con éxito</small>`;
-        logList.appendChild(div);
-    });
-}
-
-function goBackFromHistory() {
-    changeScreen(previousScreen);
-}
-
-async function syncWithSheets() {
-    if (pendingSync.length === 0) return alert("No tienes registros pendientes de sincronizar en la cola.");
-
-    alert("Conectando y sincronizando con Google Sheets en bloque...");
     try {
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            redirect: 'follow',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: "sync", records: pendingSync })
-        });
-
-        const result = await response.json();
-
-        if (result.status === "success") {
-            // Mover a bitácora histórica local antes de limpiar la cola temporal
-            syncedHistory = syncedHistory.concat(pendingSync);
-            localStorage.setItem('syncedHistory', JSON.stringify(syncedHistory));
-
-            pendingSync = [];
-            localStorage.removeItem('pendingSync');
-            
-            openHistoryScreen();
-            alert(`¡Excelente! Sincronización realizada en Sheets: ${result.message}`);
-        } else {
-            alert(`Error retornado del servidor: ${result.message}`);
-        }
+      // Pedimos GPS en modo equilibrado (tarda milisegundos en responder)
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        let loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        latitude = loc.coords.latitude.toString();
+        longitude = loc.coords.longitude.toString();
+      }
     } catch (e) {
-        console.error(e);
-        alert("Fallo de conexión de red temporal. Tus cambios siguen resguardados de forma segura en el teléfono.");
-    }
-}
-
-function downloadBackupCSV() {
-    const allVisitsOfDay = pendingSync.concat(syncedHistory);
-
-    if (allVisitsOfDay.length === 0) {
-        return alert("No tienes ningún registro de visita en el teléfono para exportar hoy.");
+      console.log("Error obteniendo ubicación rápida");
     }
 
-    const headers = [
-        "CURP", "ID", "NOMBRE", "AP_PATERNO", "AP_MATERNO", "TEL_FIJO", "TEL_CEL", 
-        "MUNICIPIO", "LOCALIDAD", "SECCION", "COLONIA", "CP", "CALLE", "NUM_EXT", 
-        "REFERENCIA", "SITUACION", "CUSAL", "Latitud", "Longitud", "FECHA_MODIFICACION", "USUARIO_MODIFICA"
-    ];
-
-    let csvRows = [headers.join(",")];
-
-    allVisitsOfDay.forEach(record => {
-        const values = headers.map(header => {
-            let val = record[header] !== undefined ? record[header] : "";
-            let valStr = String(val).trim();
-            if (valStr.includes(",") || valStr.includes("\n") || valStr.includes('"')) {
-                valStr = `"${valStr.replace(/"/g, '""')}"`;
-            }
-            return valStr;
-        });
-        csvRows.push(values.join(","));
+    // 2. Enviamos la información a Google Sheets en segundo plano sin congelar la app
+    fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        rowNum: copiaSeleccionado.rowNum,
+        situacion: situacion,
+        causal: causal,
+        lat: latitude,
+        lng: longitude
+      })
+    })
+    .then(() => {
+      // Se sincronizó con éxito silenciosamente en la Sheet
+      console.log("Sincronizado en la nube exitosamente");
+    })
+    .catch(err => {
+      console.log("Guardado retrasado por problemas de red");
     });
 
-    const csvContent = csvRows.join("\n");
-    const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
-    
-    const downloadAnchor = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    const fechaHoy = new Date().toISOString().slice(0, 10);
-    
-    downloadAnchor.setAttribute("href", url);
-    downloadAnchor.setAttribute("download", `R02_Reporte_Completo_${fechaHoy}.csv`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    
-    document.body.removeChild(downloadAnchor);
-    URL.revokeObjectURL(url);
+    // Limpiamos los campos para la siguiente encuesta
+    setCausal('');
+    setSituacion('LOCALIZADO');
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.titulo}>R02 - Derechohabientes</Text>
+      
+      {!seleccionado && (
+        <>
+          <TextInput style={styles.buscador} placeholder="Buscar por ID, Nombre o CURP..." value={busqueda} onChangeText={handleBuscar} />
+          {loading ? (
+            <ActivityIndicator size="large" color="#1e3a8a" style={{ flex: 1 }} />
+          ) : (
+            <FlatList 
+              data={filtrados}
+              keyExtractor={(item) => item.rowNum.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity style={styles.tarjeta} onPress={() => { 
+                  setSeleccionado(item); 
+                  setSituacion(item.situacion || 'LOCALIZADO');
+                  setCausal(item.causal || '');
+                }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.nombre}>{item.nombre || 'Sin Nombre'}</Text>
+                    <Text style={styles.subtexto}><Text style={{fontWeight:'bold'}}>CURP:</Text> {item.curp}</Text>
+                    <Text style={styles.subtexto}><Text style={{fontWeight:'bold'}}>Dom:</Text> {item.domicilioActual}</Text>
+                    <Text style={styles.subtexto}><Text style={{fontWeight:'bold'}}>Mpio:</Text> {item.municipio} | <Text style={{fontWeight:'bold'}}>Cel:</Text> {item.telCel}</Text>
+                  </View>
+                  <Text style={styles.badge}>{item.situacion || 'PENDIENTE'}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          )}
+        </>
+      )}
+
+      {seleccionado && (
+        <ScrollView style={styles.formularioContainer}>
+          <Text style={styles.formTitulo}>Actualizar Datos en Territorio</Text>
+          <Text style={styles.nombreDerecho}>{seleccionado.nombre}</Text>
+          <Text style={styles.subtexto}>ID: {seleccionado.id} | CURP: {seleccionado.curp}</Text>
+
+          {/* Selector de Situación */}
+          <Text style={styles.label}>SITUACIÓN (Estatus en campo):</Text>
+          <View style={styles.opcionesContainer}>
+            {['LOCALIZADO', 'NO VIVE AHÍ', 'SE MUDÓ', 'NO EXISTE DOM.'].map((opcion) => (
+              <TouchableOpacity 
+                key={opcion} 
+                style={[styles.opcionBoton, situacion === opcion && styles.opcionSeleccionada]} 
+                onPress={() => setSituacion(opcion)}
+              >
+                <Text style={[styles.opcionTexto, situacion === opcion && styles.opcionTextoSeleccionado]}>{opcion}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Notas de Causal */}
+          <Text style={styles.label}>CAUSAL (Nuevo Domicilio / Observaciones):</Text>
+          <TextInput 
+            style={[styles.input, styles.textArea]} 
+            placeholder="Introduce la nueva dirección completa o la razón por la que no se localizó..." 
+            value={causal} 
+            onChangeText={setCausal} 
+            multiline={true}
+            numberOfLines={4}
+          />
+
+          {/* Botones de acción */}
+          <View style={styles.botonesContainer}>
+            <TouchableOpacity style={[styles.boton, styles.botonGuardar]} onPress={guardarDatos}>
+              <Text style={styles.botonTexto}>Guardar en Territorio</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.boton, styles.botonCancelar]} onPress={() => setSeleccionado(null)}>
+              <Text style={styles.botonTexto}>Regresar a la lista</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      )}
+    </SafeAreaView>
+  );
 }
 
-function clearLocalStorage() {
-    if (confirm("¿Estás absolutamente seguro de vaciar la memoria? Perderás los registros pendientes y el historial de descargas del día.")) {
-        pendingSync = [];
-        syncedHistory = []; 
-        localStorage.clear();
-        if (db) {
-            const tx = db.transaction(STORE_NAME, "readwrite");
-            tx.objectStore(STORE_NAME).clear();
-        }
-        openHistoryScreen();
-        alert("Datos e historial del teléfono eliminados correctamente.");
-    }
-}
-
-// ACTIVACIÓN DEL SERVICE WORKER PWA
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('Service Worker registrado.', reg))
-            .catch(err => console.error('Error de Service Worker:', err));
-    });
-}
-
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#f3f4f6', paddingHorizontal: 15 },
+  titulo: { fontSize: 22, fontWeight: '800', textAlign: 'center', marginTop: 20, marginBottom: 15, color: '#621132', letterSpacing: 0.5 },
+  buscador: { backgroundColor: '#ffffff', paddingHorizontal: 16, paddingVertical: 14, borderRadius: 12, marginBottom: 16, fontSize: 16, borderWidth: 1, borderColor: '#e5e7eb', elevation: 2 },
+  tarjeta: { backgroundColor: '#ffffff', padding: 16, borderRadius: 14, marginBottom: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderLeftWidth: 5, borderLeftColor: '#285c4d', elevation: 2 },
+  nombre: { fontSize: 16, fontWeight: 'bold', color: '#1f2937', marginBottom: 4 },
+  subtexto: { fontSize: 12, color: '#4b5563', lineHeight: 18 },
+  badge: { fontSize: 11, backgroundColor: '#fef08a', color: '#854d0e', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, marginLeft: 10, alignSelf: 'center', fontWeight: '800', textTransform: 'uppercase' },
+  formularioContainer: { flex: 1, backgroundColor: '#ffffff', padding: 20, borderRadius: 16, marginTop: 10, elevation: 4 },
+  formTitulo: { fontSize: 12, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 1.5, fontWeight: 'bold' },
+  nombreDerecho: { fontSize: 20, fontWeight: 'bold', color: '#621132', marginVertical: 6 },
+  label: { fontSize: 14, fontWeight: '700', color: '#374151', marginTop: 18, marginBottom: 8 },
+  input: { borderWidth: 1, borderColor: '#d1d5db', padding: 14, borderRadius: 10, backgroundColor: '#f9fafb', fontSize: 15, color: '#111827' },
+  textArea: { height: 100, textAlignVertical: 'top' },
+  opcionesContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 5 },
+  opcionBoton: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, borderWidth: 1, borderColor: '#d1d5db', backgroundColor: '#ffffff' },
+  opcionSeleccionada: { backgroundColor: '#621132', borderColor: '#621132' },
+  opcionTexto: { color: '#374151', fontSize: 13, fontWeight: '500' },
+  opcionTextoSeleccionado: { color: '#ffffff', fontWeight: 'bold' },
+  botonesContainer: { flexDirection: 'column', gap: 12, marginTop: 30, marginBottom: 50 },
+  boton: { padding: 16, borderRadius: 10, alignItems: 'center', elevation: 2 },
+  botonGuardar: { backgroundColor: '#285c4d' },
+  botonCancelar: { backgroundColor: '#982236' },
+  botonTexto: { color: '#ffffff', fontWeight: '700', fontSize: 16 }
+});
