@@ -75,67 +75,86 @@
         </section>
 
 
-        <!-- PANTALLA 4: FORMULARIO DE EDICIÓN Y CAPTURA GPS AUTOMÁTICA -->
+               <!-- PANTALLA 4: FORMULARIO DE EDICIÓN, ESTATUS DE VISITA Y CAPTURA GPS -->
         <section id="screen-form" class="app-screen hidden">
             <h2>Actualización de Domicilio</h2>
+            
+            <!-- NUEVA SECCIÓN: OPCIONES DE LOCALIZACIÓN VERTICALES -->
+            <div class="status-selector-container" style="margin-bottom: 20px;">
+                <label style="font-weight: bold; display: block; margin-bottom: 8px;">Estatus de la Visita *</label>
+                <div class="status-vertical-group">
+                    <button type="button" id="btn-status-localizado" onclick="setVisitStatus('LOCALIZADO')" class="btn-status-opt text-disabled">🟢 Localizado</button>
+                    <button type="button" id="btn-status-nolocalizado" onclick="setVisitStatus('NO LOCALIZADO')" class="btn-status-opt text-disabled">🔴 No Localizado</button>
+                </div>
+            </div>
+
+            <!-- CAMPO DINÁMICO: MOTIVO DE NO LOCALIZACIÓN (OCULTO POR DEFECTO) -->
+            <div id="motivo-container" class="form-group hidden">
+                <label for="f-motivo">Motivo por el que no fue localizado *:</label>
+                <textarea id="f-motivo" rows="2" placeholder="Escriba detalladamente el motivo..."></textarea>
+            </div>
+
             <form id="edit-form" onsubmit="saveData(event)">
-                
-                <!-- Datos No Editables (Bloqueados por Diseño del Formulario) -->
-                <div class="form-grid text-disabled">
-                    <div><label>CURP:</label><input type="text" id="f-curp" readonly></div>
-                    <div><label>ID:</label><input type="text" id="f-id" readonly></div>
-                    <div><label>Nombre:</label><input type="text" id="f-nombre" readonly></div>
-                    <div><label>Ap. Paterno:</label><input type="text" id="f-paterno" readonly></div>
-                    <div><label>Ap. Materno:</label><input type="text" id="f-materno" readonly></div>
-                    <div><label>Situación:</label><input type="text" id="f-situacion" readonly></div>
-                    <div><label>Causal:</label><input type="text" id="f-causal" readonly></div>
+                <!-- Contenedor interno para poder bloquear/desbloquear los campos dinámicamente -->
+                <div id="form-fields-wrapper">
+                    <!-- Datos No Editables -->
+                    <div class="form-grid text-disabled">
+                        <div><label>CURP:</label><input type="text" id="f-curp" readonly></div>
+                        <div><label>ID:</label><input type="text" id="f-id" readonly></div>
+                        <div><label>Nombre:</label><input type="text" id="f-nombre" readonly></div>
+                        <div><label>Ap. Paterno:</label><input type="text" id="f-paterno" readonly></div>
+                        <div><label>Ap. Materno:</label><input type="text" id="f-materno" readonly></div>
+                        <div><label>Situación:</label><input type="text" id="f-situacion" readonly></div>
+                        <div><label>Causal:</label><input type="text" id="f-causal" readonly></div>
+                    </div>
+                    <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+                    
+                    <!-- Datos Editables y Obligatorios -->
+                    <div class="form-group">
+                        <label>Teléfono Fijo (10 dígitos):</label>
+                        <input type="tel" id="f-telfijo" pattern="[0-9]{10}" maxlength="10">
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono Celular (10 dígitos):</label>
+                        <input type="tel" id="f-telcel" pattern="[0-9]{10}" maxlength="10">
+                    </div>
+                    <div class="form-group">
+                        <label>Municipio:</label>
+                        <input type="text" id="f-municipio">
+                    </div>
+                    <div class="form-group">
+                        <label>Localidad *:</label>
+                        <input type="text" id="f-localidad" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Sección (Hasta 4 números) *:</label>
+                        <input type="number" id="f-seccion" max="9999" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Colonia:</label>
+                        <input type="text" id="f-colonia">
+                    </div>
+                    <div class="form-group">
+                        <label>Código Postal (5 dígitos):</label>
+                        <input type="text" id="f-cp" pattern="[0-9]{5}" maxlength="5">
+                    </div>
+                    <div class="form-group">
+                        <label>Calle:</label>
+                        <input type="text" id="f-calle">
+                    </div>
+                    <div class="form-group">
+                        <label>Núm. Ext:</label>
+                        <input type="text" id="f-numext">
+                    </div>
+                    <div class="form-group">
+                        <label>Referencia:</label>
+                        <textarea id="f-referencia" rows="3"></textarea>
+                    </div>
                 </div>
+
                 <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
                 
-                <!-- Datos Editables y Obligatorios -->
-                <div class="form-group">
-                    <label>Teléfono Fijo (10 dígitos):</label>
-                    <input type="tel" id="f-telfijo" pattern="[0-9]{10}" maxlength="10">
-                </div>
-                <div class="form-group">
-                    <label>Teléfono Celular (10 dígitos):</label>
-                    <input type="tel" id="f-telcel" pattern="[0-9]{10}" maxlength="10">
-                </div>
-                <div class="form-group">
-                    <label>Municipio:</label>
-                    <input type="text" id="f-municipio">
-                </div>
-                <div class="form-group">
-                    <label>Localidad *:</label>
-                    <input type="text" id="f-localidad" required>
-                </div>
-                <div class="form-group">
-                    <label>Sección (Hasta 4 números) *:</label>
-                    <input type="number" id="f-seccion" max="9999" required>
-                </div>
-                <div class="form-group">
-                    <label>Colonia:</label>
-                    <input type="text" id="f-colonia">
-                </div>
-                <div class="form-group">
-                    <label>Código Postal (5 dígitos):</label>
-                    <input type="text" id="f-cp" pattern="[0-9]{5}" maxlength="5">
-                </div>
-                <div class="form-group">
-                    <label>Calle:</label>
-                    <input type="text" id="f-calle">
-                </div>
-                <div class="form-group">
-                    <label>Núm. Ext:</label>
-                    <input type="text" id="f-numext">
-                </div>
-                <div class="form-group">
-                    <label>Referencia:</label>
-                    <textarea id="f-referencia" rows="3"></textarea>
-                </div>
-                <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-                
-                <!-- Geolocalización en Tiempo Real Protegida -->
+                <!-- Geolocalización en Tiempo Real (SIEMPRE ACTIVA Y OBLIGATORIA) -->
                 <div class="form-grid text-disabled">
                     <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
                     <div><label>Longitud GPS:</label><input type="text" id="f-lon" readonly></div>
@@ -145,7 +164,6 @@
                 <button type="button" onclick="changeScreen('screen-search')" class="btn-back">Cancelar</button>
             </form>
         </section>
-
                <!-- PANTALLA 5: HISTORIAL, CONTROL OFFLINE Y REPORTES EXCEL/CSV -->
         <section id="screen-history" class="app-screen hidden">
             <h2>Historial y Sincronización</h2>
