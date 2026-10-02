@@ -1,4 +1,6 @@
-/* Paleta Institucional Corregida: Guinda, Negro y Dorado Formal */
+/* =========================================================================
+   PALETA DE COLORES INSTITUCIONALES (GUINDA, NEGRO Y DORADO PREMIUM)
+   ========================================================================= */
 :root {
     --primary-color: #621132;   /* Guinda Formal */
     --primary-light: #851c44;   /* Guinda Claro (Hover) */
@@ -6,12 +8,21 @@
     --secondary-dark: #987242;  /* Dorado Oscuro (Hover) */
     --dark-color: #1F1F1F;       /* Negro Elegante */
     --dark-light: #333333;      /* Gris Oscuro */
-    --text-color: #2D3748;
-    --bg-color: #F7FAFC;
+    --text-color: #2D3748;      /* Gris de Texto */
+    --bg-color: #F7FAFC;        /* Fondo General de la App */
     --white: #ffffff;
     --disabled-bg: #EDF2F7;
+    
+    /* Efectos de Relieve Tridimensional y Profundidad Tactil */
+    --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-screen: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    --shadow-button: 0 4px 14px 0 rgba(98, 17, 50, 0.3);
+    --shadow-gold: 0 4px 14px 0 rgba(188, 149, 92, 0.2);
 }
 
+/* =========================================================================
+   ESTILOS BASE DE LA APLICACIÓN
+   ========================================================================= */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--bg-color);
@@ -27,13 +38,14 @@ body {
     text-align: center;
     padding: 18px;
     border-bottom: 4px solid var(--secondary-color);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .main-header h1 {
     margin: 0;
     font-size: 22px;
     letter-spacing: 0.5px;
+    font-weight: 700;
 }
 
 .app-container {
@@ -46,8 +58,8 @@ body {
 .app-screen {
     background: var(--white);
     padding: 22px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    border-radius: 12px;
+    box-shadow: var(--shadow-screen);
     border: 1px solid #E2E8F0;
 }
 
@@ -61,7 +73,9 @@ h2 {
     font-weight: 700;
 }
 
-/* BARRA DE HERRAMIENTAS PANTALLA 3 */
+/* =========================================================================
+   BARRA DE HERRAMIENTAS SUPERIOR (PANTALLA 3)
+   ========================================================================= */
 .screen-toolbar {
     display: flex;
     justify-content: space-between;
@@ -71,6 +85,9 @@ h2 {
 }
 .screen-toolbar h2 { margin: 0; border: none; }
 
+/* =========================================================================
+   ESTILOS DE CAMPOS DE FORMULARIO
+   ========================================================================= */
 .form-group {
     margin-bottom: 16px;
 }
@@ -87,7 +104,7 @@ input[type="text"], input[type="tel"], input[type="number"], textarea {
     width: 100%;
     padding: 11px 14px;
     border: 1px solid #CBD5E0;
-    border-radius: 6px;
+    border-radius: 8px;
     box-sizing: border-box;
     font-size: 16px;
     background-color: #FCFDFE;
@@ -107,99 +124,197 @@ input:focus, textarea:focus {
     border-color: #E2E8F0;
 }
 
-/* BOTONES CON NUEVA IDENTIDAD DE COLOR */
-button {
-    background-color: var(--primary-color);
-    color: var(--white);
-    border: none;
-    padding: 13px;
-    width: 100%;
-    border-radius: 6px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
-    margin-top: 8px;
-}
-
-button:active { transform: scale(0.98); }
-button:hover { background-color: var(--primary-light); }
-
-.btn-secondary { 
-    background-color: var(--dark-color); 
-}
-.btn-secondary:hover { background-color: var(--dark-light); }
-
-.btn-back { 
-    background-color: #718096; 
-}
-.btn-back:hover { background-color: #4A5568; }
-
-.btn-danger { 
-    background-color: #9B2C2C; 
-}
-.btn-danger:hover { background-color: #742A2A; }
-
-.btn-sync { 
-    background-color: #2F855A; 
-}
-.btn-sync:hover { background-color: #22543D; }
-
-/* NUEVO BOTÓN EXCEL: DORADO Y NEGRO */
-.btn-excel-gold {
-    background-color: var(--dark-color);
-    color: var(--secondary-color);
-    border: 2px solid var(--secondary-color);
-}
-.btn-excel-gold:hover {
-    background-color: var(--secondary-color);
-    color: var(--dark-color);
-}
-
-/* BOTÓN DE LA BARRA DE HERRAMIENTAS (PANTALLA 3) */
-.btn-toolbar-history {
-    width: auto;
-    margin: 0;
-    padding: 6px 14px;
-    font-size: 14px;
-    background-color: var(--dark-color);
-    color: var(--secondary-color);
-    border: 1px solid var(--secondary-color);
-}
-.btn-toolbar-history:hover {
-    background-color: var(--secondary-color);
-    color: var(--dark-color);
-}
-
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
 }
 
+hr {
+    margin: 20px 0; 
+    border: 0; 
+    border-top: 1px solid #E2E8F0;
+}
+
+/* =========================================================================
+   DISEÑO AVANZADO DE BOTONES INTERACTIVOS TRIDIMENSIONALES
+   ========================================================================= */
+button {
+    background-color: var(--primary-color);
+    color: var(--white);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 14px;
+    width: 100%;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: var(--shadow-button);
+    transition: all 0.2s ease;
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    letter-spacing: 0.5px;
+}
+
+/* Animación fluida de elevación al pasar el dedo o cursor */
+button:hover { 
+    background-color: var(--primary-light);
+    box-shadow: 0 6px 20px 0 rgba(98, 17, 50, 0.4);
+    transform: translateY(-1px);
+}
+
+/* Animación física de pulsación al hacer clic */
+button:active { 
+    transform: translateY(1px);
+    box-shadow: 0 2px 6px 0 rgba(98, 17, 50, 0.4);
+}
+
+/* 1. Botón Secundario (Negro Elegante con Relieve) */
+.btn-secondary { 
+    background-color: var(--dark-color); 
+    box-shadow: 0 4px 14px 0 rgba(31, 31, 31, 0.3);
+}
+.btn-secondary:hover { 
+    background-color: var(--dark-light);
+    box-shadow: 0 6px 20px 0 rgba(31, 31, 31, 0.4);
+    transform: translateY(-1px);
+}
+.btn-secondary:active {
+    box-shadow: 0 2px 6px 0 rgba(31, 31, 31, 0.4);
+    transform: translateY(1px);
+}
+
+/* 2. Botón de Regresar (Gris Industrial Neutral) */
+.btn-back { 
+    background-color: #5A6A80; 
+    box-shadow: 0 4px 14px 0 rgba(90, 106, 128, 0.3);
+}
+.btn-back:hover { 
+    background-color: #4A5568;
+    box-shadow: 0 6px 20px 0 rgba(90, 106, 128, 0.4);
+    transform: translateY(-1px);
+}
+.btn-back:active {
+    transform: translateY(1px);
+}
+
+/* 3. Botón de Peligro/Borrado (Rojo Profundo de Alerta) */
+.btn-danger { 
+    background-color: #9B2C2C; 
+    box-shadow: 0 4px 14px 0 rgba(155, 44, 44, 0.3);
+}
+.btn-danger:hover { 
+    background-color: #742A2A;
+    box-shadow: 0 6px 20px 0 rgba(155, 44, 44, 0.4);
+    transform: translateY(-1px);
+}
+.btn-danger:active {
+    transform: translateY(1px);
+}
+
+/* 4. Botón de Sincronizar (Verde de Éxito Estable) */
+.btn-sync { 
+    background-color: #236947; 
+    box-shadow: 0 4px 14px 0 rgba(35, 105, 71, 0.3);
+}
+.btn-sync:hover { 
+    background-color: #1a4d34;
+    box-shadow: 0 6px 20px 0 rgba(35, 105, 71, 0.4);
+    transform: translateY(-1px);
+}
+.btn-sync:active {
+    transform: translateY(1px);
+}
+
+/* 5. BOTÓN EXCEL PREMIUM: FONDO NEGRO CON DEGRADADO Y TEXTO METÁLICO DORADO */
+.btn-excel-gold {
+    background: linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 100%) !important;
+    color: var(--secondary-color) !important;
+    border: 2px solid var(--secondary-color) !important;
+    box-shadow: var(--shadow-gold) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.btn-excel-gold:hover {
+    background: var(--secondary-color) !important;
+    color: var(--dark-color) !important;
+    box-shadow: 0 6px 20px 0 rgba(188, 149, 92, 0.4) !important;
+    border-color: var(--secondary-dark) !important;
+    transform: translateY(-1px);
+}
+.btn-excel-gold:active {
+    box-shadow: 0 2px 6px 0 rgba(188, 149, 92, 0.4) !important;
+    transform: translateY(1px);
+}
+
+/* 6. BOTÓN COMPACTO DE HISTORIAL (BARRA PANTALLA 3) */
+.btn-toolbar-history {
+    width: auto;
+    margin: 0;
+    padding: 8px 16px;
+    font-size: 14px;
+    background-color: var(--dark-color);
+    color: var(--secondary-color);
+    border: 1px solid var(--secondary-color);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.btn-toolbar-history:hover {
+    background-color: var(--secondary-color);
+    color: var(--dark-color);
+    box-shadow: 0 4px 12px rgba(188, 149, 92, 0.3);
+    transform: translateY(-1px);
+}
+.btn-toolbar-history:active {
+    transform: translateY(1px);
+}
+
+/* =========================================================================
+   LISTADOS Y ELEMENTOS GRÁFICOS CONTENEDORES
+   ========================================================================= */
 .results-list, .log-list {
     max-height: 280px;
     overflow-y: auto;
     border: 1px solid #E2E8F0;
-    border-radius: 6px;
+    border-radius: 8px;
     margin: 15px 0;
     background: #FFF;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
 }
 
+/* Animación interactiva de desplazamiento lateral en la lista */
 .result-item {
-    padding: 12px 16px;
+    padding: 14px 16px;
     border-bottom: 1px solid #EDF2F7;
     cursor: pointer;
-    transition: background-color 0.15s;
+    transition: background-color 0.15s, padding-left 0.15s;
 }
-.result-item:hover { background-color: #F7FAFC; }
+.result-item:hover { 
+    background-color: #F7FAFC;
+    padding-left: 20px; 
+    color: var(--primary-color);
+}
 .result-item:last-child { border-bottom: none; }
 
 .card {
     background: #FFF;
     border: 1px solid #E2E8F0;
-    border-radius: 8px;
-    padding: 16px;
+    border-radius: 10px;
+    padding: 18px;
     margin-bottom: 15px;
+    box-shadow: var(--shadow-soft);
 }
-.card h3 { margin-top: 0; color: var(--dark-color); font-size: 16px; }
+.card h3 { 
+    margin-top: 0; 
+    color: var(--dark-color); 
+    font-size: 16px; 
+    font-weight: 700; 
+}
+
+/* Contenedores de botones agrupados */
+.nav-buttons, .nav-buttons-stack, .action-buttons-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 10px;
+}
