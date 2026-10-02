@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, FlatList, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, ScrollView } from 'react-native';
 import * as Location from 'expo-location';
 
-const API_URL = "https://script.google.com/macros/s/AKfycbymIkArKj52jhVXvM8uGTkYETU1Q8Ikbqbu--BdUO0BcTAYrFZ4SPb6r9UOMsjH5RC1/exec"; // <-- REEMPLAZA CON TU URL /exec
-
+// ==========================================
+// CONFIGURACIÓN DE CONEXIÓN
+// ==========================================
+const API_URL = "https://script.google.com/macros/s/AKfycbymIkArKj52jhVXvM8uGTkYETU1Q8Ikbqbu--BdUO0BcTAYrFZ4SPb6r9UOMsjH5RC1/exec"; // <-- COLOCA AQUÍ TU URL /exec
 export default function App() {
   const [loading, setLoading] = useState(true);
   const [derechohabientes, setDerechohabientes] = useState([]);
@@ -11,10 +13,13 @@ export default function App() {
   const [busqueda, setBusqueda] = useState('');
   const [seleccionado, setSeleccionado] = useState(null);
   
-  // Campos del formulario vinculados a tu Excel
+  // Estados para el Candado de Acceso por CURP
+  const [curpAcceso, setCurpAcceso] = useState('');
+  const [haAccedido, setHaAccedido] = useState(false);
+
+  // Campos del Formulario vinculados a tu Excel
   const [situacion, setSituacion] = useState('LOCALIZADO');
   const [causal, setCausal] = useState('');
-
   const cargarDatos = async () => {
     setLoading(true);
     try {
@@ -29,32 +34,50 @@ export default function App() {
     }
   };
 
-  useEffect(() => { cargarDatos(); }, []);
+  useEffect(() => {
+    cargarDatos();
+  }, []);
+
+  const manejarAcceso = () => {
+    const curpLimpia = curpAcceso.trim().toUpperCase();
+    if (curpLimpia.length !== 18) {
+      Alert.alert("Acceso Denegado", "Por favor, ingresa una CURP válida de 18 caracteres.");
+      return;
+    }
+    setHaAccedido(true);
+  };
 
   const handleBuscar = (text) => {
     setBusqueda(text);
-    const filtrados = derechohabientes.filter(item => 
-      item.nombre.toLowerCase().includes(text.toLowerCase()) || 
-      item.id.includes(text) || 
-      item.curp.toLowerCase().includes(text.toLowerCase())
-    );
+    const query = text.toLowerCase().trim();
+
+    if (!query) {
+      setFiltrados(derechohabientes);
+      return;
+    }
+
+    const filtrados = derechohabientes.filter(item => {
+      const nombreSeguro = item.nombre ? item.nombre.toLowerCase() : '';
+      const idSeguro = item.id ? item.id.toString().toLowerCase() : '';
+      const curpSegura = item.curp ? item.curp.toLowerCase() : '';
+
+      return (
+        nombreSeguro.includes(query) || 
+        idSeguro.includes(query) || 
+        curpSegura.includes(query)
+      );
+    });
     setFiltrados(filtrados);
   };
-
-  // ==========================================
-  // FUNCIÓN GUARDAR DATOS (VERSIÓN ULTRA VELOZ)
-  // ==========================================
   const guardarDatos = async () => {
     if (!causal.trim()) {
       Alert.alert("R02-Derechohabientes", "Por favor introduce el nuevo domicilio o justificación en el campo de Notas.");
       return;
     }
 
-    // 1. Cerramos el formulario e indicamos éxito LOCAL de inmediato para ahorrar tiempo
     const copiaSeleccionado = { ...seleccionado };
     setSeleccionado(null); 
     
-    // Actualizamos la lista del celular al instante (Cambiamos el color/estatus en la pantalla)
     setFiltrados(prev => prev.map(item => 
       item.rowNum === copiaSeleccionado.rowNum ? { ...item, situacion: situacion } : item
     ));
@@ -63,7 +86,6 @@ export default function App() {
     let longitude = "";
 
     try {
-      // Pedimos GPS en modo equilibrado (tarda milisegundos en responder)
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status === 'granted') {
         let loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
@@ -74,7 +96,6 @@ export default function App() {
       console.log("Error obteniendo ubicación rápida");
     }
 
-    // 2. Enviamos la información a Google Sheets en segundo plano sin congelar la app
     fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -85,27 +106,49 @@ export default function App() {
         lat: latitude,
         lng: longitude
       })
-    })
-    .then(() => {
-      // Se sincronizó con éxito silenciosamente en la Sheet
-      console.log("Sincronizado en la nube exitosamente");
-    })
-    .catch(err => {
-      console.log("Guardado retrasado por problemas de red");
-    });
+    }).catch(err => console.log("Guardado retrasado por red"));
 
-    // Limpiamos los campos para la siguiente encuesta
     setCausal('');
     setSituacion('LOCALIZADO');
   };
+  // PANTALLA DE ACCESO (LOGIN)
+  if (!haAccedido) {
+    return (
+      <SafeAreaView style={styles.loginCentrado}>
+        <View style={styles.loginTarjeta}>
+          <Text style={styles.loginSiglas}>R02</Text>
+          <Text style={styles.loginTituloSub}>Control de Territorio</Text>
+          <Text style={styles.loginInstruccion}>Ingresa tu CURP para acceder al padrón de derechohabientes:</Text>
+          <TextInput 
+            style={[styles.input, styles.loginInputMargin]} 
+            placeholder="CURP de 18 caracteres" 
+            value={curpAcceso} 
+            onChangeText={setCurpAcceso}
+            autoCapitalize="characters"
+            maxLength={18}
+            autoCorrect={false}
+          />
+          <TouchableOpacity style={[styles.boton, styles.botonGuardar, {width: '100%'}]} onPress={manejarAcceso}>
+            <Text style={styles.botonTexto}>Ingresar a la App</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
+  // PANTALLA PRINCIPAL (LISTADO Y FORMULARIO)
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.titulo}>R02 - Derechohabientes</Text>
+      <View style={styles.headerApp}>
+        <Text style={styles.titulo}>R02 - Derechohabientes</Text>
+        <TouchableOpacity style={styles.botonSalir} onPress={() => { setHaAccedido(false); setCurpAcceso(''); }}>
+          <Text style={styles.textoSalir}>Cerrar Sesión</Text>
+        </TouchableOpacity>
+      </View>
       
       {!seleccionado && (
         <>
-          <TextInput style={styles.buscador} placeholder="Buscar por ID, Nombre o CURP..." value={busqueda} onChangeText={handleBuscar} />
+          <TextInput style={styles.buscador} placeholder="Buscar por ID, Nombre o CURP..." value={busqueda} onChangeText={handleBuscar} autoCapitalize="none" autoCorrect={false} />
           {loading ? (
             <ActivityIndicator size="large" color="#1e3a8a" style={{ flex: 1 }} />
           ) : (
@@ -120,7 +163,7 @@ export default function App() {
                 }}>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.nombre}>{item.nombre || 'Sin Nombre'}</Text>
-                    <Text style={styles.subtexto}><Text style={{fontWeight:'bold'}}>CURP:</Text> {item.curp}</Text>
+                    <Text style={styles.subtexto}><Text style={{fontWeight:'bold'}}>CURP:</Text> {item.curp || 'No registrado'}</Text>
                     <Text style={styles.subtexto}><Text style={{fontWeight:'bold'}}>Dom:</Text> {item.domicilioActual}</Text>
                     <Text style={styles.subtexto}><Text style={{fontWeight:'bold'}}>Mpio:</Text> {item.municipio} | <Text style={{fontWeight:'bold'}}>Cel:</Text> {item.telCel}</Text>
                   </View>
@@ -136,51 +179,38 @@ export default function App() {
         <ScrollView style={styles.formularioContainer}>
           <Text style={styles.formTitulo}>Actualizar Datos en Territorio</Text>
           <Text style={styles.nombreDerecho}>{seleccionado.nombre}</Text>
-          <Text style={styles.subtexto}>ID: {seleccionado.id} | CURP: {seleccionado.curp}</Text>
-
-          {/* Selector de Situación */}
+          <Text style={styles.subtexto}>ID: {seleccionado.id} | CURP: {seleccionado.curp || 'N/R'}</Text>
           <Text style={styles.label}>SITUACIÓN (Estatus en campo):</Text>
           <View style={styles.opcionesContainer}>
             {['LOCALIZADO', 'NO VIVE AHÍ', 'SE MUDÓ', 'NO EXISTE DOM.'].map((opcion) => (
-              <TouchableOpacity 
-                key={opcion} 
-                style={[styles.opcionBoton, situacion === opcion && styles.opcionSeleccionada]} 
-                onPress={() => setSituacion(opcion)}
-              >
+              <TouchableOpacity key={opcion} style={[styles.opcionBoton, situacion === opcion && styles.opcionSeleccionada]} onPress={() => setSituacion(opcion)}>
                 <Text style={[styles.opcionTexto, situacion === opcion && styles.opcionTextoSeleccionado]}>{opcion}</Text>
               </TouchableOpacity>
             ))}
           </View>
-
-          {/* Notas de Causal */}
           <Text style={styles.label}>CAUSAL (Nuevo Domicilio / Observaciones):</Text>
-          <TextInput 
-            style={[styles.input, styles.textArea]} 
-            placeholder="Introduce la nueva dirección completa o la razón por la que no se localizó..." 
-            value={causal} 
-            onChangeText={setCausal} 
-            multiline={true}
-            numberOfLines={4}
-          />
-
-          {/* Botones de acción */}
+          <TextInput style={[styles.input, styles.textArea]} placeholder="Introduce la nueva dirección completa..." value={causal} onChangeText={setCausal} multiline={true} numberOfLines={4} />
           <View style={styles.botonesContainer}>
-            <TouchableOpacity style={[styles.boton, styles.botonGuardar]} onPress={guardarDatos}>
-              <Text style={styles.botonTexto}>Guardar en Territorio</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.boton, styles.botonCancelar]} onPress={() => setSeleccionado(null)}>
-              <Text style={styles.botonTexto}>Regresar a la lista</Text>
-            </TouchableOpacity>
+            <TouchableOpacity style={[styles.boton, styles.botonGuardar]} onPress={guardarDatos}><Text style={styles.botonTexto}>Guardar en Territorio</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.boton, styles.botonCancelar]} onPress={() => setSeleccionado(null)}><Text style={styles.botonTexto}>Regresar a la lista</Text></TouchableOpacity>
           </View>
         </ScrollView>
       )}
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f3f4f6', paddingHorizontal: 15 },
-  titulo: { fontSize: 22, fontWeight: '800', textAlign: 'center', marginTop: 20, marginBottom: 15, color: '#621132', letterSpacing: 0.5 },
+  headerApp: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, marginBottom: 10 },
+  titulo: { fontSize: 20, fontWeight: '800', color: '#621132' },
+  botonSalir: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6, backgroundColor: '#e5e7eb' },
+  textoSalir: { fontSize: 12, color: '#4b5563', fontWeight: '600' },
+  loginCentrado: { flex: 1, backgroundColor: '#621132', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  loginTarjeta: { backgroundColor: '#ffffff', width: '100%', padding: 25, borderRadius: 16, alignItems: 'center', elevation: 5 },
+  loginSiglas: { fontSize: 42, fontWeight: '900', color: '#621132', marginBottom: 2 },
+  loginTituloSub: { fontSize: 16, color: '#4b5563', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 20 },
+  loginInstruccion: { fontSize: 14, color: '#374151', textAlign: 'center', marginBottom: 15, lineHeight: 20 },
+  loginInputMargin: { width: '100%', marginBottom: 20, textAlign: 'center', fontSize: 16, fontWeight: 'bold', letterSpacing: 1 },
   buscador: { backgroundColor: '#ffffff', paddingHorizontal: 16, paddingVertical: 14, borderRadius: 12, marginBottom: 16, fontSize: 16, borderWidth: 1, borderColor: '#e5e7eb', elevation: 2 },
   tarjeta: { backgroundColor: '#ffffff', padding: 16, borderRadius: 14, marginBottom: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderLeftWidth: 5, borderLeftColor: '#285c4d', elevation: 2 },
   nombre: { fontSize: 16, fontWeight: 'bold', color: '#1f2937', marginBottom: 4 },
