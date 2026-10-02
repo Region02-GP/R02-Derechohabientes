@@ -294,7 +294,10 @@ function saveData(event) {
     }
     
     const targetCurp = document.getElementById('f-curp').value;
-    const originalRecord = localMemoryDatabase.find(r => r.CURP === targetCurp) || {};
+    
+    // CORRECCIÓN VITAL: Buscamos el registro directamente en la memoria RAM activa
+    const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp);
+    const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
 
     const record = {
         CURP: targetCurp,
@@ -318,20 +321,34 @@ function saveData(event) {
         Longitud: lonValue,
         FECHA_MODIFICACION: new Date().toLocaleString("es-MX"),
         USUARIO_MODIFICA: currentUser.name,
-        SHEETS_ROW_INDEX: originalRecord.SHEETS_ROW_INDEX || "" // Índice de Fila Quirúrgico
+        SHEETS_ROW_INDEX: originalRecord.SHEETS_ROW_INDEX || ""
     };
 
+    // 1. Actualizar la base de datos física del teléfono
     const txUpdate = db.transaction(STORE_NAME, "readwrite");
     txUpdate.objectStore(STORE_NAME).put(record);
 
+    // 2. ACTUALIZACIÓN EN TIEMPO REAL: Sobreescribimos el registro en la memoria RAM activa
+    if (memoryIndex !== -1) {
+        localMemoryDatabase[memoryIndex] = record;
+    } else {
+        localMemoryDatabase.push(record);
+    }
+
+    // 3. Mandar a la cola temporal de sincronización
     pendingSync.push(record);
     localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
 
     alert("Confirmación: Modificación guardada localmente.");
+    
+    // Limpiar inputs del buscador
     document.getElementById('search-input').value = "";
     document.getElementById('search-results').innerHTML = "";
+    
+    // Regresamos a la pantalla de búsqueda
     changeScreen('screen-search');
 }
+
 // =========================================================================
 // PANTALLA 5: HISTORIAL DINÁMICO Y REPORTES DIRECTOS EN EXCEL/CSV
 // =========================================================================
