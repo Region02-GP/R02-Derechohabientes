@@ -141,7 +141,7 @@ async function downloadAllDataMassive() {
     }
 }
 // =========================================================================
-// MÓDULO 3: PANTALLA 3 (BUSCADOR FLEXIBLE MULTICRITERIO DE DOS COLORES)
+// MÓDULO 3: PANTALLA 3 (FILTRADO INTEGRAL Y ORDENAMIENTO POR NUM_EXT)
 // =========================================================================
 let localMemoryDatabase = [];
 
@@ -199,16 +199,18 @@ function searchData() {
     });
 
     const recordsToDisplay = matchedRecords.slice(0, 30);
-    renderSearchCards(recordsToDisplay, resultsContainer);
+    
+    // Llamada directa al renderizador unificado
+    ejecutarRenderTarjetas(recordsToDisplay, resultsContainer);
 
     if (matchedRecords.length === 0) {
         resultsContainer.innerHTML = "<div class='result-item' style='color: gray; text-align: center;'>No se encontraron derechohabientes.</div>";
     }
 }
 // =========================================================================
-// MÓDULO 4: RENDERIZADOR GRÁFICO CON CLASES DE COLOR DINÁMICAS
+// MÓDULO 4: INTERFAZ DINÁMICA (PINTADO VERDE/ROJO Y ACTIVADOR DE CLICS)
 // =========================================================================
-function renderSearchCards(records, container) {
+function ejecutarRenderTarjetas(records, container) {
     records.forEach(item => {
         const div = document.createElement('div');
         
@@ -253,10 +255,12 @@ function renderSearchCards(records, container) {
             </div>
         `;
         
-        div.onclick = () => openForm(item);
+        // VINCULACIÓN INMEDIATA: Ejecuta de forma directa el Módulo 5
+        div.onclick = function() { openForm(item); };
         container.appendChild(div);
     });
 }
+
 // =========================================================================
 // MÓDULO 5: PANTALLA 4 (CONTROL DE CAMPOS, GPS Y GUARDADO LOCAL CORREGIDO)
 // =========================================================================
