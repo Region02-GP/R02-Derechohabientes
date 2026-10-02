@@ -175,42 +175,18 @@ function preloadDatabaseToMemory() {
 // =========================================================================
 // PANTALLA 3: BUSCADOR MULTICRITERIO FLEXIBLE Y ORDENADO POR NUM EXT
 // =========================================================================
-function searchData() {
-    const query = document.getElementById('search-input').value.toLowerCase().trim();
-    const resultsContainer = document.getElementById('search-results');
-    resultsContainer.innerHTML = "";
-
-    // Requiere un mínimo de 3 letras para iniciar el barrido en la memoria RAM
-    if (query.length < 3) return;
-    if (localMemoryDatabase.length === 0) preloadDatabaseToMemory();
-
-    // FLEXIBILIDAD: Separar la búsqueda en palabras independientes (Tokens)
-    const searchTokens = query.split(/\s+/); 
-
-    let matchedRecords = [];
-
-    // 1. FASE DE FILTRADO MULTI-PALABRA
-    for (let i = 0; i < localMemoryDatabase.length; i++) {
-        const item = localMemoryDatabase[i];
-        if (!item) continue;
-
-        // Aseguramos cadenas de texto limpias y seguras
+        // Aseguramos cadenas de texto limpias y seguras de todos los campos clave
         const calle = item.CALLE ? String(item.CALLE).toLowerCase() : "";
+        const numExt = item.NUM_EXT ? String(item.NUM_EXT).toLowerCase() : "";
+        const colonia = item.COLONIA ? String(item.COLONIA).toLowerCase() : "";
         const nombre = item.NOMBRE ? String(item.NOMBRE).toLowerCase() : "";
         const curp = item.CURP ? String(item.CURP).toLowerCase() : "";
         const apPaterno = item.AP_PATERNO ? String(item.AP_PATERNO).toLowerCase() : "";
         const apMaterno = item.AP_MATERNO ? String(item.AP_MATERNO).toLowerCase() : "";
 
-        // Unificamos los 5 criterios solicitados en una sola cadena de búsqueda por registro
-        const combinedText = `${nombre} ${apPaterno} ${apMaterno} ${curp} ${calle}`;
+        // CORRECCIÓN DEFINITIVA: Incluimos el NUMERO EXTERIOR y la COLONIA en el universo de búsqueda
+        const combinedText = `${nombre} ${apPaterno} ${apMaterno} ${curp} ${calle} ${numExt} ${colonia}`;
 
-        // El registro es candidato si TODAS las palabras del buscador están en alguna parte del texto combinado
-        const isMatch = searchTokens.every(token => combinedText.includes(token));
-
-        if (isMatch) {
-            matchedRecords.push(item);
-        }
-    }
 
     // 2. FASE DE ORDENAMIENTO NUMÉRICO INTELIGENTE POR NUM_EXT
     matchedRecords.sort((a, b) => {
