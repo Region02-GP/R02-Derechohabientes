@@ -31,13 +31,14 @@ export default function App() {
   const [situacion, setSituacion] = useState('LOCALIZADO');
   const [causal, setCausal] = useState('');
   const cargarDatos = async () => {
+    setLoading(true);
     try {
       const response = await fetch(API_URL);
       const data = await response.json();
       setDerechohabientes(data);
       setFiltrados(data);
     } catch (error) {
-      console.log("Descarga de base de datos en proceso...");
+      console.log("Error o descarga inicial en proceso...");
     } finally {
       setLoading(false);
     }
@@ -46,25 +47,6 @@ export default function App() {
   useEffect(() => {
     cargarDatos();
   }, []);
-
-  // Función de acceso local e inmediata (No se cuelga esperando a la Sheet)
-  const manejarAcceso = () => {
-    const curpLimpia = curpAcceso.trim().toUpperCase();
-    
-    if (curpLimpia.length !== 18) {
-      Alert.alert("Acceso Denegado", "Por favor, ingresa una CURP válida de 18 caracteres.");
-      return;
-    }
-
-    const brigadistaEncontrado = BRIGADISTAS_AUTORIZADOS.find(u => u.curp === curpLimpia);
-
-    if (brigadistaEncontrado) {
-      setNombreBrigadista(brigadistaEncontrado.nombre); // Guarda el nombre para el saludo de bienvenida
-      setHaAccedido(true);
-    } else {
-      Alert.alert("Acceso Denegado", "Esta CURP no está autorizada para operar la aplicación R02.");
-    }
-  };
 
   const handleBuscar = (text) => {
     setBusqueda(text);
@@ -88,6 +70,24 @@ export default function App() {
     });
     setFiltrados(filtrados);
   };
+  const manejarAcceso = () => {
+    const curpLimpia = curpAcceso.trim().toUpperCase();
+    
+    if (curpLimpia.length !== 18) {
+      Alert.alert("Acceso Denegado", "Por favor, ingresa una CURP válida de 18 caracteres.");
+      return;
+    }
+
+    const brigadistaEncontrado = BRIGADISTAS_AUTORIZADOS.find(u => u.curp === curpLimpia);
+
+    if (brigadistaEncontrado) {
+      setNombreBrigadista(brigadistaEncontrado.nombre); // Asigna el saludo de bienvenida personalizado
+      setHaAccedido(true);
+    } else {
+      Alert.alert("Acceso Denegado", "Esta CURP no está autorizada para operar la aplicación R02.");
+    }
+  };
+
   const guardarDatos = async () => {
     if (!causal.trim()) {
       Alert.alert("R02-Derechohabientes", "Por favor introduce las notas o el nuevo domicilio.");
@@ -181,7 +181,7 @@ export default function App() {
               <TouchableOpacity style={styles.tarjeta} onPress={() => { 
                 setSeleccionado(item); 
                 setSituacion(item.situacion || 'LOCALIZADO');
-                setCausal(item.causal || ''); // <-- CORREGIDO AQUÍ (Antes causaba el bloqueo)
+                setCausal(item.causal || '');
               }}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.nombre}>{item.nombre || 'Sin Nombre'}</Text>
@@ -253,3 +253,4 @@ const styles = StyleSheet.create({
   botonCancelar: { backgroundColor: '#982236' },
   botonTexto: { color: '#ffffff', fontWeight: '700', fontSize: 16 }
 });
+
