@@ -49,10 +49,15 @@
             </div>
         </section>
 
-        <!-- PANTALLA 3: BUSCADOR MULTI-CRITERIO EN MEMORIA RAM CACHÉ -->
+             <!-- PANTALLA 3: BUSCADOR MULTI-CRITERIO EN MEMORIA RAM CACHÉ -->
         <section id="screen-search" class="app-screen hidden">
-            <h2>Búsqueda de Derechohabientes</h2>
-            <div class="form-group">
+            <!-- Barra de herramientas superior de la pantalla de búsqueda -->
+            <div class="screen-toolbar">
+                <h2>Búsqueda</h2>
+                <button type="button" onclick="openHistoryScreen()" class="btn-toolbar-history">📋 Historial</button>
+            </div>
+
+            <div class="form-group" style="margin-top: 15px;">
                 <input type="text" id="search-input" oninput="searchData()" placeholder="Buscar por Calle, Nombre, CURP o Apellidos...">
             </div>
             
@@ -61,11 +66,9 @@
                 <!-- Los resultados aparecerán dinámicamente aquí -->
             </div>
             
-            <div class="nav-buttons-stack">
-                <button type="button" onclick="openHistoryScreen()" class="btn-secondary">Historial y Sincronización</button>
-                <button type="button" onclick="changeScreen('screen-welcome')" class="btn-back">Volver al Menú</button>
-            </div>
+            <button type="button" onclick="changeScreen('screen-welcome')" class="btn-back">Volver al Menú Principal</button>
         </section>
+
 
         <!-- PANTALLA 4: FORMULARIO DE EDICIÓN Y CAPTURA GPS AUTOMÁTICA -->
         <section id="screen-form" class="app-screen hidden">
@@ -138,22 +141,23 @@
             </form>
         </section>
 
-        <!-- PANTALLA 5: HISTORIAL, CONTROL OFFLINE Y REPORTE ÚNICO CSV -->
+               <!-- PANTALLA 5: HISTORIAL, CONTROL OFFLINE Y REPORTES EXCEL/CSV -->
         <section id="screen-history" class="app-screen hidden">
             <h2>Historial y Sincronización</h2>
             <div class="metrics" style="background:#f7fafc; padding:15px; border-radius:4px; margin-bottom:15px; border-left:4px solid var(--primary-color);">
                 <p style="margin:0; font-size:15px;">Cambios pendientes por subir: <strong id="pending-count">0</strong></p>
             </div>
             
+            <!-- Cola de botones con el nuevo estilo dorado y negro -->
             <div class="action-buttons-stack">
                 <button type="button" onclick="syncWithSheets()" class="btn-sync">🔄 Sincronizar con Google Sheets</button>
-                <button type="button" onclick="downloadBackupCSV()" class="btn-sync" style="background-color: #1d7243;">📊 Descargar Avance del Día (Excel / CSV)</button>
+                <!-- Botón de Excel transformado de verde a Dorado y Negro -->
+                <button type="button" onclick="downloadBackupCSV()" class="btn-excel-gold">📊 Descargar Avance del Día (Excel / CSV)</button>
                 <button type="button" onclick="clearLocalStorage()" class="btn-danger">🗑️ Borrar Datos del Teléfono</button>
             </div>
             <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
             
             <h3>Registro de Visitas del Día</h3>
-            <!-- BITÁCORA DINÁMICA DONDE SE INYECTAN LAS VISITAS (⏳ PENDIENTES Y ✅ COMPLETADAS) -->
             <div id="history-log" class="log-list">
                 <!-- Se inyecta la bitácora desde JS -->
             </div>
