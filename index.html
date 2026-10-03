@@ -9,7 +9,6 @@
 </head>
 <body>
 
-    <!-- ENCABEZADO GENERAL CON ESTILO INSTITUCIONAL -->
     <header class="main-header">
         <h1>R02-Derechohabientes</h1>
     </header>
@@ -26,9 +25,8 @@
             <button type="button" onclick="login()">Ingresar</button>
         </section>
 
-              <!-- PANTALLA 2: BIENVENIDA Y CARGA TOTAL MASIVA INDEXADA -->
+        <!-- PANTALLA 2: BIENVENIDA Y CARGA TOTAL MASIVA INDEXADA -->
         <section id="screen-welcome" class="app-screen hidden">
-            <!-- Barra de herramientas superior idéntica a la Pantalla 3 -->
             <div class="screen-toolbar">
                 <h2 id="welcome-message">Bienvenido</h2>
                 <button type="button" onclick="openHistoryScreen()" class="btn-toolbar-history">📋 Historial</button>
@@ -38,7 +36,6 @@
                 <h3>Sincronización Inicial de Base de Datos</h3>
                 <p style="font-size:13px; color:#555; margin-bottom:15px;">Descarga los registros al teléfono para trabajar totalmente sin internet en campo.</p>
                 
-                <!-- CONTENEDOR Y BARRA DE PROGRESO DE DESCARGA MASIVA -->
                 <div id="progress-container" style="display:none; background:#eee; border-radius:4px; margin:10px 0; padding:2px;">
                     <div id="progress-bar" style="background:var(--primary-color); width:0%; height:15px; border-radius:4px; transition:width 0.2s;"></div>
                 </div>
@@ -47,16 +44,13 @@
                 <button type="button" onclick="downloadAllDataMassive()" id="btn-massive-download" class="btn-secondary">📥 Descargar Base Completa</button>
             </div>
             
-            <!-- Botón de navegación principal hacia el buscador -->
             <div class="nav-buttons">
                 <button type="button" onclick="changeScreen('screen-search')">Ir a Búsqueda de Derechohabientes</button>
             </div>
         </section>
 
-
-             <!-- PANTALLA 3: BUSCADOR MULTI-CRITERIO EN MEMORIA RAM CACHÉ -->
+        <!-- PANTALLA 3: BUSCADOR MULTI-CRITERIO EN MEMORIA RAM CACHÉ -->
         <section id="screen-search" class="app-screen hidden">
-            <!-- Barra de herramientas superior de la pantalla de búsqueda -->
             <div class="screen-toolbar">
                 <h2>Búsqueda</h2>
                 <button type="button" onclick="openHistoryScreen()" class="btn-toolbar-history">📋 Historial</button>
@@ -66,60 +60,45 @@
                 <input type="text" id="search-input" oninput="searchData()" placeholder="Buscar por Calle, Nombre, CURP o Apellidos...">
             </div>
             
-            <!-- CONTENEDOR DINÁMICO DONDE SE INYECTAN LOS RESULTADOS DE BÚSQUEDA -->
-            <div id="search-results" class="results-list">
-                <!-- Los resultados aparecerán dinámicamente aquí -->
-            </div>
+            <div id="search-results" class="results-list"></div>
             
             <button type="button" onclick="changeScreen('screen-welcome')" class="btn-back">Volver al Menú Principal</button>
         </section>
 
-
-               <!-- PANTALLA 4: FORMULARIO DE EDICIÓN, ESTATUS DE VISITA Y CAPTURA GPS -->
+        <!-- PANTALLA 4: FORMULARIO DE EDICIÓN, ESTATUS DE VISITA Y CAPTURA GPS -->
         <section id="screen-form" class="app-screen hidden">
             <h2>Actualización de Domicilio</h2>
             
-            <!-- NUEVA SECCIÓN: OPCIONES DE LOCALIZACIÓN VERTICALES -->
-           <!-- REVISA Y MODIFICA TUS BOTONES EN EL HTML PARA QUE QUEDEN ASÍ: -->
-<div class="flex space-x-2 mb-4">
-    <button type="button" id="btn-status-localizado" onclick="seleccionarEstatusVisita('LOCALIZADO')" class="flex-1 p-3 border rounded-lg font-bold">
-        LOCALIZADO
-    </button>
-    <button type="button" id="btn-status-nolocalizado" onclick="seleccionarEstatusVisita('NO LOCALIZADO')" class="flex-1 p-3 border rounded-lg font-bold">
-        NO LOCALIZADO
-    </button>
-</div>
-
-
-            <!-- CAMPO DINÁMICO: MOTIVO DE NO LOCALIZACIÓN (OCULTO POR DEFECTO) -->
-            <div id="motivo-container" class="form-group hidden">
-                <label for="f-motivo">Motivo por el que no fue localizado *:</label>
-                <textarea id="f-motivo" rows="2" placeholder="Escriba detalladamente el motivo..."></textarea>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button type="button" id="btn-status-localizado" onclick="seleccionarEstatusVisita('LOCALIZADO')" style="flex:1; padding:12px; font-weight:bold; border-radius:8px; border:1px solid #ddd;">
+                    LOCALIZADO
+                </button>
+                <button type="button" id="btn-status-nolocalizado" onclick="seleccionarEstatusVisita('NO LOCALIZADO')" style="flex:1; padding:12px; font-weight:bold; border-radius:8px; border:1px solid #ddd;">
+                    NO LOCALIZADO
+                </button>
             </div>
 
             <form id="edit-form" onsubmit="saveData(event)">
-                <!-- Contenedor interno para poder bloquear/desbloquear los campos dinámicamente -->
                 <div id="form-fields-wrapper">
-                    <!-- Datos No Editables -->
                     <div class="form-grid text-disabled">
                         <div><label>CURP:</label><input type="text" id="f-curp" readonly></div>
                         <div><label>ID:</label><input type="text" id="f-id" readonly></div>
                         <div><label>Nombre:</label><input type="text" id="f-nombre" readonly></div>
-                        <div><label>Ap. Paterno:</label><input type="text" id="f-ap paterno" readonly></div>
-                        <div><label>Ap. Materno:</label><input type="text" id="f-ap materno" readonly></div>
+                        <!-- CORRECCIÓN DE ESPACIOS EN LOS IDs EN ESTAS 5 LÍNEAS -->
+                        <div><label>Ap. Paterno:</label><input type="text" id="f-paterno" readonly></div>
+                        <div><label>Ap. Materno:</label><input type="text" id="f-materno" readonly></div>
                         <div><label>Situación:</label><input type="text" id="f-situacion" readonly></div>
                         <div><label>Causal:</label><input type="text" id="f-causal" readonly></div>
                     </div>
                     <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
                     
-                    <!-- Datos Editables y Obligatorios -->
                     <div class="form-group">
                         <label>Teléfono Fijo (10 dígitos):</label>
-                        <input type="tel" id="f-tel fijo" pattern="[0-9]{10}" maxlength="10">
+                        <input type="tel" id="f-telfijo" pattern="[0-9]{10}" maxlength="10">
                     </div>
                     <div class="form-group">
                         <label>Teléfono Celular (10 dígitos):</label>
-                        <input type="tel" id="f-tel cel" pattern="[0-9]{10}" maxlength="10">
+                        <input type="tel" id="f-telcel" pattern="[0-9]{10}" maxlength="10">
                     </div>
                     <div class="form-group">
                         <label>Municipio:</label>
@@ -147,7 +126,7 @@
                     </div>
                     <div class="form-group">
                         <label>Num Ext:</label>
-                        <input type="text" id="f-num ext">
+                        <input type="text" id="f-numext">
                     </div>
                     <div class="form-group">
                         <label>Referencia:</label>
@@ -157,7 +136,6 @@
 
                 <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
                 
-                <!-- Geolocalización en Tiempo Real (SIEMPRE ACTIVA Y OBLIGATORIA) -->
                 <div class="form-grid text-disabled">
                     <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
                     <div><label>Longitud GPS:</label><input type="text" id="f-lon" readonly></div>
@@ -167,19 +145,16 @@
                 <button type="button" onclick="changeScreen('screen-search')" class="btn-back">Cancelar</button>
             </form>
         </section>
-               <!-- PANTALLA 5: HISTORIAL, CONTROL OFFLINE Y REPORTES EXCEL/CSV -->
+
+        <!-- PANTALLA 5: HISTORIAL, CONTROL OFFLINE Y REPORTES -->
         <section id="screen-history" class="app-screen hidden">
             <h2>Historial y Sincronización</h2>
             <div class="metrics" style="background:#f7fafc; padding:15px; border-radius:4px; margin-bottom:15px; border-left:4px solid var(--primary-color);">
                 <p style="margin:0; font-size:15px;">Cambios pendientes por subir: <strong id="pending-count">0</strong></p>
             </div>
             
-                       <!-- Contenedor con distribución horizontal y botón de sincronizar guinda -->
             <div class="action-buttons-stack">
-                <!-- Cambiamos la clase btn-sync por btn-primary-guinda -->
                 <button type="button" onclick="syncWithSheets()" class="btn-primary-guinda">🔄 Sincronizar con Google Sheets</button>
-                
-                <!-- Fila de dos columnas para los botones horizontales de Respaldo y Limpieza -->
                 <div class="button-row-grid">
                     <button type="button" onclick="downloadBackupCSV()" class="btn-excel-gold" style="margin-top:0;">📊 Descargar Avance</button>
                     <button type="button" onclick="clearLocalStorage()" class="btn-excel-gold" style="margin-top:0;">🗑️ Borrar Datos</button>
@@ -187,15 +162,10 @@
             </div>
 
             <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-            
             <h3>Registro de Visitas del Día</h3>
-            <div id="history-log" class="log-list">
-                <!-- Se inyecta la bitácora desde JS -->
-            </div>
-            
+            <div id="history-log" class="log-list"></div>
             <button type="button" onclick="goBackFromHistory()" class="btn-back">Volver</button>
         </section>
-
     </main>
 
     <script src="app.js"></script>
