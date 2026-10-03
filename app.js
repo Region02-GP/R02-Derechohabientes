@@ -3,7 +3,7 @@
 // =========================================================================
 
 // URL del Web App de Google Apps Script 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPiMZOcIQ4-aCDggXa4sdrEzrsRMEXM2_iKeL4oNQWMNOsCxrwto7TXkMY12ICf5En/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzCQUpzNGcM0B81MUEH1LlV7peyw-j7IQ2xmtsuSilSGVbCNV2AjK3la_hTLc2am2ss/exec";
 
 // CURPs Autorizadas en Código para la Pantalla de Acceso (Pantalla 1)
 const AUTHORIZED_CURPS = {
@@ -15,6 +15,10 @@ let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
 let currentUser = null;
 let previousScreen = 'screen-welcome';
+
+// VARIABLES PARA LOS BOTONES DE LOCALIZADO / NO LOCALIZADO
+let currentEstatusVisita = "LOCALIZADO"; 
+let motivoNoLocalizadoValue = "";        
 
 // =========================================================================
 // INITIALIZACIÓN DE INDEXEDDB (Base de Datos Local para soporte masivo)
@@ -201,7 +205,6 @@ function searchData() {
     recordsToDisplay.forEach(item => {
         const div = document.createElement('div');
         
-        // CORRECCIÓN MULTI-VARIANTE: Buscamos el dato sin importar si viene como "Latitud" o "latitud"
         const coordenadaLat = item.Latitud || item.latitud || "";
         const coordenadaLon = item.Longitud || item.longitud || "";
 
@@ -211,7 +214,6 @@ function searchData() {
         const yaSincronizadoOModificado = tieneLat && tieneLon;
         const estaEnColaPendiente = pendingSync.some(p => p.CURP === item.CURP);
         
-        // El registro se considera visitado si ya tenía coordenadas en Sheets o si se editó hoy
         const fueVisitado = yaSincronizadoOModificado || estaEnColaPendiente;
 
         div.className = fueVisitado ? "result-item status-visitado" : "result-item";
@@ -246,6 +248,25 @@ function searchData() {
         resultsContainer.innerHTML = "<div class='result-item' style='color: gray; text-align: center;'>No se encontraron derechohabientes.</div>";
     }
 }
+// CONTROLADORA PARA CAPTURAR EL MOTIVO MEDIANTE CUADRO DE DIÁLOGO
+function seleccionarEstatusVisita(estatus) {
+    currentEstatusVisita = estatus.toUpperCase();
+    
+    if (currentEstatusVisita === "NO LOCALIZADO") {
+        let motivoInput = prompt("Escriba el motivo por el cual el derechohabiente NO FUE LOCALIZADO:");
+        
+        if (motivoInput === null || motivoInput.trim() === "") {
+            alert("🛑 Operación cancelada: Debe ingresar un motivo válido.");
+            currentEstatusVisita = "LOCALIZADO"; 
+            motivoNoLocalizadoValue = "";
+            return;
+        }
+        motivoNoLocalizadoValue = motivoInput.trim();
+        alert(`Motivo registrado: "${motivoNoLocalizadoValue}"`);
+    } else {
+        motivoNoLocalizadoValue = ""; 
+    }
+}
 
 function openForm(item) {
     document.getElementById('f-curp').value = item.CURP || '';
@@ -267,15 +288,8 @@ function openForm(item) {
     document.getElementById('f-numext').value = item.NUM_EXT || '';
     document.getElementById('f-referencia').value = item.REFERENCIA || '';
 
-    // NUEVAS COLUMNAS: Inicialización en el formulario
-    // Asume que tienes un input/select para el motivo en tu HTML con ID 'f-motivo'
-    if (document.getElementById('f-motivo')) {
-        document.getElementById('f-motivo').value = item.MOTIVO_NO_LOCALIZADO || '';
-    }
-
-    // Lógica para activar visualmente el botón guardado previamente
-    const estatusPrevio = item.ESTATUS_VISITA || 'LOCALIZADO';
-    setEstatusVisitaButtons(estatusPrevio);
+    currentEstatusVisita = item.ESTATUS_VISITA || "LOCALIZADO";
+    motivoNoLocalizadoValue = item.MOTIVO_NO_LOCALIZADO || "";
 
     document.getElementById('f-lat').value = "Buscando satélite...";
     document.getElementById('f-lon').value = "Buscando satélite...";
@@ -304,31 +318,6 @@ function openForm(item) {
     changeScreen('screen-form');
 }
 
-// FUNCIÓN AUXILIAR: Cambia el valor y diseño de tus dos botones en el HTML
-let currentEstatusVisita = "LOCALIZADO";
-function setEstatusVisitaButtons(status) {
-    currentEstatusVisita = status.toUpperCase();
-    const btnLocalizado = document.getElementById('btn-status-localizado');
-    const btnNoLocalizado = document.getElementById('btn-status-nolocalizado');
-    const contenedorMotivo = document.getElementById('container-motivo-nolocalizado'); // Contenedor HTML para ocultar/mostrar el campo del motivo
-    
-    if (!btnLocalizado || !btnNoLocalizado) return;
-
-    if (currentEstatusVisita === 'LOCALIZADO') {
-        btnLocalizado.style.backgroundColor = "#236947"; // Verde activo
-        btnLocalizado.style.color = "#ffffff";
-        btnNoLocalizado.style.backgroundColor = "#e5e7eb"; // Gris inactivo
-        btnNoLocalizado.style.color = "#374151";
-        if (contenedorMotivo) contenedorMotivo.classList.add('hidden');
-    } else {
-        btnNoLocalizado.style.backgroundColor = "#b91c1c"; // Rojo activo
-        btnNoLocalizado.style.color = "#ffffff";
-        btnLocalizado.style.backgroundColor = "#e5e7eb"; // Gris inactivo
-        btnLocalizado.style.color = "#374151";
-        if (contenedorMotivo) contenedorMotivo.classList.remove('hidden');
-    }
-}
-
 function saveData(event) {
     event.preventDefault();
     const latValue = document.getElementById('f-lat').value;
@@ -342,14 +331,6 @@ function saveData(event) {
     const targetCurp = document.getElementById('f-curp').value;
     const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp);
     const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
-
-    const motivoInput = document.getElementById('f-motivo');
-    const motivoValue = (currentEstatusVisita === "NO LOCALIZADO" && motivoInput) ? motivoInput.value.trim() : "";
-
-    if (currentEstatusVisita === "NO LOCALIZADO" && !motivoValue) {
-        alert("🛑 BLOQUEO: Si el derechohabiente no fue localizado, debes especificar el motivo.");
-        return;
-    }
 
     const record = {
         CURP: targetCurp,
@@ -370,10 +351,9 @@ function saveData(event) {
         SITUACION: document.getElementById('f-situacion').value,
         CUSAL: document.getElementById('f-causal').value,
         
-        // LAS DOS NUEVAS COLUMNAS SOLICITADAS (Completan el intervalo de 23 columnas)
         ESTATUS_VISITA: currentEstatusVisita,
-        MOTIVO_NO_LOCALIZADO: motivoValue,
-
+        MOTIVO_NO_LOCALIZADO: motivoNoLocalizadoValue,
+        
         Latitud: latValue,
         Longitud: lonValue,
         FECHA_MODIFICACION: new Date().toLocaleString("es-MX"),
@@ -398,7 +378,6 @@ function saveData(event) {
     document.getElementById('search-results').innerHTML = "";
     changeScreen('screen-search');
 }
-
 // =========================================================================
 // MÓDULO 4: PANTALLA 5 (HISTORIAL, SINCRONIZACIÓN Y OFFLINE)
 // =========================================================================
@@ -467,7 +446,6 @@ function downloadBackupCSV() {
         return alert("No tienes ningún registro de visita para exportar hoy.");
     }
 
-    // Agregamos los dos nuevos campos al arreglo de cabeceras
     const headers = [
         "CURP", "ID", "NOMBRE", "AP_PATERNO", "AP_MATERNO", "TEL_FIJO", "TEL_CEL", 
         "MUNICIPIO", "LOCALIDAD", "SECCION", "COLONIA", "CP", "CALLE", "NUM_EXT", 
@@ -504,7 +482,6 @@ function downloadBackupCSV() {
     document.body.removeChild(downloadAnchor);
     URL.revokeObjectURL(url);
 }
-
 
 function clearLocalStorage() {
     if (confirm("¿Estás seguro de vaciar la memoria? Perderás los registros pendientes y el historial del día.")) {
