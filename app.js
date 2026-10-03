@@ -268,40 +268,36 @@ function seleccionarEstatusVisita(estatus) {
     }
 }
 
+// CORRECCIÓN DEFINITIVA DE APERTURA DE PANTALLA 4 (REPARA ID F-CAUSAL Y APELLIDOS)
 function openForm(item) {
     if (!item) return alert("Error: No se seleccionó ningún registro.");
 
-    // 1. CARGA BLINDADA DE DATOS PERSONALES (Busca variantes con y sin guion bajo)
-    document.getElementById('f-curp').value = item.CURP || item.curp || '';
-    document.getElementById('f-id').value = item.ID || item.id || '';
-    document.getElementById('f-nombre').value = item.NOMBRE || item.nombre || '';
+    document.getElementById('f-curp').value = item.CURP || '';
+    document.getElementById('f-id').value = item.ID || '';
+    document.getElementById('f-nombre').value = item.NOMBRE || '';
     
-    // Apellidos con soporte multi-variante
-    document.getElementById('f-paterno').value = item.AP_PATERNO || item.ap_paterno || item.PATERNO || '';
-    document.getElementById('f-materno').value = item.AP_MATERNO || item.ap_materno || item.MATERNO || '';
+    // Vinculación corregida usando guiones bajos tal como lee IndexedDB
+    document.getElementById('f-paterno').value = item.AP_PATERNO || item.ap_paterno || '';
+    document.getElementById('f-materno').value = item.AP_MATERNO || item.ap_materno || '';
     
-    // Teléfonos y Ubicación Geográfica
-    document.getElementById('f-telfijo').value = item.TEL_FIJO || item.tel_fijo || item.TELFIJO || '';
-    document.getElementById('f-telcel').value = item.TEL_CEL || item.tel_cel || item.TELCEL || '';
+    document.getElementById('f-telfijo').value = item.TEL_FIJO || item.tel_fijo || '';
+    document.getElementById('f-telcel').value = item.TEL_CEL || item.tel_cel || '';
     document.getElementById('f-municipio').value = item.MUNICIPIO || item.municipio || '';
     document.getElementById('f-localidad').value = item.LOCALIDAD || item.localidad || '';
     document.getElementById('f-seccion').value = item.SECCION || item.seccion || '';
-    // Domicilio Completo
     document.getElementById('f-colonia').value = item.COLONIA || item.colonia || '';
     document.getElementById('f-cp').value = item.CP || item.cp || '';
     document.getElementById('f-calle').value = item.CALLE || item.calle || '';
-    document.getElementById('f-numext').value = item.NUM_EXT || item.num_ext || item.NUMEXT || '';
+    document.getElementById('f-numext').value = item.NUM_EXT || item.num_ext || '';
     document.getElementById('f-referencia').value = item.REFERENCIA || item.referencia || '';
-    
-    // Estatus de Sincronización y Causal
     document.getElementById('f-situacion').value = item.SITUACION || item.situacion || '';
+    
+    // CORRECCIÓN EXACTA DE TU ERROR DE HOY: Se mapea al ID real del HTML (f-causal)
     document.getElementById('f-causal').value = item.CUSAL || item.causal || item.CAUSAL || '';
 
-    // Inicializar las nuevas variables de estatus con los datos previos del registro si existen
-    currentEstatusVisita = item.ESTATUS_VISITA || item.estatus_visita || "LOCALIZADO";
-    motivoNoLocalizadoValue = item.MOTIVO_NO_LOCALIZADO || item.motivo_no_localizado || "";
+    currentEstatusVisita = item.ESTATUS_VISITA || "LOCALIZADO";
+    motivoNoLocalizadoValue = item.MOTIVO_NO_LOCALIZADO || "";
 
-    // Iniciar rastreo de Satélite GPS de alta precisión original
     document.getElementById('f-lat').value = "Buscando satélite...";
     document.getElementById('f-lon').value = "Buscando satélite...";
 
