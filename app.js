@@ -267,6 +267,16 @@ function openForm(item) {
     document.getElementById('f-numext').value = item.NUM_EXT || '';
     document.getElementById('f-referencia').value = item.REFERENCIA || '';
 
+    // NUEVAS COLUMNAS: Inicialización en el formulario
+    // Asume que tienes un input/select para el motivo en tu HTML con ID 'f-motivo'
+    if (document.getElementById('f-motivo')) {
+        document.getElementById('f-motivo').value = item.MOTIVO_NO_LOCALIZADO || '';
+    }
+
+    // Lógica para activar visualmente el botón guardado previamente
+    const estatusPrevio = item.ESTATUS_VISITA || 'LOCALIZADO';
+    setEstatusVisitaButtons(estatusPrevio);
+
     document.getElementById('f-lat').value = "Buscando satélite...";
     document.getElementById('f-lon').value = "Buscando satélite...";
 
@@ -294,6 +304,31 @@ function openForm(item) {
     changeScreen('screen-form');
 }
 
+// FUNCIÓN AUXILIAR: Cambia el valor y diseño de tus dos botones en el HTML
+let currentEstatusVisita = "LOCALIZADO";
+function setEstatusVisitaButtons(status) {
+    currentEstatusVisita = status.toUpperCase();
+    const btnLocalizado = document.getElementById('btn-status-localizado');
+    const btnNoLocalizado = document.getElementById('btn-status-nolocalizado');
+    const contenedorMotivo = document.getElementById('container-motivo-nolocalizado'); // Contenedor HTML para ocultar/mostrar el campo del motivo
+    
+    if (!btnLocalizado || !btnNoLocalizado) return;
+
+    if (currentEstatusVisita === 'LOCALIZADO') {
+        btnLocalizado.style.backgroundColor = "#236947"; // Verde activo
+        btnLocalizado.style.color = "#ffffff";
+        btnNoLocalizado.style.backgroundColor = "#e5e7eb"; // Gris inactivo
+        btnNoLocalizado.style.color = "#374151";
+        if (contenedorMotivo) contenedorMotivo.classList.add('hidden');
+    } else {
+        btnNoLocalizado.style.backgroundColor = "#b91c1c"; // Rojo activo
+        btnNoLocalizado.style.color = "#ffffff";
+        btnLocalizado.style.backgroundColor = "#e5e7eb"; // Gris inactivo
+        btnLocalizado.style.color = "#374151";
+        if (contenedorMotivo) contenedorMotivo.classList.remove('hidden');
+    }
+}
+
 function saveData(event) {
     event.preventDefault();
     const latValue = document.getElementById('f-lat').value;
@@ -307,6 +342,14 @@ function saveData(event) {
     const targetCurp = document.getElementById('f-curp').value;
     const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp);
     const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
+
+    const motivoInput = document.getElementById('f-motivo');
+    const motivoValue = (currentEstatusVisita === "NO LOCALIZADO" && motivoInput) ? motivoInput.value.trim() : "";
+
+    if (currentEstatusVisita === "NO LOCALIZADO" && !motivoValue) {
+        alert("🛑 BLOQUEO: Si el derechohabiente no fue localizado, debes especificar el motivo.");
+        return;
+    }
 
     const record = {
         CURP: targetCurp,
@@ -326,6 +369,11 @@ function saveData(event) {
         REFERENCIA: document.getElementById('f-referencia').value,
         SITUACION: document.getElementById('f-situacion').value,
         CUSAL: document.getElementById('f-causal').value,
+        
+        // LAS DOS NUEVAS COLUMNAS SOLICITADAS (Completan el intervalo de 23 columnas)
+        ESTATUS_VISITA: currentEstatusVisita,
+        MOTIVO_NO_LOCALIZADO: motivoValue,
+
         Latitud: latValue,
         Longitud: lonValue,
         FECHA_MODIFICACION: new Date().toLocaleString("es-MX"),
@@ -350,6 +398,7 @@ function saveData(event) {
     document.getElementById('search-results').innerHTML = "";
     changeScreen('screen-search');
 }
+
 // =========================================================================
 // MÓDULO 4: PANTALLA 5 (HISTORIAL, SINCRONIZACIÓN Y OFFLINE)
 // =========================================================================
@@ -418,10 +467,12 @@ function downloadBackupCSV() {
         return alert("No tienes ningún registro de visita para exportar hoy.");
     }
 
+    // Agregamos los dos nuevos campos al arreglo de cabeceras
     const headers = [
         "CURP", "ID", "NOMBRE", "AP_PATERNO", "AP_MATERNO", "TEL_FIJO", "TEL_CEL", 
         "MUNICIPIO", "LOCALIDAD", "SECCION", "COLONIA", "CP", "CALLE", "NUM_EXT", 
-        "REFERENCIA", "SITUACION", "CUSAL", "Latitud", "Longitud", "FECHA_MODIFICACION", "USUARIO_MODIFICA"
+        "REFERENCIA", "SITUACION", "CUSAL", "ESTATUS_VISITA", "MOTIVO_NO_LOCALIZADO", 
+        "Latitud", "Longitud", "FECHA_MODIFICACION", "USUARIO_MODIFICA"
     ];
 
     let csvRows = [headers.join(",")];
@@ -453,6 +504,7 @@ function downloadBackupCSV() {
     document.body.removeChild(downloadAnchor);
     URL.revokeObjectURL(url);
 }
+
 
 function clearLocalStorage() {
     if (confirm("¿Estás seguro de vaciar la memoria? Perderás los registros pendientes y el historial del día.")) {
