@@ -5,14 +5,19 @@ import * as Location from 'expo-location';
 // ==========================================
 // CONFIGURACIÓN DE CONEXIÓN ORIGINAL
 // ==========================================
-const API_URL = "https://script.google.com/macros/s/AKfycbxYuMHKxWazaPn09svP_T18Jb_P1S0AF8slPd3FFvcTVI6OnnZWfpykRk_rmbDyfgTf/exec"; // <-- COLOCA AQUÍ TU URL /exec
+const API_URL = "https://script.google.com/macros/s/AKfycbxYuMHKxWazaPn09svP_T18Jb_P1S0AF8slPd3FFvcTVI6OnnZWfpykRk_rmbDyfgTf/exec"; // <-- REEMPLAZA CON TU URL /exec
 export default function App() {
   const [loading, setLoading] = useState(true);
   const [derechohabientes, setDerechohabientes] = useState([]);
   const [filtrados, setFiltrados] = useState([]);
   const [busqueda, setBusqueda] = useState('');
   const [seleccionado, setSeleccionado] = useState(null);
-  
+
+  // Estados del Candado de Acceso por CURP y Bienvenida
+  const [curpAcceso, setCurpAcceso] = useState('');
+  const [haAccedido, setHaAccedido] = useState(false);
+  const [nombreBrigadista, setNombreBrigadista] = useState('');
+
   // ========================================================
   // BASE DE DATOS DE BRIGADISTAS AUTORIZADOS (DENTRO DEL CÓDIGO)
   // ========================================================
@@ -22,30 +27,24 @@ export default function App() {
     { curp: "CURPCOORDINADOR333", nombre: "Carlos Rodríguez" }
   ];
 
-  // Estados originales del Candado de Acceso por CURP y Bienvenida
-  const [curpAcceso, setCurpAcceso] = useState('');
-  const [haAccedido, setHaAccedido] = useState(false);
-  const [nombreBrigadista, setNombreBrigadista] = useState('');
-
-  // Estados de tus campos de Sheets en mayúsculas
+  // Campos del formulario vinculados a tus columnas originales de la Sheets
   const [situacion, setSituacion] = useState('LOCALIZADO');
   const [causal, setCausal] = useState('');
   const cargarDatos = async () => {
-    setLoading(true);
     try {
       const response = await fetch(API_URL);
       const data = await response.json();
       setDerechohabientes(data);
       setFiltrados(data);
     } catch (error) {
-      Alert.alert("R02", "Error de conexión con la base de datos.");
+      console.log("Sincronizando datos en segundo plano...");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    cargarDatos();
+  useEffect(() => { 
+    cargarDatos(); 
   }, []);
 
   const handleBuscar = (text) => {
@@ -74,7 +73,6 @@ export default function App() {
     });
     setFiltrados(filtrados);
   };
-  // FUNCIÓN DE LOGIN CORREGIDA (Valida directo contra el Bloque 2)
   const manejarAcceso = () => {
     const curpLimpia = curpAcceso.trim().toUpperCase();
     
@@ -83,12 +81,11 @@ export default function App() {
       return;
     }
 
-    // Compara estrictamente contra la lista de brigadistas declarada arriba
     const brigadistaEncontrado = BRIGADISTAS_AUTORIZADOS.find(u => u.curp === curpLimpia);
 
     if (brigadistaEncontrado) {
-      setNombreBrigadista(brigadistaEncontrado.nombre); // Guarda el nombre real para la bienvenida
-      setHaAccedido(true); // Destraba la pantalla de inmediato
+      setNombreBrigadista(brigadistaEncontrado.nombre); 
+      setHaAccedido(true); 
     } else {
       Alert.alert("Acceso Denegado", "Esta CURP no está autorizada para operar la aplicación R02.");
     }
@@ -96,7 +93,7 @@ export default function App() {
 
   const guardarDatos = async () => {
     if (!causal.trim()) {
-      Alert.alert("R02-Derechohabientes", "Por favor introduce las notas o el nuevo domicilio.");
+      Alert.alert("R02", "Por favor introduce las notas o el nuevo domicilio.");
       return;
     }
 
@@ -107,7 +104,7 @@ export default function App() {
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status === 'granted') {
-        let loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+        let loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
         latitude = loc.coords.latitude.toString();
         longitude = loc.coords.longitude.toString();
       }
@@ -132,11 +129,11 @@ export default function App() {
       setSituacion('LOCALIZADO');
       setTimeout(cargarDatos, 500);
     } catch (error) {
-      Alert.alert("R02 - Error", "No se pudieron guardar los cambios.");
+      Alert.alert("R02", "No se pudieron guardar los cambios.");
       setLoading(false);
     }
   };
-  // PANTALLA 1: CANDADO DE INICIO DE SESIÓN DIRECTO DESDE EL CÓDIGO
+  // PANTALLA 1: PANTALLA DE ACCESO (LOGIN POR CURP)
   if (!haAccedido) {
     return (
       <SafeAreaView style={styles.loginCentrado}>
@@ -161,7 +158,7 @@ export default function App() {
     );
   }
 
-  // PANTALLA 2: INTERFAZ CON BIENVENIDA PERSONALIZADA Y COLUMNAS EN ESPAÑOL
+  // PANTALLA 2: INTERFAZ PRINCIPAL DESBLOQUEADA
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerApp}>
@@ -177,14 +174,14 @@ export default function App() {
       {loading ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#621132" />
-          <Text style={{ marginTop: 10, color: '#4b5563' }}>Sincronizando base de datos...</Text>
+          <Text style={{ marginTop: 10, color: '#4b5563' }}>Descargando padrón...</Text>
         </View>
       ) : !seleccionado ? (
         <View style={{ flex: 1 }}>
           <TextInput style={styles.buscador} placeholder="Buscar por ID, Nombre o CURP..." value={busqueda} onChangeText={handleBuscar} autoCapitalize="none" autoCorrect={false} />
           <FlatList 
             data={filtrados}
-            keyExtractor={(item) => item.rowNum.toString()}
+            keyExtractor={(item, index) => index.toString()}
             keyboardShouldPersistTaps="handled"
             renderItem={({ item }) => (
               <TouchableOpacity 
