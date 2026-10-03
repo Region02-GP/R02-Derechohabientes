@@ -3,7 +3,7 @@
 // =========================================================================
 
 // URL del Web App de Google Apps Script 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyBFzP8muJhXZsyHWeCmRrW_Yzev1yknhm9yVjH88tphPka4cjF7hYAPNPkCd_O3UOW/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxYuMHKxWazaPn09svP_T18Jb_P1S0AF8slPd3FFvcTVI6OnnZWfpykRk_rmbDyfgTf/exec";
 
 // CURPs Autorizadas en Código para la Pantalla de Acceso (Pantalla 1)
 const AUTHORIZED_CURPS = {
@@ -43,6 +43,7 @@ request.onsuccess = (e) => {
 request.onerror = (e) => {
     console.error("Error al abrir IndexedDB:", e.target.error);
 };
+
 // NAVEGACIÓN GENERAL ENTRE PANTALLAS
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') {
@@ -54,7 +55,6 @@ function changeScreen(screenId) {
     document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
     document.getElementById(screenId).classList.remove('hidden');
 }
-
 // =========================================================================
 // MÓDULO 2: PANTALLA 1 (LOGIN) Y PANTALLA 2 (DESCARGA)
 // =========================================================================
@@ -68,6 +68,7 @@ function login() {
         alert("CURP no autorizada o inválida en el sistema.");
     }
 }
+
 async function downloadAllDataMassive() {
     const btn = document.getElementById('btn-massive-download');
     const progressContainer = document.getElementById('progress-container');
@@ -181,6 +182,7 @@ function searchData() {
             matchedRecords.push(item);
         }
     }
+
     matchedRecords.sort((a, b) => {
         const valA = a.NUM_EXT ? String(a.NUM_EXT).trim() : "";
         const valB = b.NUM_EXT ? String(b.NUM_EXT).trim() : "";
@@ -194,30 +196,282 @@ function searchData() {
         return numA - numB;
     });
 
-    // Pinta las tarjetas resultantes en la interfaz de usuario
-    matchedRecords.forEach(record => {
+    const recordsToDisplay = matchedRecords.slice(0, 30);
+
+    recordsToDisplay.forEach(item => {
         const div = document.createElement('div');
-        div.className = "p-4 border-b bg-white rounded-lg shadow-sm mb-2 cursor-pointer hover:bg-gray-50 transition";
-        div.onclick = () => {
-            // Lógica original para abrir tu formulario pasándole el registro completo
-            openUpdateForm(record); 
-        };
+        
+        // CORRECCIÓN MULTI-VARIANTE: Buscamos el dato sin importar si viene como "Latitud" o "latitud"
+        const coordenadaLat = item.Latitud || item.latitud || "";
+        const coordenadaLon = item.Longitud || item.longitud || "";
+
+        const tieneLat = coordenadaLat !== "" && coordenadaLat !== "0" && coordenadaLat !== "ERROR" && !String(coordenadaLat).includes("Buscando");
+        const tieneLon = coordenadaLon !== "" && coordenadaLon !== "0" && coordenadaLon !== "ERROR" && !String(coordenadaLon).includes("Buscando");
+        
+        const yaSincronizadoOModificado = tieneLat && tieneLon;
+        const estaEnColaPendiente = pendingSync.some(p => p.CURP === item.CURP);
+        
+        // El registro se considera visitado si ya tenía coordenadas en Sheets o si se editó hoy
+        const fueVisitado = yaSincronizadoOModificado || estaEnColaPendiente;
+
+        div.className = fueVisitado ? "result-item status-visitado" : "result-item";
+        
+        const displayNombre = item.NOMBRE ? String(item.NOMBRE).trim() : '';
+        const displayPaterno = item.AP_PATERNO ? String(item.AP_PATERNO).trim() : '';
+        const displayMaterno = item.AP_MATERNO ? String(item.AP_MATERNO).trim() : '';
+        const displayCurp = item.CURP ? String(item.CURP).trim() : 'SIN CURP';
+        const displayCalle = item.CALLE ? String(item.CALLE).trim() : 'Calle no reg.';
+        const displayNumExt = item.NUM_EXT ? `No. ${String(item.NUM_EXT).trim()}` : 'S/N';
+        const displayColonia = item.COLONIA ? String(item.COLONIA).trim() : 'Colonia no reg.';
+        
+        const indicadorTexto = fueVisitado ? ' <span style="color:#236947; font-weight:bold; font-size:12px; margin-left:5px;">✓ Actualizado</span>' : '';
+
         div.innerHTML = `
-            <div class="flex justify-between items-start">
-                <div>
-                    <p class="font-bold text-gray-900">${record.NOMBRE || ''} ${record.AP_PATERNO || ''} ${record.AP_MATERNO || ''}</p>
-                    <p class="text-xs text-gray-500 mt-1">CURP: ${record.CURP || ''} | ID: ${record.ID || ''}</p>
-                    <p class="text-xs text-gray-700 mt-1"><b>Dom:</b> Calle ${record.CALLE || ''} Num. ${record.NUM_EXT || ''}, Col. ${record.COLONIA || ''}</p>
-                </div>
-                <span class="text-xs px-2 py-1 rounded-full font-bold ${record.SITUACION ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
-                    ${record.SITUACION || 'PENDIENTE'}
-                </span>
+            <div style="font-size:16px; font-weight:700; color:var(--dark-color); margin-bottom:2px;">
+                ${displayNombre} ${displayPaterno} ${displayMaterno}${indicadorTexto}
+            </div>
+            <div style="font-size:13px; font-weight:600; color:var(--primary-color); margin-bottom:4px; letter-spacing:0.3px;">
+                CURP: ${displayCurp}
+            </div>
+            <div style="font-size:13px; color:#555555;">
+                📍 ${displayCalle}, ${displayNumExt}, Col. ${displayColonia}
             </div>
         `;
+        
+        div.onclick = () => openForm(item);
         resultsContainer.appendChild(div);
     });
 
     if (matchedRecords.length === 0) {
-        resultsContainer.innerHTML = '<p class="text-gray-500 text-center py-4">No se encontraron coincidencias en la base offline.</p>';
+        resultsContainer.innerHTML = "<div class='result-item' style='color: gray; text-align: center;'>No se encontraron derechohabientes.</div>";
     }
+}
+
+function openForm(item) {
+    document.getElementById('f-curp').value = item.CURP || '';
+    document.getElementById('f-id').value = item.ID || '';
+    document.getElementById('f-nombre').value = item.NOMBRE || '';
+    document.getElementById('f-paterno').value = item.AP_PATERNO || '';
+    document.getElementById('f-materno').value = item.AP_MATERNO || '';
+    document.getElementById('f-situacion').value = item.SITUACION || '';
+    document.getElementById('f-causal').value = item.CUSAL || '';
+    
+    document.getElementById('f-telfijo').value = item.TEL_FIJO || '';
+    document.getElementById('f-telcel').value = item.TEL_CEL || '';
+    document.getElementById('f-municipio').value = item.MUNICIPIO || '';
+    document.getElementById('f-localidad').value = item.LOCALIDAD || '';
+    document.getElementById('f-seccion').value = item.SECCION || '';
+    document.getElementById('f-colonia').value = item.COLONIA || '';
+    document.getElementById('f-cp').value = item.CP || '';
+    document.getElementById('f-calle').value = item.CALLE || '';
+    document.getElementById('f-numext').value = item.NUM_EXT || '';
+    document.getElementById('f-referencia').value = item.REFERENCIA || '';
+
+    document.getElementById('f-lat').value = "Buscando satélite...";
+    document.getElementById('f-lon').value = "Buscando satélite...";
+
+    const gpsOptions = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                let cleanLat = String(position.coords.latitude.toFixed(6)).replace(",", ".");
+                let cleanLon = String(position.coords.longitude.toFixed(6)).replace(",", ".");
+                document.getElementById('f-lat').value = cleanLat;
+                document.getElementById('f-lon').value = cleanLon;
+            },
+            (error) => { 
+                document.getElementById('f-lat').value = "ERROR";
+                document.getElementById('f-lon').value = "ERROR";
+                alert("Atención: Otorgue permisos de ubicación para capturar la georreferencia.");
+            },
+            gpsOptions
+        );
+    } else {
+        document.getElementById('f-lat').value = "NO COMPATIBLE";
+        document.getElementById('f-lon').value = "NO COMPATIBLE";
+    }
+    changeScreen('screen-form');
+}
+
+function saveData(event) {
+    event.preventDefault();
+    const latValue = document.getElementById('f-lat').value;
+    const lonValue = document.getElementById('f-lon').value;
+
+    if (latValue.includes("Buscando") || latValue === "" || latValue === "ERROR" || latValue === "NO COMPATIBLE") {
+        alert("🛑 BLOQUEO: No se puede guardar el registro sin la georreferencia del domicilio.");
+        return; 
+    }
+    
+    const targetCurp = document.getElementById('f-curp').value;
+    const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp);
+    const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
+
+    const record = {
+        CURP: targetCurp,
+        ID: document.getElementById('f-id').value,
+        NOMBRE: document.getElementById('f-nombre').value,
+        AP_PATERNO: document.getElementById('f-paterno').value,
+        AP_MATERNO: document.getElementById('f-materno').value,
+        TEL_FIJO: document.getElementById('f-telfijo').value,
+        TEL_CEL: document.getElementById('f-telcel').value,
+        MUNICIPIO: document.getElementById('f-municipio').value,
+        LOCALIDAD: document.getElementById('f-localidad').value,
+        SECCION: document.getElementById('f-seccion').value,
+        COLONIA: document.getElementById('f-colonia').value,
+        CP: document.getElementById('f-cp').value,
+        CALLE: document.getElementById('f-calle').value,
+        NUM_EXT: document.getElementById('f-numext').value,
+        REFERENCIA: document.getElementById('f-referencia').value,
+        SITUACION: document.getElementById('f-situacion').value,
+        CUSAL: document.getElementById('f-causal').value,
+        Latitud: latValue,
+        Longitud: lonValue,
+        FECHA_MODIFICACION: new Date().toLocaleString("es-MX"),
+        USUARIO_MODIFICA: currentUser.name,
+        SHEETS_ROW_INDEX: originalRecord.SHEETS_ROW_INDEX || ""
+    };
+
+    const txUpdate = db.transaction(STORE_NAME, "readwrite");
+    txUpdate.objectStore(STORE_NAME).put(record);
+
+    if (memoryIndex !== -1) {
+        localMemoryDatabase[memoryIndex] = record;
+    } else {
+        localMemoryDatabase.push(record);
+    }
+
+    pendingSync.push(record);
+    localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
+
+    alert("Confirmación: Modificación guardada localmente.");
+    document.getElementById('search-input').value = "";
+    document.getElementById('search-results').innerHTML = "";
+    changeScreen('screen-search');
+}
+// =========================================================================
+// MÓDULO 4: PANTALLA 5 (HISTORIAL, SINCRONIZACIÓN Y OFFLINE)
+// =========================================================================
+function openHistoryScreen() {
+    changeScreen('screen-history');
+    document.getElementById('pending-count').innerText = pendingSync.length;
+    const logList = document.getElementById('history-log');
+    logList.innerHTML = "";
+
+    pendingSync.forEach((item) => {
+        const div = document.createElement('div');
+        div.className = "result-item";
+        div.innerHTML = `<strong>⏳ ${item.NOMBRE} (${item.CURP})</strong><br><small>Pendiente | Modificado: ${item.FECHA_MODIFICACION}</small>`;
+        logList.appendChild(div);
+    });
+
+    syncedHistory.forEach((item) => {
+        const div = document.createElement('div');
+        div.className = "result-item";
+        div.style.opacity = "0.6"; 
+        div.innerHTML = `<strong>✅ ${item.NOMBRE} (${item.CURP})</strong><br><small style="color:green;">Sincronizado con Sheets con éxito</small>`;
+        logList.appendChild(div);
+    });
+}
+
+function goBackFromHistory() {
+    changeScreen(previousScreen);
+}
+
+async function syncWithSheets() {
+    if (pendingSync.length === 0) return alert("No tienes registros pendientes de sincronizar.");
+
+    alert("Conectando y sincronizando con Google Sheets...");
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            redirect: 'follow',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: "sync", records: pendingSync })
+        });
+
+        const result = await response.json();
+
+        if (result.status === "success") {
+            syncedHistory = syncedHistory.concat(pendingSync);
+            localStorage.setItem('syncedHistory', JSON.stringify(syncedHistory));
+
+            pendingSync = [];
+            localStorage.removeItem('pendingSync');
+            
+            openHistoryScreen();
+            alert(`¡Excelente! Sincronización realizada en Sheets: ${result.message}`);
+        } else {
+            alert(`Error del servidor: ${result.message}`);
+        }
+    } catch (e) {
+        console.error(e);
+        alert("Fallo de conexión temporal. Los cambios siguen resguardados en el teléfono.");
+    }
+}
+
+function downloadBackupCSV() {
+    const allVisitsOfDay = pendingSync.concat(syncedHistory);
+
+    if (allVisitsOfDay.length === 0) {
+        return alert("No tienes ningún registro de visita para exportar hoy.");
+    }
+
+    const headers = [
+        "CURP", "ID", "NOMBRE", "AP_PATERNO", "AP_MATERNO", "TEL_FIJO", "TEL_CEL", 
+        "MUNICIPIO", "LOCALIDAD", "SECCION", "COLONIA", "CP", "CALLE", "NUM_EXT", 
+        "REFERENCIA", "SITUACION", "CUSAL", "Latitud", "Longitud", "FECHA_MODIFICACION", "USUARIO_MODIFICA"
+    ];
+
+    let csvRows = [headers.join(",")];
+
+    allVisitsOfDay.forEach(record => {
+        const values = headers.map(header => {
+            let val = record[header] !== undefined ? record[header] : "";
+            let valStr = String(val).trim();
+            if (valStr.includes(",") || valStr.includes("\n") || valStr.includes('"')) {
+                valStr = `"${valStr.replace(/"/g, '""')}"`;
+            }
+            return valStr;
+        });
+        csvRows.push(values.join(","));
+    });
+
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+    const downloadAnchor = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    const fechaHoy = new Date().toISOString().slice(0, 10);
+    
+    downloadAnchor.setAttribute("href", url);
+    downloadAnchor.setAttribute("download", `R02_Reporte_Completo_${fechaHoy}.csv`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    
+    document.body.removeChild(downloadAnchor);
+    URL.revokeObjectURL(url);
+}
+
+function clearLocalStorage() {
+    if (confirm("¿Estás seguro de vaciar la memoria? Perderás los registros pendientes y el historial del día.")) {
+        pendingSync = [];
+        syncedHistory = []; 
+        localStorage.clear();
+        if (db) {
+            const tx = db.transaction(STORE_NAME, "readwrite");
+            tx.objectStore(STORE_NAME).clear();
+        }
+        openHistoryScreen();
+        alert("Datos del teléfono eliminados correctamente.");
+    }
+}
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('Service Worker registrado.', reg))
+            .catch(err => console.error('Error de Service Worker:', err));
+    });
 }
