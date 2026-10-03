@@ -1,5 +1,5 @@
 // URL del Web App de Google Apps Script 
-const GOOGLE_SCRIPT_URL = "https://google.com";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUx3xvBTGwS7zUccDMYb275oRgo8ZVaZKeHSqUGyWCYNAtsLTdADAlF7tCGMgSgXYv/exec";
 
 const AUTHORIZED_CURPS = {
     "CURPVALIDA12345678": "Juan Pérez López",
