@@ -22,7 +22,7 @@ export default function App() {
     { curp: "CURPCOORDINADOR333", nombre: "Carlos Rodríguez" }
   ];
 
-  // Estados para el Candado de Acceso por CURP y Bienvenida
+  // Estados originales del Candado de Acceso por CURP y Bienvenida
   const [curpAcceso, setCurpAcceso] = useState('');
   const [haAccedido, setHaAccedido] = useState(false);
   const [nombreBrigadista, setNombreBrigadista] = useState('');
@@ -58,7 +58,6 @@ export default function App() {
     }
 
     const filtrados = derechohabientes.filter(item => {
-      // Búsqueda blindada usando los encabezados exactos de tu Excel
       const nombreSeguro = item['NOMBRE2'] ? item['NOMBRE2'].toLowerCase() : '';
       const paternoSeguro = item['AP PATERNO'] ? item['AP PATERNO'].toLowerCase() : '';
       const maternoSeguro = item['AP MATERNO'] ? item['AP MATERNO'].toLowerCase() : '';
@@ -75,7 +74,7 @@ export default function App() {
     });
     setFiltrados(filtrados);
   };
-  // Validación de acceso local (Compara estrictamente contra la lista de arriba)
+  // FUNCIÓN DE LOGIN CORREGIDA (Valida directo contra el Bloque 2)
   const manejarAcceso = () => {
     const curpLimpia = curpAcceso.trim().toUpperCase();
     
@@ -84,11 +83,12 @@ export default function App() {
       return;
     }
 
+    // Compara estrictamente contra la lista de brigadistas declarada arriba
     const brigadistaEncontrado = BRIGADISTAS_AUTORIZADOS.find(u => u.curp === curpLimpia);
 
     if (brigadistaEncontrado) {
-      setNombreBrigadista(brigadistaEncontrado.nombre); // Guarda el nombre para el saludo de bienvenida
-      setHaAccedido(true);
+      setNombreBrigadista(brigadistaEncontrado.nombre); // Guarda el nombre real para la bienvenida
+      setHaAccedido(true); // Destraba la pantalla de inmediato
     } else {
       Alert.alert("Acceso Denegado", "Esta CURP no está autorizada para operar la aplicación R02.");
     }
