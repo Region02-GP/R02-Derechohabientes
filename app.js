@@ -13,7 +13,16 @@ export default function App() {
   const [busqueda, setBusqueda] = useState('');
   const [seleccionado, setSeleccionado] = useState(null);
   
-  // Estados originales del Candado de Acceso por CURP y Bienvenida
+  // ========================================================
+  // BASE DE DATOS DE BRIGADISTAS AUTORIZADOS (DENTRO DEL CÓDIGO)
+  // ========================================================
+  const BRIGADISTAS_AUTORIZADOS = [
+    { curp: "CURPBRIGADISTA11111", nombre: "Juan Pérez Martínez" },
+    { curp: "CURPBRIGADISTA22222", nombre: "María Gómez López" },
+    { curp: "CURPCOORDINADOR333", nombre: "Carlos Rodríguez" }
+  ];
+
+  // Estados para el Candado de Acceso por CURP y Bienvenida
   const [curpAcceso, setCurpAcceso] = useState('');
   const [haAccedido, setHaAccedido] = useState(false);
   const [nombreBrigadista, setNombreBrigadista] = useState('');
@@ -66,7 +75,7 @@ export default function App() {
     });
     setFiltrados(filtrados);
   };
-  // Valida la CURP buscando la coincidencia dentro de tu lista de la Sheet
+  // Validación de acceso local (Compara estrictamente contra la lista de arriba)
   const manejarAcceso = () => {
     const curpLimpia = curpAcceso.trim().toUpperCase();
     
@@ -75,17 +84,13 @@ export default function App() {
       return;
     }
 
-    // Busca si la CURP ingresada está en la columna CURP de tus registros
-    const personaEncontrada = derechohabientes.find(item => 
-      item['CURP'] && item['CURP'].trim().toUpperCase() === curpLimpia
-    );
+    const brigadistaEncontrado = BRIGADISTAS_AUTORIZADOS.find(u => u.curp === curpLimpia);
 
-    if (personaEncontrada) {
-      const nombreCompleto = `${personaEncontrada['NOMBRE2']} ${personaEncontrada['AP PATERNO']}`;
-      setNombreBrigadista(nombreCompleto); // Despliega la bienvenida con su nombre real
+    if (brigadistaEncontrado) {
+      setNombreBrigadista(brigadistaEncontrado.nombre); // Guarda el nombre para el saludo de bienvenida
       setHaAccedido(true);
     } else {
-      Alert.alert("Acceso Denegado", "La CURP ingresada no se encuentra registrada como autorizada.");
+      Alert.alert("Acceso Denegado", "Esta CURP no está autorizada para operar la aplicación R02.");
     }
   };
 
@@ -131,7 +136,7 @@ export default function App() {
       setLoading(false);
     }
   };
-  // PANTALLA 1: CANDADO DE INICIO DE SESIÓN ORIGINAL
+  // PANTALLA 1: CANDADO DE INICIO DE SESIÓN DIRECTO DESDE EL CÓDIGO
   if (!haAccedido) {
     return (
       <SafeAreaView style={styles.loginCentrado}>
@@ -156,7 +161,7 @@ export default function App() {
     );
   }
 
-  // PANTALLA 2: INTERFAZ ORIGINAL CON BIENVENIDA Y FORMATO DE COLUMNAS EN ESPAÑOL
+  // PANTALLA 2: INTERFAZ CON BIENVENIDA PERSONALIZADA Y COLUMNAS EN ESPAÑOL
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerApp}>
