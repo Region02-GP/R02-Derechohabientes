@@ -80,13 +80,16 @@
             <h2>Actualización de Domicilio</h2>
             
             <!-- NUEVA SECCIÓN: OPCIONES DE LOCALIZACIÓN VERTICALES -->
-            <div class="status-selector-container" style="margin-bottom: 20px;">
-                <label style="font-weight: bold; display: block; margin-bottom: 8px;">Estatus de la Visita *</label>
-                <div class="status-vertical-group">
-                    <button type="button" id="btn-status-localizado" onclick="setVisitStatus('LOCALIZADO')" class="btn-status-opt text-disabled">🟢 Localizado</button>
-                    <button type="button" id="btn-status-nolocalizado" onclick="setVisitStatus('NO LOCALIZADO')" class="btn-status-opt text-disabled">🔴 No Localizado</button>
-                </div>
-            </div>
+           <!-- REVISA Y MODIFICA TUS BOTONES EN EL HTML PARA QUE QUEDEN ASÍ: -->
+<div class="flex space-x-2 mb-4">
+    <button type="button" id="btn-status-localizado" onclick="seleccionarEstatusVisita('LOCALIZADO')" class="flex-1 p-3 border rounded-lg font-bold">
+        LOCALIZADO
+    </button>
+    <button type="button" id="btn-status-nolocalizado" onclick="seleccionarEstatusVisita('NO LOCALIZADO')" class="flex-1 p-3 border rounded-lg font-bold">
+        NO LOCALIZADO
+    </button>
+</div>
+
 
             <!-- CAMPO DINÁMICO: MOTIVO DE NO LOCALIZACIÓN (OCULTO POR DEFECTO) -->
             <div id="motivo-container" class="form-group hidden">
