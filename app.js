@@ -1,270 +1,223 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, FlatList, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, ScrollView } from 'react-native';
-import * as Location from 'expo-location';
+// =========================================================================
+// R02-DERECHOHABIENTES: CONFIGURACIÓN GENERAL Y ESTADO DE LA APP
+// =========================================================================
 
-// ==========================================
-// CONFIGURACIÓN DE CONEXIÓN ORIGINAL
-// ==========================================
-const API_URL = "https://script.google.com/macros/s/AKfycbxYuMHKxWazaPn09svP_T18Jb_P1S0AF8slPd3FFvcTVI6OnnZWfpykRk_rmbDyfgTf/exec"; // <-- REEMPLAZA CON TU URL /exec
-export default function App() {
-  const [loading, setLoading] = useState(true);
-  const [derechohabientes, setDerechohabientes] = useState([]);
-  const [filtrados, setFiltrados] = useState([]);
-  const [busqueda, setBusqueda] = useState('');
-  const [seleccionado, setSeleccionado] = useState(null);
+// URL del Web App de Google Apps Script 
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyBFzP8muJhXZsyHWeCmRrW_Yzev1yknhm9yVjH88tphPka4cjF7hYAPNPkCd_O3UOW/exec";
 
-  // Estados originales para el Candado de Acceso por CURP y Bienvenida
-  const [curpAcceso, setCurpAcceso] = useState('');
-  const [haAccedido, setHaAccedido] = useState(false);
-  const [nombreBrigadista, setNombreBrigadista] = useState('');
+// CURPs Autorizadas en Código para la Pantalla de Acceso (Pantalla 1)
+const AUTHORIZED_CURPS = {
+    "CURPVALIDA12345678": "Juan Pérez López",
+    "CURPVALIDA87654321": "María Gómez García"
+};
 
-  // ========================================================
-  // BASE DE DATOS DE BRIGADISTAS AUTORIZADOS (DENTRO DEL CÓDIGO)
-  // ========================================================
-  const BRIGADISTAS_AUTORIZADOS = [
-    { curp: "CURPBRIGADISTA11111", nombre: "Juan Pérez Martínez" },
-    { curp: "CURPBRIGADISTA22222", nombre: "María Gómez López" },
-    { curp: "CURPCOORDINADOR333", nombre: "Carlos Rodríguez" }
-  ];
+let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
+let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
+let currentUser = null;
+let previousScreen = 'screen-welcome';
 
-  // Campos del formulario vinculados a tus columnas originales de la Sheets
-  const [situacion, setSituacion] = useState('LOCALIZADO');
-  const [causal, setCausal] = useState('');
-  const cargarDatos = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(API_URL);
-      const data = await response.json();
-      setDerechohabientes(data);
-      setFiltrados(data);
-    } catch (error) {
-      Alert.alert("R02", "Error de conexión con la base de datos.");
-    } finally {
-      setLoading(false);
+// =========================================================================
+// INITIALIZACIÓN DE INDEXEDDB (Base de Datos Local para soporte masivo)
+// =========================================================================
+const DB_NAME = "R02_DB";
+const DB_VERSION = 1;
+const STORE_NAME = "derechohabientes";
+let db;
+
+const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+request.onupgradeneeded = (e) => {
+    db = e.target.result;
+    if (!db.objectStoreNames.contains(STORE_NAME)) {
+        const store = db.createObjectStore(STORE_NAME, { keyPath: "CURP" });
+        store.createIndex("by_nombre", "NOMBRE", { unique: false });
+        store.createIndex("by_calle", "CALLE", { unique: false });
     }
-  };
+};
 
-  useEffect(() => { 
-    cargarDatos(); 
-  }, []);
+request.onsuccess = (e) => { 
+    db = e.target.result; 
+    console.log("IndexedDB inicializada correctamente para soporte masivo.");
+};
 
-  const handleBuscar = (text) => {
-    setBusqueda(text);
-    const query = text.toLowerCase().trim();
-
-    if (!query) {
-      setFiltrados(derechohabientes);
-      return;
+request.onerror = (e) => {
+    console.error("Error al abrir IndexedDB:", e.target.error);
+};
+// NAVEGACIÓN GENERAL ENTRE PANTALLAS
+function changeScreen(screenId) {
+    if (screenId !== 'screen-history') {
+        previousScreen = screenId;
     }
-
-    const filtrados = derechohabientes.filter(item => {
-      const nombreSeguro = item['NOMBRE2'] ? item['NOMBRE2'].toLowerCase() : '';
-      const paternoSeguro = item['AP PATERNO'] ? item['AP PATERNO'].toLowerCase() : '';
-      const maternoSeguro = item['AP MATERNO'] ? item['AP MATERNO'].toLowerCase() : '';
-      const idSeguro = item['ID'] ? item['ID'].toString().toLowerCase() : '';
-      const curpSegura = item['CURP'] ? item['CURP'].toLowerCase() : '';
-
-      const nombreCompleto = `${nombreSeguro} ${paternoSeguro} ${maternoSeguro}`;
-
-      return (
-        nombreCompleto.includes(query) || 
-        idSeguro.includes(query) || 
-        curpSegura.includes(query)
-      );
-    });
-    setFiltrados(filtrados);
-  };
-  // Función de acceso corregida (Opera de forma local inmediata)
-  const manejarAcceso = () => {
-    const curpLimpia = curpAcceso.trim().toUpperCase();
-    
-    if (curpLimpia.length !== 18) {
-      Alert.alert("Acceso Denegado", "Por favor, ingresa una CURP válida de 18 caracteres.");
-      return;
+    if (screenId === 'screen-search') {
+        preloadDatabaseToMemory();
     }
-
-    const brigadistaEncontrado = BRIGADISTAS_AUTORIZADOS.find(u => u.curp === curpLimpia);
-
-    if (brigadistaEncontrado) {
-      setNombreBrigadista(brigadistaEncontrado.nombre); // Guarda el nombre para el saludo de bienvenida
-      setHaAccedido(true); // Desbloquea la interfaz
-    } else {
-      Alert.alert("Acceso Denegado", "Esta CURP no está autorizada para operar la aplicación R02.");
-    }
-  };
-
-  const guardarDatos = async () => {
-    if (!causal.trim()) {
-      Alert.alert("R02", "Por favor introduce las notas o el nuevo domicilio.");
-      return;
-    }
-
-    setLoading(true);
-    let latitude = "";
-    let longitude = "";
-
-    try {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        let loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-        latitude = loc.coords.latitude.toString();
-        longitude = loc.coords.longitude.toString();
-      }
-    } catch (e) {}
-
-    try {
-      await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          rowNum: seleccionado.rowNum,
-          situacion: situacion,
-          causal: causal,
-          lat: latitude,
-          lng: longitude
-        })
-      });
-
-      Alert.alert("R02", "¡Datos y ubicación GPS guardados correctamente!");
-      setSeleccionado(null);
-      setCausal('');
-      setSituacion('LOCALIZADO');
-      setTimeout(cargarDatos, 500);
-    } catch (error) {
-      Alert.alert("R02", "No se pudieron guardar los cambios.");
-      setLoading(false);
-    }
-  };
-v  // PANTALLA 1: PANTALLA DE ACCESO (LOGIN POR CURP)
-  if (!haAccedido) {
-    return (
-      <SafeAreaView style={styles.loginCentrado}>
-        <View style={styles.loginTarjeta}>
-          <Text style={styles.loginSiglas}>R02</Text>
-          <Text style={styles.loginTituloSub}>Control de Territorio</Text>
-          <Text style={styles.loginInstruccion}>Ingresa tu CURP para validar tu acceso como Brigadista:</Text>
-          <TextInput 
-            style={[styles.input, styles.loginInputMargin]} 
-            placeholder="CURP DE 18 DÍGITOS" 
-            value={curpAcceso} 
-            onChangeText={setCurpAcceso}
-            autoCapitalize="characters"
-            maxLength={18}
-            autoCorrect={false}
-          />
-          <TouchableOpacity style={[styles.boton, styles.botonGuardar, {width: '100%'}]} onPress={manejarAcceso}>
-            <Text style={styles.botonTexto}>Verificar e Ingresar</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  // PANTALLA 2: INTERFAZ PRINCIPAL DESBLOQUEADA
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.headerApp}>
-        <View style={{ flex: 1, paddingRight: 10 }}>
-          <Text style={styles.titulo}>R02 - Territorio</Text>
-          <Text style={styles.bienvenida}>Bienvenido(a): <Text style={{fontWeight:'700'}}>{nombreBrigadista}</Text></Text>
-        </View>
-        <TouchableOpacity style={styles.botonSalir} onPress={() => { setHaAccedido(false); setCurpAcceso(''); setNombreBrigadista(''); }}>
-          <Text style={styles.textoSalir}>Salir</Text>
-        </TouchableOpacity>
-      </View>
-      
-      {loading ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#621132" />
-          <Text style={{ marginTop: 10, color: '#4b5563' }}>Sincronizando base de datos...</Text>
-        </View>
-      ) : !seleccionado ? (
-        <View style={{ flex: 1 }}>
-          <TextInput style={styles.buscador} placeholder="Buscar por ID, Nombre o CURP..." value={busqueda} onChangeText={handleBuscar} autoCapitalize="none" autoCorrect={false} />
-          <FlatList 
-            data={filtrados}
-            keyExtractor={(item, index) => index.toString()}
-            keyboardShouldPersistTaps="handled"
-            renderItem={({ item }) => (
-              <TouchableOpacity 
-                style={styles.tarjeta} 
-                activeOpacity={0.7}
-                onPress={() => { 
-                  setSeleccionado(item); 
-                  setSituacion(item['SITUACION'] || 'LOCALIZADO');
-                  setCausal(item['CAUSAL'] || '');
-                }}
-              >
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.nombre}>{item['NOMBRE2']} {item['AP PATERNO']} {item['AP MATERNO']}</Text>
-                  <Text style={styles.subtexto}><Text style={{fontWeight:'bold'}}>CURP:</Text> {item['CURP'] || 'No registrado'}</Text>
-                  <Text style={styles.subtexto}><Text style={{fontWeight:'bold'}}>Dom:</Text> Calle {item['CALLE']} Num. {item['NUM EXT']}, Col. {item['COLONIA']}</Text>
-                  <Text style={styles.subtexto}><Text style={{fontWeight:'bold'}}>Mpio:</Text> {item['MUNICIPIO']} | <Text style={{fontWeight:'bold'}}>Cel:</Text> {item['TEL CEL']}</Text>
-                </View>
-                <Text style={styles.badge}>{item['SITUACION'] || 'PENDIENTE'}</Text>
-              </TouchableOpacity>
-            )}
-          />
-        </View>
-      ) : (
-        <ScrollView style={styles.formularioContainer} keyboardShouldPersistTaps="handled">
-          <Text style={styles.formTitulo}>Actualizar Datos en Territorio</Text>
-          <Text style={styles.nombreDerecho}>{seleccionado['NOMBRE2']} {seleccionado['AP PATERNO']}</Text>
-          <Text style={styles.subtexto}>ID: {seleccionado['ID']} | CURP: {seleccionado['CURP'] || 'N/R'}</Text>
-          
-          <Text style={styles.label}>SITUACIÓN (Estatus en campo):</Text>
-          <View style={styles.opcionesContainer}>
-            {['LOCALIZADO', 'NO VIVE AHÍ', 'SE MUDÓ', 'NO EXISTE DOM.'].map((opcion) => (
-              <TouchableOpacity key={opcion} style={[styles.opcionBoton, situacion === opcion && styles.opcionSeleccionada]} onPress={() => setSituacion(opcion)}>
-                <Text style={[styles.opcionTexto, situacion === opcion && styles.opcionTextoSeleccionado]}>{opcion}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          
-          <Text style={styles.label}>CAUSAL (Nuevo Domicilio / Observaciones):</Text>
-          <TextInput style={[styles.input, styles.textArea]} placeholder="Introduce la nueva dirección completa..." value={causal} onChangeText={setCausal} multiline={true} numberOfLines={4} />
-          
-          <View style={styles.botonesContainer}>
-            <TouchableOpacity style={[styles.boton, styles.botonGuardar]} onPress={guardarDatos}><Text style={styles.botonTexto}>Guardar en Territorio</Text></TouchableOpacity>
-            <TouchableOpacity style={[styles.boton, styles.botonCancelar]} onPress={() => setSeleccionado(null)}><Text style={styles.botonTexto}>Regresar a la lista</Text></TouchableOpacity>
-          </View>
-        </ScrollView>
-      )}
-    </SafeAreaView>
-  );
+    document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
+    document.getElementById(screenId).classList.remove('hidden');
 }
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f3f4f6', paddingHorizontal: 15 },
-  headerApp: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, marginBottom: 15 },
-  titulo: { fontSize: 20, fontWeight: '800', color: '#621132' },
-  bienvenida: { fontSize: 13, color: '#4b5563', marginTop: 2 },
-  botonSalir: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 6, backgroundColor: '#e5e7eb' },
-  textoSalir: { fontSize: 13, color: '#4b5563', fontWeight: '600' },
-  loginCentrado: { flex: 1, backgroundColor: '#621132', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  loginTarjeta: { backgroundColor: '#ffffff', width: '100%', padding: 25, borderRadius: 16, alignItems: 'center', elevation: 5 },
-  loginSiglas: { fontSize: 42, fontWeight: '900', color: '#621132', marginBottom: 2 },
-  loginTituloSub: { fontSize: 16, color: '#4b5563', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 20 },
-  loginInstruccion: { fontSize: 14, color: '#374151', textAlign: 'center', marginBottom: 15, lineHeight: 20 },
-  loginInputMargin: { width: '100%', marginBottom: 20, textAlign: 'center', fontSize: 16, fontWeight: 'bold', letterSpacing: 1 },
-  buscador: { backgroundColor: '#ffffff', paddingHorizontal: 16, paddingVertical: 14, borderRadius: 12, marginBottom: 16, fontSize: 16, borderWidth: 1, borderColor: '#e5e7eb', elevation: 2 },
-  tarjeta: { backgroundColor: '#ffffff', padding: 16, borderRadius: 14, marginBottom: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderLeftWidth: 5, borderLeftColor: '#285c4d', elevation: 2 },
-  nombre: { fontSize: 16, fontWeight: 'bold', color: '#1f2937', marginBottom: 4 },
-  subtexto: { fontSize: 12, color: '#4b5563', lineHeight: 18 },
-  badge: { fontSize: 11, backgroundColor: '#fef08a', color: '#854d0e', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, marginLeft: 10, alignSelf: 'center', fontWeight: '800', textTransform: 'uppercase' },
-  formularioContainer: { flex: 1, backgroundColor: '#ffffff', padding: 20, borderRadius: 16, marginTop: 10, elevation: 4 },
-  formTitulo: { fontSize: 12, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 1.5, fontWeight: 'bold' },
-  nombreDerecho: { fontSize: 20, fontWeight: 'bold', color: '#621132', marginVertical: 6 },
-  label: { fontSize: 14, fontWeight: '700', color: '#374151', marginTop: 18, marginBottom: 8 },
-  input: { borderWidth: 1, borderColor: '#d1d5db', padding: 14, borderRadius: 10, backgroundColor: '#f9fafb', fontSize: 15, color: '#111827' },
-  textArea: { height: 100, textAlignVertical: 'top' },
-  opcionesContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 5 },
-  opcionBoton: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, borderWidth: 1, borderColor: '#d1d5db', backgroundColor: '#ffffff' },
-  opcionSeleccionada: { backgroundColor: '#621132', borderColor: '#621132' },
-  opcionTexto: { color: '#374151', fontSize: 13, fontWeight: '500' },
-  opcionTextoSeleccionado: { color: '#ffffff', fontWeight: 'bold' },
-  botonesContainer: { flexDirection: 'column', gap: 12, marginTop: 30, marginBottom: 50 },
-  boton: { padding: 16, borderRadius: 10, alignItems: 'center', elevation: 2 },
-  botonGuardar: { backgroundColor: '#285c4d' },
-  botonCancelar: { backgroundColor: '#982236' },
-  botonTexto: { color: '#ffffff', fontWeight: '700', fontSize: 16 }
-});
+
+// =========================================================================
+// MÓDULO 2: PANTALLA 1 (LOGIN) Y PANTALLA 2 (DESCARGA)
+// =========================================================================
+function login() {
+    const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
+    if (AUTHORIZED_CURPS[curpInput]) {
+        currentUser = { curp: curpInput, name: AUTHORIZED_CURPS[curpInput] };
+        document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
+        changeScreen('screen-welcome');
+    } else {
+        alert("CURP no autorizada o inválida en el sistema.");
+    }
+}
+async function downloadAllDataMassive() {
+    const btn = document.getElementById('btn-massive-download');
+    const progressContainer = document.getElementById('progress-container');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    
+    if (!db) return alert("La base de datos local aún no está lista. Reintente en un segundo.");
+    
+    btn.disabled = true;
+    progressContainer.style.display = "block";
+    
+    let offset = 0;
+    let limit = 10000; 
+    let isDone = false;
+    let totalCargados = 0;
+    
+    const txClear = db.transaction(STORE_NAME, "readwrite");
+    txClear.objectStore(STORE_NAME).clear();
+    
+    try {
+        while (!isDone) {
+            progressText.innerText = `Descargando registros: ${totalCargados} acumulados...`;
+            
+            const url = `${GOOGLE_SCRIPT_URL}?action=getAllData&offset=${offset}&limit=${limit}&_=${new Date().getTime()}`;
+            const response = await fetch(url);
+            
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+            
+            const textData = await response.text();
+            let data;
+            try {
+                data = JSON.parse(textData);
+            } catch (jsonParseError) {
+                throw new Error("El servidor de Google devolvió un formato corrompido.");
+            }
+            
+            if (data && data.records && data.records.length > 0) {
+                const tx = db.transaction(STORE_NAME, "readwrite");
+                const store = tx.objectStore(STORE_NAME);
+                
+                data.records.forEach(record => {
+                    if (record && record.CURP) {
+                        record.CURP = String(record.CURP).replace(/ /g, "").toUpperCase().trim();
+                        store.put(record); 
+                        totalCargados++;
+                    }
+                });
+                await new Promise((resolve) => { tx.oncomplete = resolve; });
+            }
+            
+            isDone = data.done === true || data.records.length === 0;
+            offset = data.nextOffset || (offset + limit);
+            
+            let percentage = Math.min(100, Math.round((offset / 25000) * 100));
+            progressBar.style.width = `${percentage}%`;
+        }
+        
+        progressText.innerText = `¡Descarga completa! ${totalCargados} derechohabientes listos offline.`;
+        alert(`Éxito: Se han guardado ${totalCargados} registros en la memoria interna.`);
+    } catch (error) {
+        console.error(error);
+        alert(`Error en la transferencia: ${error.message}`);
+    } finally {
+        window.setTimeout(() => { btn.disabled = false; }, 1000);
+    }
+}
+// =========================================================================
+// MÓDULO 3: PANTALLA 3 (BUSCADOR FLEXIBLE) Y PANTALLA 4 (FORMULARIO Y GPS)
+// =========================================================================
+let localMemoryDatabase = [];
+
+function preloadDatabaseToMemory() {
+    if (!db) return;
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+    const requestGetAll = store.getAll(); 
+
+    requestGetAll.onsuccess = (e) => {
+        localMemoryDatabase = e.target.result || [];
+        console.log(`Base de datos de ${localMemoryDatabase.length} registros precargada en RAM.`);
+    };
+}
+
+function searchData() {
+    const query = document.getElementById('search-input').value.toLowerCase().trim();
+    const resultsContainer = document.getElementById('search-results');
+    resultsContainer.innerHTML = "";
+
+    if (query.length < 3) return;
+    if (localMemoryDatabase.length === 0) preloadDatabaseToMemory();
+
+    const searchTokens = query.split(/\s+/); 
+    let matchedRecords = [];
+
+    for (let i = 0; i < localMemoryDatabase.length; i++) {
+        const item = localMemoryDatabase[i];
+        if (!item) continue;
+
+        const calle = item.CALLE ? String(item.CALLE).toLowerCase() : "";
+        const numExt = item.NUM_EXT ? String(item.NUM_EXT).toLowerCase() : "";
+        const colonia = item.COLONIA ? String(item.COLONIA).toLowerCase() : "";
+        const nombre = item.NOMBRE ? String(item.NOMBRE).toLowerCase() : "";
+        const curp = item.CURP ? String(item.CURP).toLowerCase() : "";
+        const apPaterno = item.AP_PATERNO ? String(item.AP_PATERNO).toLowerCase() : "";
+        const apMaterno = item.AP_MATERNO ? String(item.AP_MATERNO).toLowerCase() : "";
+
+        const combinedText = `${nombre} ${apPaterno} ${apMaterno} ${curp} ${calle} ${numExt} ${colonia}`;
+        const isMatch = searchTokens.every(token => combinedText.includes(token));
+
+        if (isMatch) {
+            matchedRecords.push(item);
+        }
+    }
+    matchedRecords.sort((a, b) => {
+        const valA = a.NUM_EXT ? String(a.NUM_EXT).trim() : "";
+        const valB = b.NUM_EXT ? String(b.NUM_EXT).trim() : "";
+        const numA = parseInt(valA.match(/\d+/), 10);
+        const numB = parseInt(valB.match(/\d+/), 10);
+
+        if (isNaN(numA) && isNaN(numB)) return valA.localeCompare(valB);
+        if (isNaN(numA)) return 1;
+        if (isNaN(numB)) return -1;
+        if (numA === numB) return valA.localeCompare(valB);
+        return numA - numB;
+    });
+
+    // Pinta las tarjetas resultantes en la interfaz de usuario
+    matchedRecords.forEach(record => {
+        const div = document.createElement('div');
+        div.className = "p-4 border-b bg-white rounded-lg shadow-sm mb-2 cursor-pointer hover:bg-gray-50 transition";
+        div.onclick = () => {
+            // Lógica original para abrir tu formulario pasándole el registro completo
+            openUpdateForm(record); 
+        };
+        div.innerHTML = `
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="font-bold text-gray-900">${record.NOMBRE || ''} ${record.AP_PATERNO || ''} ${record.AP_MATERNO || ''}</p>
+                    <p class="text-xs text-gray-500 mt-1">CURP: ${record.CURP || ''} | ID: ${record.ID || ''}</p>
+                    <p class="text-xs text-gray-700 mt-1"><b>Dom:</b> Calle ${record.CALLE || ''} Num. ${record.NUM_EXT || ''}, Col. ${record.COLONIA || ''}</p>
+                </div>
+                <span class="text-xs px-2 py-1 rounded-full font-bold ${record.SITUACION ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                    ${record.SITUACION || 'PENDIENTE'}
+                </span>
+            </div>
+        `;
+        resultsContainer.appendChild(div);
+    });
+
+    if (matchedRecords.length === 0) {
+        resultsContainer.innerHTML = '<p class="text-gray-500 text-center py-4">No se encontraron coincidencias en la base offline.</p>';
+    }
+}
