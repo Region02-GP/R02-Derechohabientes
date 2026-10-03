@@ -171,13 +171,14 @@ function searchData() {
         const item = localMemoryDatabase[i];
         if (!item) continue;
 
-        const calle = item.CALLE ? String(item.CALLE).toLowerCase() : "";
-        const numExt = item.NUM_EXT ? String(item.NUM_EXT).toLowerCase() : "";
-        const colonia = item.COLONIA ? String(item.COLONIA).toLowerCase() : "";
-        const nombre = item.NOMBRE ? String(item.NOMBRE).toLowerCase() : "";
-        const curp = item.CURP ? String(item.CURP).toLowerCase() : "";
-        const apPaterno = item.AP_PATERNO ? String(item.AP_PATERNO).toLowerCase() : "";
-        const apMaterno = item.AP_MATERNO ? String(item.AP_MATERNO).toLowerCase() : "";
+        // MAPEO EXACTO: Se adaptan los nombres a tus columnas con espacio de Sheets
+        const calle = item['CALLE'] ? String(item['CALLE']).toLowerCase() : "";
+        const numExt = item['NUM EXT'] ? String(item['NUM EXT']).toLowerCase() : "";
+        const colonia = item['COLONIA'] ? String(item['COLONIA']).toLowerCase() : "";
+        const nombre = item['NOMBRE'] ? String(item['NOMBRE']).toLowerCase() : "";
+        const curp = item['CURP'] ? String(item['CURP']).toLowerCase() : "";
+        const apPaterno = item['AP PATERNO'] ? String(item['AP PATERNO']).toLowerCase() : "";
+        const apMaterno = item['AP MATERNO'] ? String(item['AP MATERNO']).toLowerCase() : "";
 
         const combinedText = `${nombre} ${apPaterno} ${apMaterno} ${curp} ${calle} ${numExt} ${colonia}`;
         const isMatch = searchTokens.every(token => combinedText.includes(token));
@@ -188,8 +189,8 @@ function searchData() {
     }
 
     matchedRecords.sort((a, b) => {
-        const valA = a.NUM_EXT ? String(a.NUM_EXT).trim() : "";
-        const valB = b.NUM_EXT ? String(b.NUM_EXT).trim() : "";
+        const valA = a['NUM EXT'] ? String(a['NUM EXT']).trim() : "";
+        const valB = b['NUM EXT'] ? String(b['NUM EXT']).trim() : "";
         const numA = parseInt(valA.match(/\d+/), 10);
         const numB = parseInt(valB.match(/\d+/), 10);
 
@@ -205,26 +206,26 @@ function searchData() {
     recordsToDisplay.forEach(item => {
         const div = document.createElement('div');
         
-        const coordenadaLat = item.Latitud || item.latitud || "";
-        const coordenadaLon = item.Longitud || item.longitud || "";
+        const coordenadaLat = item['Latitud'] || item['latitud'] || "";
+        const coordenadaLon = item['Longitud'] || item['longitud'] || "";
 
         const tieneLat = coordenadaLat !== "" && coordenadaLat !== "0" && coordenadaLat !== "ERROR" && !String(coordenadaLat).includes("Buscando");
         const tieneLon = coordenadaLon !== "" && coordenadaLon !== "0" && coordenadaLon !== "ERROR" && !String(coordenadaLon).includes("Buscando");
         
         const yaSincronizadoOModificado = tieneLat && tieneLon;
-        const estaEnColaPendiente = pendingSync.some(p => p.CURP === item.CURP);
+        const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']);
         
         const fueVisitado = yaSincronizadoOModificado || estaEnColaPendiente;
 
         div.className = fueVisitado ? "result-item status-visitado" : "result-item";
         
-        const displayNombre = item.NOMBRE ? String(item.NOMBRE).trim() : '';
-        const displayPaterno = item.AP_PATERNO ? String(item.AP_PATERNO).trim() : '';
-        const displayMaterno = item.AP_MATERNO ? String(item.AP_MATERNO).trim() : '';
-        const displayCurp = item.CURP ? String(item.CURP).trim() : 'SIN CURP';
-        const displayCalle = item.CALLE ? String(item.CALLE).trim() : 'Calle no reg.';
-        const displayNumExt = item.NUM_EXT ? `No. ${String(item.NUM_EXT).trim()}` : 'S/N';
-        const displayColonia = item.COLONIA ? String(item.COLONIA).trim() : 'Colonia no reg.';
+        const displayNombre = item['NOMBRE'] ? String(item['NOMBRE']).trim() : '';
+        const displayPaterno = item['AP PATERNO'] ? String(item['AP PATERNO']).trim() : '';
+        const displayMaterno = item['AP MATERNO'] ? String(item['AP MATERNO']).trim() : '';
+        const displayCurp = item['CURP'] ? String(item['CURP']).trim() : 'SIN CURP';
+        const displayCalle = item['CALLE'] ? String(item['CALLE']).trim() : 'Calle no reg.';
+        const displayNumExt = item['NUM EXT'] ? `No. ${String(item['NUM EXT']).trim()}` : 'S/N';
+        const displayColonia = item['COLONIA'] ? String(item['COLONIA']).trim() : 'Colonia no reg.';
         
         const indicadorTexto = fueVisitado ? ' <span style="color:#236947; font-weight:bold; font-size:12px; margin-left:5px;">✓ Actualizado</span>' : '';
 
@@ -268,35 +269,37 @@ function seleccionarEstatusVisita(estatus) {
     }
 }
 
-// CORRECCIÓN DEFINITIVA DE APERTURA DE PANTALLA 4 (REPARA ID F-CAUSAL Y APELLIDOS)
+// CORRECCIÓN EXACTA DE LOS ELEMENTOS HTML Y VINCULACIÓN CON TUS COLUMNAS
 function openForm(item) {
     if (!item) return alert("Error: No se seleccionó ningún registro.");
 
-    document.getElementById('f-curp').value = item.CURP || '';
-    document.getElementById('f-id').value = item.ID || '';
-    document.getElementById('f-nombre').value = item.NOMBRE || '';
+    // Se asignan los valores a los IDs reales de tu index.html usando tus columnas de Sheets
+    document.getElementById('f-curp').value = item['CURP'] || '';
+    document.getElementById('f-id').value = item['ID'] || '';
+    document.getElementById('f-nombre').value = item['NOMBRE'] || '';
     
-    // Vinculación corregida usando guiones bajos tal como lee IndexedDB
-    document.getElementById('f-paterno').value = item.AP_PATERNO || item.ap_paterno || '';
-    document.getElementById('f-materno').value = item.AP_MATERNO || item.ap_materno || '';
+    // Vinculación corregida de tus apellidos con espacio
+    document.getElementById('f-paterno').value = item['AP PATERNO'] || '';
+    document.getElementById('f-materno').value = item['AP MATERNO'] || '';
     
-    document.getElementById('f-telfijo').value = item.TEL_FIJO || item.tel_fijo || '';
-    document.getElementById('f-telcel').value = item.TEL_CEL || item.tel_cel || '';
-    document.getElementById('f-municipio').value = item.MUNICIPIO || item.municipio || '';
-    document.getElementById('f-localidad').value = item.LOCALIDAD || item.localidad || '';
-    document.getElementById('f-seccion').value = item.SECCION || item.seccion || '';
-    document.getElementById('f-colonia').value = item.COLONIA || item.colonia || '';
-    document.getElementById('f-cp').value = item.CP || item.cp || '';
-    document.getElementById('f-calle').value = item.CALLE || item.calle || '';
-    document.getElementById('f-numext').value = item.NUM_EXT || item.num_ext || '';
-    document.getElementById('f-referencia').value = item.REFERENCIA || item.referencia || '';
-    document.getElementById('f-situacion').value = item.SITUACION || item.situacion || '';
+    document.getElementById('f-telfijo').value = item['TEL FIJO'] || '';
+    document.getElementById('f-telcel').value = item['TEL CEL'] || '';
+    document.getElementById('f-municipio').value = item['MUNICIPIO'] || '';
+    document.getElementById('f-localidad').value = item['LOCALIDAD'] || '';
+    document.getElementById('f-seccion').value = item['SECCION'] || '';
+    document.getElementById('f-colonia').value = item['COLONIA'] || '';
+    document.getElementById('f-cp').value = item['CP'] || '';
+    document.getElementById('f-calle').value = item['CALLE'] || '';
+    document.getElementById('f-numext').value = item['NUM EXT'] || '';
+    document.getElementById('f-referencia').value = item['REFERENCIA'] || '';
+    document.getElementById('f-situacion').value = item['SITUACION'] || '';
     
-    // CORRECCIÓN EXACTA DE TU ERROR DE HOY: Se mapea al ID real del HTML (f-causal)
-    document.getElementById('f-causal').value = item.CUSAL || item.causal || item.CAUSAL || '';
+    // CORRECCIÓN DE LA TRABA DE HOY: Mapeo exacto al ID del HTML (f-causal) y columna real (CAUSAL)
+    document.getElementById('f-causal').value = item['CAUSAL'] || '';
 
-    currentEstatusVisita = item.ESTATUS_VISITA || "LOCALIZADO";
-    motivoNoLocalizadoValue = item.MOTIVO_NO_LOCALIZADO || "";
+    // Carga de las dos nuevas columnas
+    currentEstatusVisita = item['ESTATUS_VISITA'] || "LOCALIZADO";
+    motivoNoLocalizadoValue = item['MOTIVO_NO_LOCALIZADO'] || "";
 
     document.getElementById('f-lat').value = "Buscando satélite...";
     document.getElementById('f-lon').value = "Buscando satélite...";
@@ -336,36 +339,36 @@ function saveData(event) {
     }
     
     const targetCurp = document.getElementById('f-curp').value;
-    const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp);
+    const memoryIndex = localMemoryDatabase.findIndex(r => r['CURP'] === targetCurp);
     const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
 
     const record = {
-        CURP: targetCurp,
-        ID: document.getElementById('f-id').value,
-        NOMBRE: document.getElementById('f-nombre').value,
-        AP_PATERNO: document.getElementById('f-paterno').value,
-        AP_MATERNO: document.getElementById('f-materno').value,
-        TEL_FIJO: document.getElementById('f-telfijo').value,
-        TEL_CEL: document.getElementById('f-telcel').value,
-        MUNICIPIO: document.getElementById('f-municipio').value,
-        LOCALIDAD: document.getElementById('f-localidad').value,
-        SECCION: document.getElementById('f-seccion').value,
-        COLONIA: document.getElementById('f-colonia').value,
-        CP: document.getElementById('f-cp').value,
-        CALLE: document.getElementById('f-calle').value,
-        NUM_EXT: document.getElementById('f-numext').value,
-        REFERENCIA: document.getElementById('f-referencia').value,
-        SITUACION: document.getElementById('f-situacion').value,
-        CUSAL: document.getElementById('f-causal').value,
+        'CURP': targetCurp,
+        'ID': document.getElementById('f-id').value,
+        'NOMBRE': document.getElementById('f-nombre').value,
+        'AP PATERNO': document.getElementById('f-paterno').value,
+        'AP MATERNO': document.getElementById('f-materno').value,
+        'TEL FIJO': document.getElementById('f-telfijo').value,
+        'TEL CEL': document.getElementById('f-telcel').value,
+        'MUNICIPIO': document.getElementById('f-municipio').value,
+        'LOCALIDAD': document.getElementById('f-localidad').value,
+        'SECCION': document.getElementById('f-seccion').value,
+        'COLONIA': document.getElementById('f-colonia').value,
+        'CP': document.getElementById('f-cp').value,
+        'CALLE': document.getElementById('f-calle').value,
+        'NUM EXT': document.getElementById('f-numext').value,
+        'REFERENCIA': document.getElementById('f-referencia').value,
+        'SITUACION': document.getElementById('f-situacion').value,
+        'CAUSAL': document.getElementById('f-causal').value,
         
-        ESTATUS_VISITA: currentEstatusVisita,
-        MOTIVO_NO_LOCALIZADO: motivoNoLocalizadoValue,
+        'ESTATUS_VISITA': currentEstatusVisita,
+        'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue,
         
-        Latitud: latValue,
-        Longitud: lonValue,
-        FECHA_MODIFICACION: new Date().toLocaleString("es-MX"),
-        USUARIO_MODIFICA: currentUser.name,
-        SHEETS_ROW_INDEX: originalRecord.SHEETS_ROW_INDEX || ""
+        'Latitud': latValue,
+        'Longitud': lonValue,
+        'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"),
+        'USUARIO_MODIFICA': currentUser.name,
+        'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || ""
     };
 
     const txUpdate = db.transaction(STORE_NAME, "readwrite");
@@ -397,7 +400,7 @@ function openHistoryScreen() {
     pendingSync.forEach((item) => {
         const div = document.createElement('div');
         div.className = "result-item";
-        div.innerHTML = `<strong>⏳ ${item.NOMBRE} (${item.CURP})</strong><br><small>Pendiente | Modificado: ${item.FECHA_MODIFICACION}</small>`;
+        div.innerHTML = `<strong>⏳ ${item['NOMBRE']} (${item['CURP']})</strong><br><small>Pendiente | Modificado: ${item['FECHA_MODIFICACION']}</small>`;
         logList.appendChild(div);
     });
 
@@ -405,7 +408,7 @@ function openHistoryScreen() {
         const div = document.createElement('div');
         div.className = "result-item";
         div.style.opacity = "0.6"; 
-        div.innerHTML = `<strong>✅ ${item.NOMBRE} (${item.CURP})</strong><br><small style="color:green;">Sincronizado con Sheets con éxito</small>`;
+        div.innerHTML = `<strong>✅ ${item['NOMBRE']} (${item['CURP']})</strong><br><small style="color:green;">Sincronizado con Sheets con éxito</small>`;
         logList.appendChild(div);
     });
 }
@@ -454,9 +457,9 @@ function downloadBackupCSV() {
     }
 
     const headers = [
-        "CURP", "ID", "NOMBRE", "AP_PATERNO", "AP_MATERNO", "TEL_FIJO", "TEL_CEL", 
-        "MUNICIPIO", "LOCALIDAD", "SECCION", "COLONIA", "CP", "CALLE", "NUM_EXT", 
-        "REFERENCIA", "SITUACION", "CUSAL", "ESTATUS_VISITA", "MOTIVO_NO_LOCALIZADO", 
+        "CURP", "ID", "NOMBRE", "AP PATERNO", "AP MATERNO", "TEL FIJO", "TEL CEL", 
+        "MUNICIPIO", "LOCALIDAD", "SECCION", "COLONIA", "CP", "CALLE", "NUM EXT", 
+        "REFERENCIA", "SITUACION", "CAUSAL", "ESTATUS_VISITA", "MOTIVO_NO_LOCALIZADO", 
         "Latitud", "Longitud", "FECHA_MODIFICACION", "USUARIO_MODIFICA"
     ];
 
