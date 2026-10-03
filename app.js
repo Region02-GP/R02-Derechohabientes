@@ -13,7 +13,7 @@ export default function App() {
   const [busqueda, setBusqueda] = useState('');
   const [seleccionado, setSeleccionado] = useState(null);
 
-  // Estados del Candado de Acceso por CURP y Bienvenida
+  // Estados originales para el Candado de Acceso por CURP y Bienvenida
   const [curpAcceso, setCurpAcceso] = useState('');
   const [haAccedido, setHaAccedido] = useState(false);
   const [nombreBrigadista, setNombreBrigadista] = useState('');
@@ -31,13 +31,14 @@ export default function App() {
   const [situacion, setSituacion] = useState('LOCALIZADO');
   const [causal, setCausal] = useState('');
   const cargarDatos = async () => {
+    setLoading(true);
     try {
       const response = await fetch(API_URL);
       const data = await response.json();
       setDerechohabientes(data);
       setFiltrados(data);
     } catch (error) {
-      console.log("Sincronizando datos en segundo plano...");
+      Alert.alert("R02", "Error de conexión con la base de datos.");
     } finally {
       setLoading(false);
     }
@@ -73,6 +74,7 @@ export default function App() {
     });
     setFiltrados(filtrados);
   };
+  // Función de acceso corregida (Opera de forma local inmediata)
   const manejarAcceso = () => {
     const curpLimpia = curpAcceso.trim().toUpperCase();
     
@@ -84,8 +86,8 @@ export default function App() {
     const brigadistaEncontrado = BRIGADISTAS_AUTORIZADOS.find(u => u.curp === curpLimpia);
 
     if (brigadistaEncontrado) {
-      setNombreBrigadista(brigadistaEncontrado.nombre); 
-      setHaAccedido(true); 
+      setNombreBrigadista(brigadistaEncontrado.nombre); // Guarda el nombre para el saludo de bienvenida
+      setHaAccedido(true); // Desbloquea la interfaz
     } else {
       Alert.alert("Acceso Denegado", "Esta CURP no está autorizada para operar la aplicación R02.");
     }
@@ -104,7 +106,7 @@ export default function App() {
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status === 'granted') {
-        let loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        let loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
         latitude = loc.coords.latitude.toString();
         longitude = loc.coords.longitude.toString();
       }
@@ -133,7 +135,7 @@ export default function App() {
       setLoading(false);
     }
   };
-  // PANTALLA 1: PANTALLA DE ACCESO (LOGIN POR CURP)
+v  // PANTALLA 1: PANTALLA DE ACCESO (LOGIN POR CURP)
   if (!haAccedido) {
     return (
       <SafeAreaView style={styles.loginCentrado}>
@@ -174,7 +176,7 @@ export default function App() {
       {loading ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#621132" />
-          <Text style={{ marginTop: 10, color: '#4b5563' }}>Descargando padrón...</Text>
+          <Text style={{ marginTop: 10, color: '#4b5563' }}>Sincronizando base de datos...</Text>
         </View>
       ) : !seleccionado ? (
         <View style={{ flex: 1 }}>
