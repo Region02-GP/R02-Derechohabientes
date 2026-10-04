@@ -1,5 +1,5 @@
 /* =========================================================================
-   PALETA DE COLORES MODO OSCURO INSTITUCIONAL (AHORRO DE BATERÍA AMOLED)
+   PALETA DE COLORES CLARO INSTITUCIONAL (ALTO CONTRASTE / ANTIRREFLEJO)
    ========================================================================= */
 :root {
     --primary-color: #621132;   /* Guinda Formal */
@@ -7,20 +7,21 @@
     --secondary-color: #BC955C; /* Dorado Institucional Premium */
     --secondary-dark: #987242;  /* Dorado Oscuro (Hover) */
     
-    /* Fondos Oscuros Puros para ahorro de energía en Pantallas AMOLED */
-    --bg-color: #121212;        /* Negro Absoluto (Apaga píxeles) */
-    --surface-color: #1E1F22;   /* Gris Asfalto Oscuro para tarjetas y pantallas */
-    --surface-light: #2B2D31;   /* Gris Medio para inputs y elementos secundarios */
+    /* Fondos Claros Limpios para Lectura en Exteriores */
+    --bg-color: #F3F4F6;        /* Fondo General Gris Claro */
+    --surface-color: #FFFFFF;   /* Blanco Puro para tarjetas y pantallas */
+    --surface-light: #F9FAFB;   /* Gris Sutil para campos de texto */
     
-    /* Textos de Alto Contraste para lectura bajo el sol */
-    --text-main: #F2F3F5;       /* Blanco Grisáceo Suave */
-    --text-muted: #B5BAC1;      /* Gris Claro para etiquetas */
+    /* Textos de Máxima Legibilidad */
+    --text-main: #1F2937;       /* Negro Antracita para contenido */
+    --text-muted: #4B5563;      /* Gris Medio para etiquetas */
     --white: #ffffff;
     
-    /* Efectos de Profundidad en Modo Oscuro */
-    --shadow-soft: 0 4px 10px rgba(0, 0, 0, 0.3);
-    --shadow-screen: 0 8px 32px rgba(0, 0, 0, 0.5);
-    --shadow-gold: 0 4px 14px 0 rgba(188, 149, 92, 0.15);
+    /* Efectos de Relieve Tridimensional Tactil */
+    --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-screen: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    --shadow-button: 0 4px 14px 0 rgba(98, 17, 50, 0.25);
+    --shadow-gold: 0 4px 14px 0 rgba(188, 149, 92, 0.2);
 }
 
 /* =========================================================================
@@ -36,12 +37,12 @@ body {
 }
 
 .main-header {
-    background-color: var(--surface-color);
+    background-color: var(--primary-color);
     color: var(--white);
     text-align: center;
     padding: 18px;
-    border-bottom: 3px solid var(--secondary-color); /* Línea dorada divisoria */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    border-bottom: 4px solid var(--secondary-color); /* Línea dorada */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
 
 .main-header h1 {
@@ -52,7 +53,7 @@ body {
     color: var(--white);
 }
 
-/* Margen de seguridad inferior para la barra de navegación horizontal */
+/* Margen de seguridad inferior para evitar que la barra tape contenido */
 .app-container {
     max-width: 480px;
     margin: 15px auto;
@@ -64,16 +65,16 @@ body {
 .app-screen {
     background: var(--surface-color);
     padding: 22px;
-    border-radius: 14px;
+    border-radius: 12px;
     box-shadow: var(--shadow-screen);
-    border: 1px solid #2B2D31;
+    border: 1px solid #E5E7EB;
     position: relative;
 }
 
 .hidden { display: none !important; opacity: 0 !important; visibility: hidden !important; }
 
 h2 { 
-    color: var(--secondary-color); /* Títulos en Dorado sobre fondo oscuro */
+    color: var(--primary-color); 
     margin-top: 0;
     margin-bottom: 15px;
     font-size: 20px;
@@ -90,7 +91,7 @@ h2 {
 }
 .screen-toolbar h2 { margin: 0; border: none; }
 /* =========================================================================
-   ESTILOS DE CAMPOS DE FORMULARIO OSCUROS
+   ESTILOS DE CAMPOS DE FORMULARIO DE ALTA VISIBILIDAD
    ========================================================================= */
 .form-group {
     margin-bottom: 16px;
@@ -107,7 +108,7 @@ h2 {
 input[type="text"], input[type="tel"], input[type="number"], textarea {
     width: 100%;
     padding: 11px 14px;
-    border: 1px solid #3f4248;
+    border: 1px solid #CBD5E0;
     border-radius: 8px;
     box-sizing: border-box;
     font-size: 16px;
@@ -117,17 +118,17 @@ input[type="text"], input[type="tel"], input[type="number"], textarea {
 }
 
 input:focus, textarea:focus {
-    border-color: var(--secondary-color); /* Foco dorado en modo oscuro */
-    box-shadow: 0 0 0 3px rgba(188, 149, 92, 0.2);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(98, 17, 50, 0.15);
     outline: none;
 }
 
-/* Campos de lectura deshabilitados (CURP, ID, etc.) */
+/* Bloqueo de lectura (CURP, ID, etc.) */
 .text-disabled input {
-    background-color: var(--bg-color);
-    color: var(--text-muted);
+    background-color: #EDF2F7;
+    color: #4A5568;
     cursor: not-allowed;
-    border-color: #2B2D31;
+    border-color: #E2E8F0;
 }
 
 .form-grid {
@@ -139,23 +140,23 @@ input:focus, textarea:focus {
 hr {
     margin: 20px 0; 
     border: 0; 
-    border-top: 1px solid #2B2D31;
+    border-top: 1px solid #E5E7EB;
 }
 
 /* =========================================================================
-   DISEÑO AVANZADO DE BOTONES TRIDIMENSIONALES INSTITUCIONALES
+   DISEÑO AVANZADO DE BOTONES INTERACTIVOS TRIDIMENSIONALES
    ========================================================================= */
 button {
-    background-color: var(--primary-color); /* Guinda */
+    background-color: var(--primary-color);
     color: var(--white);
-    border: 1px solid rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
     padding: 14px;
     width: 100%;
     border-radius: 8px;
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(98, 17, 50, 0.4);
+    box-shadow: var(--shadow-button);
     transition: all 0.2s ease;
     margin-top: 10px;
     display: flex;
@@ -166,39 +167,36 @@ button {
 
 button:hover { 
     background-color: var(--primary-light);
-    box-shadow: 0 6px 20px rgba(98, 17, 50, 0.5);
+    box-shadow: 0 6px 20px rgba(98, 17, 50, 0.35);
     transform: translateY(-1px);
 }
 
 button:active { 
     transform: translateY(1px);
-    box-shadow: 0 2px 6px rgba(98, 17, 50, 0.4);
+    box-shadow: 0 2px 6px rgba(98, 17, 50, 0.25);
 }
 
 .btn-secondary { 
-    background-color: #2B2D31; 
-    color: var(--text-main);
-    border: 1px solid #3f4248;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    background-color: #1F1F1F; 
+    box-shadow: 0 4px 14px rgba(31, 31, 31, 0.2);
 }
-.btn-secondary:hover { 
-    background-color: #35373c;
-}
+.btn-secondary:hover { background-color: #333333; }
 
 .btn-back { 
-    background-color: #4E5D6C; 
-    box-shadow: 0 4px 12px rgba(78, 93, 108, 0.3);
+    background-color: #5A6A80; 
+    box-shadow: 0 4px 14px rgba(90, 106, 128, 0.2);
 }
-.btn-back:hover { background-color: #3B4856; }
+.btn-back:hover { background-color: #4A5568; }
 
-/* Botón de Sincronizar Guinda Formal Optimizado */
+/* Botón Sincronizar Guinda Formal */
 .btn-primary-guinda {
     background-color: var(--primary-color);
     color: var(--white);
-    border: 1px solid var(--secondary-color); /* Detalle de contorno dorado */
+    box-shadow: var(--shadow-button);
 }
+.btn-primary-guinda:hover { background-color: var(--primary-light); }
 
-/* Botón Excel Premium Dorado Metálico */
+/* Botón Excel Premium */
 .btn-excel-gold {
     background: linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 100%) !important;
     color: var(--secondary-color) !important;
@@ -207,42 +205,42 @@ button:active {
 }
 .btn-excel-gold:hover {
     background: var(--secondary-color) !important;
-    color: #121212 !important;
+    color: #1A1A1A !important;
 }
 
-/* Contenedores de Listas */
+/* Listados y Tarjetas */
 .results-list, .log-list {
     max-height: 280px;
     overflow-y: auto;
-    border: 1px solid #2B2D31;
+    border: 1px solid #E5E7EB;
     border-radius: 8px;
     margin: 15px 0;
-    background: var(--bg-color);
+    background: var(--white);
 }
 
 .result-item {
     padding: 14px 16px;
-    border-bottom: 1px solid #1E1F22;
+    border-bottom: 1px solid #F3F4F6;
     cursor: pointer;
-    background-color: var(--surface-color);
+    background-color: var(--white);
     transition: background-color 0.15s, padding-left 0.15s;
 }
 .result-item:hover { 
-    background-color: var(--surface-light);
+    background-color: #F9FAFB;
     padding-left: 20px; 
 }
 
 .card {
-    background: var(--surface-light);
-    border: 1px solid #35373c;
-    border-radius: 12px;
+    background: var(--white);
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
     padding: 18px;
     margin-bottom: 15px;
     box-shadow: var(--shadow-soft);
 }
 .card h3 { 
     margin-top: 0; 
-    color: var(--white); 
+    color: var(--text-main); 
     font-size: 16px; 
     font-weight: 700; 
 }
@@ -261,7 +259,7 @@ button:active {
     margin-top: 10px;              
 }
 /* =========================================================================
-   INSIGNIAS FLOTANTES DE NÚMERO DE PANTALLA INSTITUCIONAL
+   INSIGNIAS IDENTIFICADORAS DE NÚMERO DE PANTALLA
    ========================================================================= */
 .screen-number-badge {
     position: absolute;
@@ -280,44 +278,39 @@ button:active {
 }
 
 /* =========================================================================
-   SEMÁFORO DE VISITAS DE ALTO CONTRASTE (VINCULADO AL ESTATUS)
+   SEMÁFORO DE VISITAS CORPORATIVO SUAVE (REDUCE EL CANSANCIO VISUAL)
    ========================================================================= */
 
-/* 1. PENDIENTES / AÚN NO VISITADOS: Azul Cobalto Metálico Suave */
+/* 1. PENDIENTES / NO TOCADOS: Azul Glaciar Pastel / Borde Dorado */
 .result-item {
-    padding: 14px 16px;
-    border-bottom: 1px solid #1E1F22;
-    cursor: pointer;
-    background-color: #1a243d !important; /* Azul cobalto de bajo consumo */
-    border-left: 5px solid #BC955C !important; /* Borde izquierdo dorado de control */
-    transition: background-color 0.15s, padding-left 0.15s;
+    border-left: 5px solid var(--secondary-color) !important;
+    background-color: #EDF4F9 !important; /* Azul pastel muy claro */
+    color: var(--text-main);
 }
-.result-item:hover { 
-    background-color: #24325c !important; /* Brillo azul suave al pasar el dedo */
-    padding-left: 20px; 
+.result-item:hover {
+    background-color: #DEEBF4 !important;
 }
 
-/* 2. LOCALIZADOS: Verde Esmeralda Institucional */
+/* 2. LOCALIZADOS: Verde Menta / Borde Esmeralda */
 .result-item.status-localizado {
     border-left: 5px solid #236947 !important;
-    background-color: #14291e !important; 
+    background-color: #E6F4EA !important; /* Verde claro pastel */
 }
 .result-item.status-localizado:hover {
-    background-color: #1a3a27 !important;
+    background-color: #D2EBD4 !important;
 }
 
-/* 3. NO LOCALIZADOS: Rojo Carmesí de Advertencia */
+/* 3. NO LOCALIZADOS: Rojo Rosáceo / Borde Carmesí */
 .result-item.status-nolocalizado {
     border-left: 5px solid #b91c1c !important;
-    background-color: #2d1414 !important; 
+    background-color: #FCE8E6 !important; /* Rojo claro pastel */
 }
 .result-item.status-nolocalizado:hover {
-    background-color: #3d1a1a !important;
+    background-color: #FAD2CF !important;
 }
 
-
 /* =========================================================================
-   BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL PREMIUM MODO OSCURO
+   BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL CLARA (FIJA AL FONDO)
    ========================================================================= */
 .bottom-nav {
     position: fixed;
@@ -326,16 +319,16 @@ button:active {
     transform: translateX(-50%);
     width: 100%;
     max-width: 480px; 
-    background-color: var(--surface-color);
+    background-color: var(--white);
     
-    /* ALINEACIÓN HORIZONTAL ESTRICTA */
+    /* ALINEACIÓN HORIZONTAL */
     display: flex !important;
     flex-direction: row !important; 
     justify-content: space-around !important;
     align-items: center !important;
     
     border-top: 3px solid var(--secondary-color); /* Contorno Dorado */
-    box-shadow: 0 -6px 25px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.08);
     z-index: 100;
     padding: 8px 0;
     box-sizing: border-box;
@@ -345,7 +338,7 @@ button:active {
 .bottom-nav .nav-item {
     background: none !important;
     border: none !important;
-    color: var(--text-muted) !important;
+    color: #4A5568 !important;
     box-shadow: none !important;
     font-size: 13px !important;
     font-weight: 700 !important;
@@ -353,7 +346,7 @@ button:active {
     padding: 6px 12px !important;
     cursor: pointer;
     
-    /* ALINEACIÓN VERTICAL INTERNA */
+    /* ICONO ARRIBA Y TEXTO ABAJO */
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
@@ -372,13 +365,13 @@ button:active {
     margin-bottom: 2px !important;
 }
 
-/* Estado Seleccionado / Encendido (Enciende en Dorado Premium) */
+/* Estado Activo / Encendido (Guinda Institucional Activo) */
 .bottom-nav .nav-item.active {
-    color: var(--secondary-color) !important;
+    color: var(--primary-color) !important;
     transform: scale(1.05);
 }
 
 .bottom-nav .nav-item:hover {
-    color: var(--white) !important;
+    color: var(--primary-light) !important;
     box-shadow: none !important;
 }
