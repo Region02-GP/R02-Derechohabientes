@@ -194,12 +194,63 @@ function searchData() {
 
 function seleccionarEstatusVisita(estatus) {
     currentEstatusVisita = estatus.toUpperCase();
+    
     if (currentEstatusVisita === "NO LOCALIZADO") {
         let mot = prompt("Escriba el motivo por el cual NO FUE LOCALIZADO:");
-        if (!mot) { currentEstatusVisita = "LOCALIZADO"; return; }
+        if (!mot || mot.trim() === "") { 
+            alert("🛑 Operación cancelada: Debe ingresar un motivo válido.");
+            currentEstatusVisita = "LOCALIZADO"; 
+            motivoNoLocalizadoValue = "";
+            actualizarEstilosBotonesFormulario();
+            return; 
+        }
         motivoNoLocalizadoValue = mot.trim();
-    } else { motivoNoLocalizadoValue = ""; }
+    } else { 
+        motivoNoLocalizadoValue = ""; 
+    }
+    
+    // Fuerza el cambio visual inmediato de los botones al hacer clic
+    actualizarEstilosBotonesFormulario();
 }
+
+// FUNCIÓN NUEVA: Controla el encendido y apagado visual de alto contraste
+function actualizarEstilosBotonesFormulario() {
+    const btnLoc = document.getElementById('btn-status-localizado');
+    const btnNoLoc = document.getElementById('btn-status-nolocalizado');
+    
+    if (!btnLoc || !btnNoLoc) return;
+
+    if (currentEstatusVisita === "LOCALIZADO") {
+        // Encender Localizado (Verde Menta con borde grueso y sombra)
+        btnLoc.style.backgroundColor = "#E6F4EA";
+        btnLoc.style.borderColor = "#137333";
+        btnLoc.style.color = "#137333";
+        btnLoc.style.boxShadow = "0 4px 12px rgba(19, 115, 51, 0.25), inset 0 2px 4px rgba(255,255,255,0.6)";
+        btnLoc.style.transform = "scale(1.02)";
+        
+        // Apagar No Localizado (Gris neutro inactivo)
+        btnNoLoc.style.backgroundColor = "#F3F4F6";
+        btnNoLoc.style.borderColor = "#CBD5E0";
+        btnNoLoc.style.color = "#9CA3AF";
+        btnNoLoc.style.boxShadow = "none";
+        btnNoLoc.style.transform = "scale(1)";
+    } else if (currentEstatusVisita === "NO LOCALIZADO") {
+        // Encender No Localizado (Rojo Rosáceo con borde carmesí y sombra)
+        btnNoLoc.style.backgroundColor = "#FCE8E6";
+        btnNoLoc.style.borderColor = "#C5221F";
+        btnNoLoc.style.color = "#C5221F";
+        btnNoLoc.style.boxShadow = "0 4px 12px rgba(197, 34, 31, 0.25), inset 0 2px 4px rgba(255,255,255,0.6)";
+        btnNoLoc.style.transform = "scale(1.02)";
+        
+        // Apagar Localizado (Gris neutro inactivo)
+        btnLoc.style.backgroundColor = "#F3F4F6";
+        btnLoc.style.borderColor = "#CBD5E0";
+        btnLoc.style.color = "#9CA3AF";
+        btnLoc.style.boxShadow = "none";
+        btnLoc.style.transform = "scale(1)";
+    }
+}
+
 function openForm(item) {
     if (!item) return;
     document.getElementById('f-curp').value = item['CURP'] || '';
@@ -249,6 +300,16 @@ function openForm(item) {
         document.getElementById('f-lon').value = "NO COMPATIBLE";
     }
     changeScreen('screen-form');
+        // ... todo el código anterior de openForm se queda idéntico ...
+    currentEstatusVisita = item['ESTATUS_VISITA'] || "LOCALIZADO";
+    motivoNoLocalizadoValue = item['MOTIVO_NO_LOCALIZADO'] || "";
+
+    // LÍNEA NUEVA A AGREGAR: Pinta el botón correcto al cargar los datos del derechohabiente
+    actualizarEstilosBotonesFormulario();
+
+    changeScreen('screen-form');
+}
+
 }
 
 function saveData(event) {
