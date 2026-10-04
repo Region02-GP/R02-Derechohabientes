@@ -1,6 +1,11 @@
+// =========================================================================
+// R02-DERECHOHABIENTES: CONFIGURACIÓN GENERAL Y ESTADO DE LA APP
+// =========================================================================
+
 // URL del Web App de Google Apps Script 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUx3xvBTGwS7zUccDMYb275oRgo8ZVaZKeHSqUGyWCYNAtsLTdADAlF7tCGMgSgXYv/exec";
 
+// CURPs Autorizadas en Código para la Pantalla de Acceso (Pantalla 1)
 const AUTHORIZED_CURPS = {
     "CURPVALIDA12345678": "Juan Pérez López",
     "CURPVALIDA87654321": "María Gómez García"
@@ -11,15 +16,18 @@ let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
 let currentUser = null;
 let previousScreen = 'screen-welcome';
 
+// VARIABLES PARA LOS BOTONES DE LOCALIZADO / NO LOCALIZADO
 let currentEstatusVisita = "LOCALIZADO"; 
 let motivoNoLocalizadoValue = "";        
 
+// INITIALIZACIÓN DE INDEXEDDB 
 const DB_NAME = "R02_DB";
 const DB_VERSION = 1;
 const STORE_NAME = "derechohabientes";
 let db;
 
 const request = indexedDB.open(DB_NAME, DB_VERSION);
+
 request.onupgradeneeded = (e) => {
     db = e.target.result;
     if (!db.objectStoreNames.contains(STORE_NAME)) {
@@ -28,15 +36,30 @@ request.onupgradeneeded = (e) => {
         store.createIndex("by_calle", "CALLE", { unique: false });
     }
 };
-request.onsuccess = (e) => { db = e.target.result; };
-request.onerror = (e) => { console.error("Error IndexedDB:", e.target.error); };
 
+request.onsuccess = (e) => { 
+    db = e.target.result; 
+    console.log("IndexedDB inicializada correctamente para soporte masivo.");
+};
+
+request.onerror = (e) => {
+    console.error("Error al abrir IndexedDB:", e.target.error);
+};
+
+// NAVEGACIÓN GENERAL ENTRE PANTALLAS
 function changeScreen(screenId) {
-    if (screenId !== 'screen-history') previousScreen = screenId;
-    if (screenId === 'screen-search') preloadDatabaseToMemory();
+    if (screenId !== 'screen-history') {
+        previousScreen = screenId;
+    }
+    if (screenId === 'screen-search') {
+        preloadDatabaseToMemory();
+    }
     document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
     document.getElementById(screenId).classList.remove('hidden');
 }
+// =========================================================================
+// MÓDULO 2: PANTALLA 1 (LOGIN) Y PANTALLA 2 (DESCARGA)
+// =========================================================================
 function login() {
     const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
     if (AUTHORIZED_CURPS[curpInput]) {
@@ -44,7 +67,7 @@ function login() {
         document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
         changeScreen('screen-welcome');
     } else {
-        alert("CURP no autorizada o inválida.");
+        alert("CURP no autorizada o inválida en el sistema.");
     }
 }
 
@@ -53,11 +76,16 @@ async function downloadAllDataMassive() {
     const progressContainer = document.getElementById('progress-container');
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
-    if (!db) return alert("La base de datos local aún no está lista.");
+    
+    if (!db) return alert("La base de datos local aún no está lista. Reintente en un segundo.");
     
     btn.disabled = true;
     progressContainer.style.display = "block";
-    let offset = 0, limit = 10000, isDone = false, totalCargados = 0;
+    
+    let offset = 0;
+    let limit = 10000; 
+    let isDone = false;
+    let totalCargados = 0;
     
     const txClear = db.transaction(STORE_NAME, "readwrite");
     txClear.objectStore(STORE_NAME).clear();
@@ -65,14 +93,24 @@ async function downloadAllDataMassive() {
     try {
         while (!isDone) {
             progressText.innerText = `Descargando registros: ${totalCargados} acumulados...`;
+            
             const url = `${GOOGLE_SCRIPT_URL}?action=getAllData&offset=${offset}&limit=${limit}&_=${new Date().getTime()}`;
             const response = await fetch(url);
+            
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+            
             const textData = await response.text();
-            let data = JSON.parse(textData);
+            let data;
+            try {
+                data = JSON.parse(textData);
+            } catch (jsonParseError) {
+                throw new Error("El servidor de Google devolvió un formato corrompido.");
+            }
             
             if (data && data.records && data.records.length > 0) {
                 const tx = db.transaction(STORE_NAME, "readwrite");
                 const store = tx.objectStore(STORE_NAME);
+                
                 data.records.forEach(record => {
                     if (record && record.CURP) {
                         record.CURP = String(record.CURP).replace(/ /g, "").toUpperCase().trim();
@@ -82,31 +120,37 @@ async function downloadAllDataMassive() {
                 });
                 await new Promise((resolve) => { tx.oncomplete = resolve; });
             }
+            
             isDone = data.done === true || data.records.length === 0;
             offset = data.nextOffset || (offset + limit);
-            progressBar.style.width = `${Math.min(100, Math.round((offset / 25000) * 100))}%`;
+            
+            let percentage = Math.min(100, Math.round((offset / 25000) * 100));
+            progressBar.style.width = `${percentage}%`;
         }
-        progressText.innerText = `¡Descarga completa! ${totalCargados} registros listos.`;
-        alert(`Éxito: Se guardaron ${totalCargados} registros.`);
+        
+        progressText.innerText = `¡Descarga completa! ${totalCargados} derechohabientes listos offline.`;
+        alert(`Éxito: Se han guardado ${totalCargados} registros en la memoria interna.`);
     } catch (error) {
-        alert(`Error: ${error.message}`);
-    } finally { btn.disabled = false; }
+        console.error(error);
+        alert(`Error en la transferencia: ${error.message}`);
+    } finally {
+        window.setTimeout(() => { btn.disabled = false; }, 1000);
+    }
 }
+// =========================================================================
+// MÓDULO 3: PANTALLA 3 (BUSCADOR FLEXIBLE) Y PANTALLA 4 (FORMULARIO Y GPS)
+// =========================================================================
 let localMemoryDatabase = [];
-function preloadDatabaseToMemory() {
-    if (!db) return;
-    const tx = db.transaction(STORE_NAME, "readonly");
-    tx.objectStore(STORE_NAME).getAll().onsuccess = (e) => {
-        localMemoryDatabase = e.target.result || [];
-    };
-}
 
-let localMemoryDatabase = [];
 function preloadDatabaseToMemory() {
     if (!db) return;
     const tx = db.transaction(STORE_NAME, "readonly");
-    tx.objectStore(STORE_NAME).getAll().onsuccess = (e) => {
+    const store = tx.objectStore(STORE_NAME);
+    const requestGetAll = store.getAll(); 
+
+    requestGetAll.onsuccess = (e) => {
         localMemoryDatabase = e.target.result || [];
+        console.log(`Base de datos de ${localMemoryDatabase.length} registros precargada en RAM.`);
     };
 }
 
@@ -131,6 +175,7 @@ function searchData() {
         const numExt = item['NUM EXT'] ? String(item['NUM EXT']).toLowerCase() : "";
         const colonia = item['COLONIA'] ? String(item['COLONIA']).toLowerCase() : "";
 
+        // Unificación para búsqueda cruzada por cualquier dato
         const combinedText = `${nombre} ${apPaterno} ${apMaterno} ${curp} ${calle} ${numExt} ${colonia}`;
         if (searchTokens.every(t => combinedText.includes(t))) {
             matchedRecords.push(item);
@@ -142,25 +187,20 @@ function searchData() {
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div');
         
-        // =========================================================================
-        // LÓGICA DEL SEMÁFORO VISUAL POR COLUMNA ESTATUS_VISITA
-        // =========================================================================
-        // Revisamos si ya tiene un estatus guardado hoy localmente o si vino desde Sheets
+        // Consolidación de estatus para pintar el semáforo visual
         const estatusActual = item['ESTATUS_VISITA'] || "";
         const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']);
         const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
-        
-        // Consolidamos cuál es el estatus final a mostrar
         const estatusFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['ESTATUS_VISITA'] : estatusActual;
 
-        let claseColor = "result-item"; // Gris por defecto (Pendiente)
+        let claseColor = "result-item"; 
         let textoIndicador = "";
 
         if (estatusFinal === "LOCALIZADO") {
-            claseColor = "result-item status-localizado"; // Se pintará Verde
+            claseColor = "result-item status-localizado"; 
             textoIndicador = ' <span style="color:#236947; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>';
         } else if (estatusFinal === "NO LOCALIZADO") {
-            claseColor = "result-item status-nolocalizado"; // Se pintará Rojo
+            claseColor = "result-item status-nolocalizado"; 
             textoIndicador = ' <span style="color:#b91c1c; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
         }
 
@@ -194,17 +234,10 @@ function seleccionarEstatusVisita(estatus) {
         motivoNoLocalizadoValue = mot.trim();
     } else { motivoNoLocalizadoValue = ""; }
 }
-
-function seleccionarEstatusVisita(estatus) {
-    currentEstatusVisita = estatus.toUpperCase();
-    if (currentEstatusVisita === "NO LOCALIZADO") {
-        let mot = prompt("Escriba el motivo por el cual NO FUE LOCALIZADO:");
-        if (!mot) { currentEstatusVisita = "LOCALIZADO"; return; }
-        motivoNoLocalizadoValue = mot.trim();
-    } else { motivoNoLocalizadoValue = ""; }
-}
 function openForm(item) {
-    if (!item) return;
+    if (!item) return alert("Error: No se seleccionó ningún registro.");
+
+    // Mapeo exacto hacia tus identificadores del index.html corrigiendo los espacios
     document.getElementById('f-curp').value = item['CURP'] || '';
     document.getElementById('f-id').value = item['ID'] || '';
     document.getElementById('f-nombre').value = item['NOMBRE'] || '';
@@ -268,22 +301,43 @@ function saveData(event) {
     const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
 
     const record = {
-        'CURP': targetCurp, 'ID': document.getElementById('f-id').value, 'NOMBRE': document.getElementById('f-nombre').value,
-        'AP PATERNO': document.getElementById('f-paterno').value, 'AP MATERNO': document.getElementById('f-materno').value,
-        'TEL FIJO': document.getElementById('f-telfijo').value, 'TEL CEL': document.getElementById('f-telcel').value,
-        'MUNICIPIO': document.getElementById('f-municipio').value, 'LOCALIDAD': document.getElementById('f-localidad').value,
-        'SECCION': document.getElementById('f-seccion').value, 'COLONIA': document.getElementById('f-colonia').value,
-        'CP': document.getElementById('f-cp').value, 'CALLE': document.getElementById('f-calle').value,
-        'NUM EXT': document.getElementById('f-numext').value, 'REFERENCIA': document.getElementById('f-referencia').value,
-        'SITUACION': document.getElementById('f-situacion').value, 'CAUSAL': document.getElementById('f-causal').value,
-        'ESTATUS_VISITA': currentEstatusVisita, 'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue,
-        'Latitud': latValue, 'Longitud': lonValue,
-        'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"), 'USUARIO_MODIFICA': currentUser.name,
+        'CURP': targetCurp,
+        'ID': document.getElementById('f-id').value,
+        'NOMBRE': document.getElementById('f-nombre').value,
+        'AP PATERNO': document.getElementById('f-paterno').value,
+        'AP MATERNO': document.getElementById('f-materno').value,
+        'TEL FIJO': document.getElementById('f-telfijo').value,
+        'TEL CEL': document.getElementById('f-telcel').value,
+        'MUNICIPIO': document.getElementById('f-municipio').value,
+        'LOCALIDAD': document.getElementById('f-localidad').value,
+        'SECCION': document.getElementById('f-seccion').value,
+        'COLONIA': document.getElementById('f-colonia').value,
+        'CP': document.getElementById('f-cp').value,
+        'CALLE': document.getElementById('f-calle').value,
+        'NUM EXT': document.getElementById('f-numext').value,
+        'REFERENCIA': document.getElementById('f-referencia').value,
+        'SITUACION': document.getElementById('f-situacion').value,
+        'CAUSAL': document.getElementById('f-causal').value,
+        
+        'ESTATUS_VISITA': currentEstatusVisita,
+        'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue,
+        
+        'Latitud': latValue,
+        'Longitud': lonValue,
+        'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"),
+        'USUARIO_MODIFICA': currentUser.name,
         'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || ""
     };
 
-    db.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).put(record);
-    if (memoryIndex !== -1) localMemoryDatabase[memoryIndex] = record; else localMemoryDatabase.push(record);
+    const txUpdate = db.transaction(STORE_NAME, "readwrite");
+    txUpdate.objectStore(STORE_NAME).put(record);
+
+    if (memoryIndex !== -1) {
+        localMemoryDatabase[memoryIndex] = record;
+    } else {
+        localMemoryDatabase.push(record);
+    }
+
     pendingSync.push(record);
     localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
 
@@ -296,9 +350,8 @@ function openHistoryScreen() {
     changeScreen('screen-history');
     document.getElementById('pending-count').innerText = pendingSync.length;
     const logList = document.getElementById('history-log');
-    logList.innerHTML = ""; // Limpieza de seguridad de la bitácora
+    logList.innerHTML = ""; 
 
-    // Muestra en la interfaz los registros en cola local
     pendingSync.forEach((item) => {
         const div = document.createElement('div');
         div.className = "result-item";
@@ -306,7 +359,6 @@ function openHistoryScreen() {
         logList.appendChild(div);
     });
 
-    // Muestra en la interfaz los registros ya subidos con éxito en el día
     syncedHistory.forEach((item) => {
         const div = document.createElement('div');
         div.className = "result-item";
@@ -327,20 +379,33 @@ async function syncWithSheets() {
             method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({ action: "sync", records: pendingSync })
         });
+
         const result = await response.json();
+
         if (result.status === "success") {
             syncedHistory = syncedHistory.concat(pendingSync);
             localStorage.setItem('syncedHistory', JSON.stringify(syncedHistory));
-            pendingSync = []; localStorage.removeItem('pendingSync');
-            openHistoryScreen(); 
-            alert("¡Éxito! Sincronización realizada en Sheets de forma correcta.");
+
+            pendingSync = [];
+            localStorage.removeItem('pendingSync');
+            
+            openHistoryScreen();
+            alert(`¡Excelente! Sincronización realizada en Sheets: ${result.message}`);
+        } else {
+            alert(`Error del servidor: ${result.message}`);
         }
-    } catch (e) { alert("Error de red temporal."); }
+    } catch (e) {
+        console.error(e);
+        alert("Fallo de conexión temporal.");
+    }
 }
 
 function downloadBackupCSV() {
     const allVisitsOfDay = pendingSync.concat(syncedHistory);
-    if (allVisitsOfDay.length === 0) return alert("No tienes ningún registro para exportar.");
+
+    if (allVisitsOfDay.length === 0) {
+        return alert("No tienes ningún registro de visita para exportar hoy.");
+    }
 
     const headers = [
         "CURP", "ID", "NOMBRE", "AP PATERNO", "AP MATERNO", "TEL FIJO", "TEL CEL", 
@@ -350,6 +415,7 @@ function downloadBackupCSV() {
     ];
 
     let csvRows = [headers.join(",")];
+
     allVisitsOfDay.forEach(record => {
         const values = headers.map(header => {
             let val = record[header] !== undefined ? record[header] : "";
@@ -364,14 +430,30 @@ function downloadBackupCSV() {
 
     const csvContent = csvRows.join("\n");
     const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    
     const downloadAnchor = document.createElement('a');
     const url = URL.createObjectURL(blob);
+    const fechaHoy = new Date().toISOString().slice(0, 10);
+    
     downloadAnchor.setAttribute("href", url);
-    downloadAnchor.setAttribute("download", `R02_Reporte_Completo_${new Date().toISOString().slice(0, 10)}.csv`);
+    downloadAnchor.setAttribute("download", `R02_Reporte_Completo_${fechaHoy}.csv`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
+    
     document.body.removeChild(downloadAnchor);
     URL.revokeObjectURL(url);
 }
 
-function clearLocalStorage() { localStorage.clear(); location.reload(); }
+function clearLocalStorage() {
+    if (confirm("¿Estás seguro de vaciar la memoria?")) {
+        pendingSync = []; syncedHistory = []; localStorage.clear(); location.reload();
+    }
+}
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('Service Worker registrado.', reg))
+            .catch(err => console.error('Error de Service Worker:', err));
+    });
+}
