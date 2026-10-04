@@ -400,3 +400,28 @@ button:active {
     color: var(--primary-light) !important;
     box-shadow: none !important;
 }
+/* =========================================================================
+   ESTILOS DE LOGOTIPO INTEGRADO EN EL ENCABEZADO GLOBAL (TODAS LAS PANTALLAS)
+   ========================================================================= */
+.header-brand-wrapper {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 12px !important; /* Separación elegante entre el logotipo y el texto */
+    width: 100%;
+}
+
+.header-logo {
+    max-height: 38px;    /* Altura controlada para no estirar la barra guinda */
+    width: auto;         /* Mantiene la proporción original de la imagen */
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+}
+
+/* Ajuste fino al título para que combine con el icono */
+.main-header h1 {
+    margin: 0 !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+}
