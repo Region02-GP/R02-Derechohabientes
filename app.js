@@ -1,4 +1,4 @@
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzcHzs_0Fu3WBcl_3i8dHNB8Vbtr9hHi-9OlVSZaa5fUHgfSGb8RpP4zesC8D6aLF-E/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzS4rEpvTBAfGdLgZXj2KKDCBdrZjLvOxeIif0nmivYbGMsIuJ_aiWRVerfxito5N34/exec";
 
 const AUTHORIZED_CURPS = {
     "CURPVALIDA12345678": "Juan Pérez López",
@@ -42,12 +42,32 @@ function updateLocalCounter() {
     };
 }
 
+// CONTROL DE CAMBIO DE PANTALLAS CON BARRA DE NAVEGACIÓN FIJA AUTOMÁTICA
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
     if (screenId === 'screen-welcome') updateLocalCounter(); 
+    
+    // Esconder todas las pantallas nativas
     document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
     document.getElementById(screenId).classList.remove('hidden');
+
+    const bottomNav = document.getElementById('app-bottom-nav');
+    
+    // La barra de navegación se oculta en la Pantalla 1 (Login) y Pantalla 4 (Formulario)
+    if (screenId === 'screen-login' || screenId === 'screen-form') {
+        bottomNav.classList.add('hidden');
+    } else {
+        bottomNav.classList.remove('hidden');
+        
+        // Quitar la clase activa de todos los botones de la barra inferior
+        document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+        
+        // Encender visualmente en dorado/guinda el botón de la sección seleccionada
+        if (screenId === 'screen-welcome') document.getElementById('nav-welcome').classList.add('active');
+        if (screenId === 'screen-search') document.getElementById('nav-search').classList.add('active');
+        if (screenId === 'screen-history') document.getElementById('nav-history').classList.add('active');
+    }
 }
 function login() {
     const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
@@ -165,6 +185,7 @@ function searchData() {
         resultsContainer.appendChild(div);
     });
 }
+
 function seleccionarEstatusVisita(estatus) {
     currentEstatusVisita = estatus.toUpperCase();
     if (currentEstatusVisita === "NO LOCALIZADO") {
@@ -173,7 +194,6 @@ function seleccionarEstatusVisita(estatus) {
         motivoNoLocalizadoValue = mot.trim();
     } else { motivoNoLocalizadoValue = ""; }
 }
-
 function openForm(item) {
     if (!item) return;
     document.getElementById('f-curp').value = item['CURP'] || '';
@@ -269,8 +289,6 @@ function openHistoryScreen() {
         logList.appendChild(div);
     });
 }
-
-function goBackFromHistory() { changeScreen(previousScreen); }
 
 async function syncWithSheets() {
     if (pendingSync.length === 0) return alert("No tienes registros pendientes.");
