@@ -65,14 +65,16 @@
         <section id="screen-form" class="app-screen hidden">
             <h2>Actualización de Domicilio</h2>
             
-            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button type="button" id="btn-status-localizado" onclick="seleccionarEstatusVisita('LOCALIZADO')" style="flex:1; padding:12px; font-weight:bold; border-radius:8px; border:1px solid #ddd; cursor:pointer;">
-                    LOCALIZADO
-                </button>
-                <button type="button" id="btn-status-nolocalizado" onclick="seleccionarEstatusVisita('NO LOCALIZADO')" style="flex:1; padding:12px; font-weight:bold; border-radius:8px; border:1px solid #ddd; cursor:pointer;">
-                    NO LOCALIZADO
-                </button>
-            </div>
+            <!-- BUSCA TUS DOS BOTONES EN EL INDEX.HTML Y REEMPLÁZALOS POR ESTOS DE ALTO CONTRASTE MODO OSCURO: -->
+<div style="display: flex; gap: 10px; margin-bottom: 15px;">
+    <button type="button" id="btn-status-localizado" onclick="seleccionarEstatusVisita('LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #236947; background-color: #14291e; color: #ffffff; cursor: pointer;">
+        LOCALIZADO
+    </button>
+    <button type="button" id="btn-status-nolocalizado" onclick="seleccionarEstatusVisita('NO LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #b91c1c; background-color: #2d1414; color: #ffffff; cursor: pointer;">
+        NO LOCALIZADO
+    </button>
+</div>
+
 
             <input type="hidden" id="f-motivo" value="">
 
