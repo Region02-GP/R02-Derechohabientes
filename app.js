@@ -42,35 +42,39 @@ function updateLocalCounter() {
     };
 }
 
-// CONTROL DE CAMBIO DE PANTALLAS CON BARRA DE NAVEGACIÓN FIJA AUTOMÁTICA
-// REEMPLAZA ÚNICAMENTE ESTA FUNCIÓN DENTRO DE TU APP.JS:
+// REEMPLAZA ÚNICAMENTE ESTA FUNCIÓN EN TU APP.JS
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
     if (screenId === 'screen-welcome') updateLocalCounter(); 
     
-    // Esconder todas las pantallas nativas
+    // 1. Esconder todas las pantallas nativas
     document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
-    document.getElementById(screenId).classList.remove('hidden');
+    
+    const targetScreen = document.getElementById(screenId);
+    if (targetScreen) targetScreen.classList.remove('hidden');
 
     const bottomNav = document.getElementById('app-bottom-nav');
     if (!bottomNav) return;
     
-    // CANDADO STRICTO: La barra se oculta en Pantalla 1 (screen-login) y Pantalla 4 (screen-form)
+    // 2. CANDADO ABSOLUTO CON REGLA INLINE STYLE (Evita que otra función la encienda por error)
     if (screenId === 'screen-login' || screenId === 'screen-form') {
+        bottomNav.style.setProperty('display', 'none', 'important');
         bottomNav.classList.add('hidden');
     } else {
+        bottomNav.style.setProperty('display', 'flex', 'important');
         bottomNav.classList.remove('hidden');
         
         // Quitar la clase activa de todos los botones de la barra inferior
-        document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => btn.classList.remove('active'));
         
-        // Encender visualmente en guinda el botón de la sección seleccionada
+        // Encender visualmente en guinda institucional el botón de la sección seleccionada
         if (screenId === 'screen-welcome') document.getElementById('nav-welcome').classList.add('active');
         if (screenId === 'screen-search') document.getElementById('nav-search').classList.add('active');
         if (screenId === 'screen-history') document.getElementById('nav-history').classList.add('active');
     }
 }
+
 function login() {
     const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
     if (AUTHORIZED_CURPS[curpInput]) {
