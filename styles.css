@@ -443,3 +443,65 @@ button:active {
     opacity: 0.5;
     pointer-events: none; /* Bloquea clics y escrituras */
 }
+/* =========================================================================
+   BARRA DE NAVEGACIÓN INFERIOR (PANTALLAS 2, 3 Y 5)
+   ========================================================================= */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px; /* Alineado al ancho máximo de tu contenedor app */
+    background-color: var(--white);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 3px solid var(--secondary-color); /* Borde superior dorado */
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.08);
+    z-index: 100;
+    padding: 6px 0;
+    box-sizing: border-box;
+}
+
+/* Botones individuales de la barra inferior */
+.nav-item {
+    background: none !important;
+    border: none !important;
+    color: var(--dark-light) !important;
+    box-shadow: none !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    margin-top: 0 !important;
+    padding: 6px 10px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    cursor: pointer;
+    width: auto !important;
+    letter-spacing: 0.3px !important;
+    transition: color 0.2s ease, transform 0.1s ease;
+}
+
+.nav-item span {
+    font-size: 18px; /* Tamaño de los iconos/emojis */
+}
+
+/* Estado activo del botón para resaltar en qué pantalla está parado el usuario */
+.nav-item.active {
+    color: var(--primary-color) !important;
+    transform: scale(1.05);
+}
+
+.nav-item:hover {
+    color: var(--primary-light) !important;
+    box-shadow: none !important;
+    transform: none;
+}
+
+/* Ajuste de seguridad para el contenedor principal de la app (evita que la barra tape contenido) */
+.app-container {
+    padding-bottom: 75px !important;
+}
