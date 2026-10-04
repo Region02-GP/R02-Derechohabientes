@@ -163,17 +163,19 @@
         </section>
 
         <!-- BARRA DE NAVEGACIÓN INFERIOR DINÁMICA DE TRES BOTONES -->
-        <nav id="app-bottom-nav" class="bottom-nav hidden">
-            <button type="button" id="nav-welcome" onclick="changeScreen('screen-welcome')" class="nav-item">
-                <span>📥</span>Inicio
-            </button>
-            <button type="button" id="nav-search" onclick="changeScreen('screen-search')" class="nav-item">
-                <span>🔍</span>Búsqueda
-            </button>
-            <button type="button" id="nav-history" onclick="openHistoryScreen()" class="nav-item">
-                <span>📋</span>Historial
-            </button>
-        </nav>
+       <!-- BUSCA LA ETIQUETA <nav id="app-bottom-nav"> Y DÉJALA ASÍ (CON LA CLASE hidden AGREGADA): -->
+<nav id="app-bottom-nav" class="bottom-nav hidden">
+    <button type="button" id="nav-welcome" onclick="changeScreen('screen-welcome')" class="nav-item">
+        <span>📥</span>Inicio
+    </button>
+    <button type="button" id="nav-search" onclick="changeScreen('screen-search')" class="nav-item">
+        <span>🔍</span>Búsqueda
+    </button>
+    <button type="button" id="nav-history" onclick="openHistoryScreen()" class="nav-item">
+        <span>📋</span>Historial
+    </button>
+</nav>
+
 
     </main>
 
