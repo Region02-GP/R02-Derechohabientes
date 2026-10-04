@@ -15,15 +15,23 @@
 
     <main class="app-container">
         
-        <!-- PANTALLA 1: ACCESO POR CURP AUTHORIZED -->
-        <section id="screen-login" class="app-screen">
-            <h2>Acceso al Sistema</h2>
-            <div class="form-group">
-                <label for="login-curp">Ingrese su CURP Autorizada:</label>
-                <input type="text" id="login-curp" maxlength="18" placeholder="18 dígitos" style="text-transform:uppercase">
-            </div>
-            <button type="button" onclick="login()">Ingresar</button>
-        </section>
+        <!-- BUSCA TU <section id="screen-login"> Y REEMPLÁZALO POR COMPLETO CON ESTO: -->
+<section id="screen-login" class="app-screen" style="position: relative;">
+    <div class="screen-number-badge">Pantalla 1</div>
+    
+    <!-- CONTENEDOR DE IMAGEN INSTITUCIONAL AGREGADO -->
+    <div class="login-logo-container">
+        <img src="logo.png" alt="Logotipo Institucional" class="login-logo">
+    </div>
+
+    <h2>Acceso al Sistema</h2>
+    <div class="form-group">
+        <label for="login-curp">Ingrese su CURP Autorizada:</label>
+        <input type="text" id="login-curp" maxlength="18" placeholder="18 dígitos" style="text-transform:uppercase">
+    </div>
+    <button type="button" onclick="login()">Ingresar</button>
+</section>
+
 
         <!-- PANTALLA 2: BIENVENIDA Y CARGA TOTAL MASIVA INDEXADA -->
         <section id="screen-welcome" class="app-screen hidden">
