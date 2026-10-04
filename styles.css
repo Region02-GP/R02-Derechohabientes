@@ -1,23 +1,26 @@
 /* =========================================================================
-   PALETA DE COLORES INSTITUCIONALES (GUINDA, NEGRO Y DORADO PREMIUM)
+   PALETA DE COLORES MODO OSCURO INSTITUCIONAL (AHORRO DE BATERÍA AMOLED)
    ========================================================================= */
 :root {
     --primary-color: #621132;   /* Guinda Formal */
     --primary-light: #851c44;   /* Guinda Claro (Hover) */
-    --secondary-color: #BC955C; /* Dorado Institucional */
+    --secondary-color: #BC955C; /* Dorado Institucional Premium */
     --secondary-dark: #987242;  /* Dorado Oscuro (Hover) */
-    --dark-color: #1F1F1F;       /* Negro Elegante */
-    --dark-light: #333333;      /* Gris Oscuro */
-    --text-color: #2D3748;      /* Gris de Texto */
-    --bg-color: #F7FAFC;        /* Fondo General de la App */
-    --white: #ffffff;
-    --disabled-bg: #EDF2F7;
     
-    /* Efectos de Relieve Tridimensional y Profundidad Tactil */
-    --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    --shadow-screen: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-    --shadow-button: 0 4px 14px 0 rgba(98, 17, 50, 0.3);
-    --shadow-gold: 0 4px 14px 0 rgba(188, 149, 92, 0.2);
+    /* Fondos Oscuros Puros para ahorro de energía en Pantallas AMOLED */
+    --bg-color: #121212;        /* Negro Absoluto (Apaga píxeles) */
+    --surface-color: #1E1F22;   /* Gris Asfalto Oscuro para tarjetas y pantallas */
+    --surface-light: #2B2D31;   /* Gris Medio para inputs y elementos secundarios */
+    
+    /* Textos de Alto Contraste para lectura bajo el sol */
+    --text-main: #F2F3F5;       /* Blanco Grisáceo Suave */
+    --text-muted: #B5BAC1;      /* Gris Claro para etiquetas */
+    --white: #ffffff;
+    
+    /* Efectos de Profundidad en Modo Oscuro */
+    --shadow-soft: 0 4px 10px rgba(0, 0, 0, 0.3);
+    --shadow-screen: 0 8px 32px rgba(0, 0, 0, 0.5);
+    --shadow-gold: 0 4px 14px 0 rgba(188, 149, 92, 0.15);
 }
 
 /* =========================================================================
@@ -26,19 +29,19 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--bg-color);
-    color: var(--text-color);
+    color: var(--text-main);
     margin: 0;
     padding: 0;
     line-height: 1.5;
 }
 
 .main-header {
-    background-color: var(--primary-color);
+    background-color: var(--surface-color);
     color: var(--white);
     text-align: center;
     padding: 18px;
-    border-bottom: 4px solid var(--secondary-color);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-bottom: 3px solid var(--secondary-color); /* Línea dorada divisoria */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
 .main-header h1 {
@@ -46,35 +49,36 @@ body {
     font-size: 22px;
     letter-spacing: 0.5px;
     font-weight: 700;
+    color: var(--white);
 }
 
-/* Ajuste de seguridad inferior para que la barra de navegación no tape contenido */
+/* Margen de seguridad inferior para la barra de navegación horizontal */
 .app-container {
     max-width: 480px;
     margin: 15px auto;
     padding: 10px;
-    padding-bottom: 85px !important; 
+    padding-bottom: 90px !important; 
     box-sizing: border-box;
 }
 
 .app-screen {
-    background: var(--white);
+    background: var(--surface-color);
     padding: 22px;
-    border-radius: 12px;
+    border-radius: 14px;
     box-shadow: var(--shadow-screen);
-    border: 1px solid #E2E8F0;
-    position: relative; /* Habilita que las insignias de pantalla se ubiquen de forma correcta */
+    border: 1px solid #2B2D31;
+    position: relative;
 }
-/* BUSCA ESTA LÍNEA EN TU STYLES.CSS Y DÉJALA EXACTAMENTE ASÍ: */
+
 .hidden { display: none !important; opacity: 0 !important; visibility: hidden !important; }
 
-
 h2 { 
-    color: var(--primary-color); 
+    color: var(--secondary-color); /* Títulos en Dorado sobre fondo oscuro */
     margin-top: 0;
     margin-bottom: 15px;
     font-size: 20px;
     font-weight: 700;
+    letter-spacing: 0.3px;
 }
 
 .screen-toolbar {
@@ -86,7 +90,7 @@ h2 {
 }
 .screen-toolbar h2 { margin: 0; border: none; }
 /* =========================================================================
-   ESTILOS DE CAMPOS DE FORMULARIO
+   ESTILOS DE CAMPOS DE FORMULARIO OSCUROS
    ========================================================================= */
 .form-group {
     margin-bottom: 16px;
@@ -97,31 +101,33 @@ h2 {
     font-weight: 600;
     margin-bottom: 6px;
     font-size: 14px;
-    color: var(--dark-light);
+    color: var(--text-muted);
 }
 
 input[type="text"], input[type="tel"], input[type="number"], textarea {
     width: 100%;
     padding: 11px 14px;
-    border: 1px solid #CBD5E0;
+    border: 1px solid #3f4248;
     border-radius: 8px;
     box-sizing: border-box;
     font-size: 16px;
-    background-color: #FCFDFE;
+    background-color: var(--surface-light);
+    color: var(--text-main);
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 input:focus, textarea:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(98, 17, 50, 0.15);
+    border-color: var(--secondary-color); /* Foco dorado en modo oscuro */
+    box-shadow: 0 0 0 3px rgba(188, 149, 92, 0.2);
     outline: none;
 }
 
+/* Campos de lectura deshabilitados (CURP, ID, etc.) */
 .text-disabled input {
-    background-color: var(--disabled-bg);
-    color: #4A5568;
+    background-color: var(--bg-color);
+    color: var(--text-muted);
     cursor: not-allowed;
-    border-color: #E2E8F0;
+    border-color: #2B2D31;
 }
 
 .form-grid {
@@ -133,23 +139,23 @@ input:focus, textarea:focus {
 hr {
     margin: 20px 0; 
     border: 0; 
-    border-top: 1px solid #E2E8F0;
+    border-top: 1px solid #2B2D31;
 }
 
 /* =========================================================================
-   DISEÑO AVANZADO DE BOTONES INTERACTIVOS TRIDIMENSIONALES
+   DISEÑO AVANZADO DE BOTONES TRIDIMENSIONALES INSTITUCIONALES
    ========================================================================= */
 button {
-    background-color: var(--primary-color);
+    background-color: var(--primary-color); /* Guinda */
     color: var(--white);
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.05);
     padding: 14px;
     width: 100%;
     border-radius: 8px;
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
-    box-shadow: var(--shadow-button);
+    box-shadow: 0 4px 12px rgba(98, 17, 50, 0.4);
     transition: all 0.2s ease;
     margin-top: 10px;
     display: flex;
@@ -160,30 +166,39 @@ button {
 
 button:hover { 
     background-color: var(--primary-light);
-    box-shadow: 0 6px 20px 0 rgba(98, 17, 50, 0.4);
+    box-shadow: 0 6px 20px rgba(98, 17, 50, 0.5);
     transform: translateY(-1px);
 }
 
 button:active { 
     transform: translateY(1px);
-    box-shadow: 0 2px 6px 0 rgba(98, 17, 50, 0.4);
+    box-shadow: 0 2px 6px rgba(98, 17, 50, 0.4);
 }
 
 .btn-secondary { 
-    background-color: var(--dark-color); 
-    box-shadow: 0 4px 14px 0 rgba(31, 31, 31, 0.3);
+    background-color: #2B2D31; 
+    color: var(--text-main);
+    border: 1px solid #3f4248;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 .btn-secondary:hover { 
-    background-color: var(--dark-light);
-    box-shadow: 0 6px 20px 0 rgba(31, 31, 31, 0.4);
+    background-color: #35373c;
 }
 
 .btn-back { 
-    background-color: #5A6A80; 
-    box-shadow: 0 4px 14px 0 rgba(90, 106, 128, 0.3);
+    background-color: #4E5D6C; 
+    box-shadow: 0 4px 12px rgba(78, 93, 108, 0.3);
 }
-.btn-back:hover { background-color: #4A5568; }
+.btn-back:hover { background-color: #3B4856; }
 
+/* Botón de Sincronizar Guinda Formal Optimizado */
+.btn-primary-guinda {
+    background-color: var(--primary-color);
+    color: var(--white);
+    border: 1px solid var(--secondary-color); /* Detalle de contorno dorado */
+}
+
+/* Botón Excel Premium Dorado Metálico */
 .btn-excel-gold {
     background: linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 100%) !important;
     color: var(--secondary-color) !important;
@@ -192,45 +207,44 @@ button:active {
 }
 .btn-excel-gold:hover {
     background: var(--secondary-color) !important;
-    color: var(--dark-color) !important;
+    color: #121212 !important;
 }
 
-.btn-primary-guinda {
-    background-color: var(--primary-color);
-    color: var(--white);
-    box-shadow: var(--shadow-button);
-}
-.btn-primary-guinda:hover { background-color: var(--primary-light); }
-
-/* Listas y Elementos Gráficos */
+/* Contenedores de Listas */
 .results-list, .log-list {
     max-height: 280px;
     overflow-y: auto;
-    border: 1px solid #E2E8F0;
+    border: 1px solid #2B2D31;
     border-radius: 8px;
     margin: 15px 0;
-    background: #FFF;
+    background: var(--bg-color);
 }
 
 .result-item {
     padding: 14px 16px;
-    border-bottom: 1px solid #EDF2F7;
+    border-bottom: 1px solid #1E1F22;
     cursor: pointer;
+    background-color: var(--surface-color);
     transition: background-color 0.15s, padding-left 0.15s;
 }
 .result-item:hover { 
-    background-color: #F7FAFC;
+    background-color: var(--surface-light);
     padding-left: 20px; 
-    color: var(--primary-color);
 }
 
 .card {
-    background: #FFF;
-    border: 1px solid #E2E8F0;
-    border-radius: 10px;
+    background: var(--surface-light);
+    border: 1px solid #35373c;
+    border-radius: 12px;
     padding: 18px;
     margin-bottom: 15px;
     box-shadow: var(--shadow-soft);
+}
+.card h3 { 
+    margin-top: 0; 
+    color: var(--white); 
+    font-size: 16px; 
+    font-weight: 700; 
 }
 
 .nav-buttons, .action-buttons-stack {
@@ -247,7 +261,7 @@ button:active {
     margin-top: 10px;              
 }
 /* =========================================================================
-   INSIGNIAS IDENTIFICADORAS DE NÚMERO DE PANTALLA
+   INSIGNIAS FLOTANTES DE NÚMERO DE PANTALLA INSTITUCIONAL
    ========================================================================= */
 .screen-number-badge {
     position: absolute;
@@ -261,32 +275,33 @@ button:active {
     border-radius: 20px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    opacity: 0.85;
     z-index: 10;
     border: 1px solid var(--secondary-color);
 }
 
 /* =========================================================================
-   COLORES DEL SEMÁFORO VISUAL PARA LAS TARJETAS (PANTALLA 3)
+   SEMÁFORO DE VISITAS DE ALTO CONTRASTE (VINCULADO AL ESTATUS)
    ========================================================================= */
+/* Localizado: Verde Esmeralda Institucional */
 .result-item.status-localizado {
     border-left: 5px solid #236947 !important;
-    background-color: #f0fdf4 !important;
+    background-color: #14291e !important; 
 }
 .result-item.status-localizado:hover {
-    background-color: #dcfce7 !important;
+    background-color: #1a3a27 !important;
 }
 
+/* No Localizado: Rojo Carmesí de Advertencia */
 .result-item.status-nolocalizado {
     border-left: 5px solid #b91c1c !important;
-    background-color: #fef2f2 !important;
+    background-color: #2d1414 !important; 
 }
 .result-item.status-nolocalizado:hover {
-    background-color: #fee2e2 !important;
+    background-color: #3d1a1a !important;
 }
 
 /* =========================================================================
-   BARRA DE NAVEGACIÓN INFERIOR TOTALMENTE HORIZONTAL
+   BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL PREMIUM MODO OSCURO
    ========================================================================= */
 .bottom-nav {
     position: fixed;
@@ -295,26 +310,26 @@ button:active {
     transform: translateX(-50%);
     width: 100%;
     max-width: 480px; 
-    background-color: var(--white);
+    background-color: var(--surface-color);
     
-    /* ALINEACIÓN HORIZONTAL */
+    /* ALINEACIÓN HORIZONTAL ESTRICTA */
     display: flex !important;
     flex-direction: row !important; 
     justify-content: space-around !important;
     align-items: center !important;
     
-    border-top: 3px solid var(--secondary-color); 
-    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.1);
+    border-top: 3px solid var(--secondary-color); /* Contorno Dorado */
+    box-shadow: 0 -6px 25px rgba(0, 0, 0, 0.6);
     z-index: 100;
     padding: 8px 0;
     box-sizing: border-box;
 }
 
-/* BOTONES INTERNOS DE LA BARRA INFERIOR */
+/* BOTONES INTERNOS DE LA BARRA HORIZONTAL */
 .bottom-nav .nav-item {
     background: none !important;
     border: none !important;
-    color: var(--dark-light) !important;
+    color: var(--text-muted) !important;
     box-shadow: none !important;
     font-size: 13px !important;
     font-weight: 700 !important;
@@ -322,7 +337,7 @@ button:active {
     padding: 6px 12px !important;
     cursor: pointer;
     
-    /* ICONO ARRIBA Y TEXTO ABAJO */
+    /* ALINEACIÓN VERTICAL INTERNA */
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
@@ -335,20 +350,19 @@ button:active {
     transition: color 0.2s ease, transform 0.1s ease;
 }
 
-/* Iconos superiores compactos */
 .bottom-nav .nav-item span {
     font-size: 20px !important;
     line-height: 1 !important;
     margin-bottom: 2px !important;
 }
 
-/* Estado Encendido / Selección (Guinda formal activo) */
+/* Estado Seleccionado / Encendido (Enciende en Dorado Premium) */
 .bottom-nav .nav-item.active {
-    color: var(--primary-color) !important;
+    color: var(--secondary-color) !important;
     transform: scale(1.05);
 }
 
 .bottom-nav .nav-item:hover {
-    color: var(--primary-light) !important;
+    color: var(--white) !important;
     box-shadow: none !important;
 }
