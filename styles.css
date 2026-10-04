@@ -282,7 +282,22 @@ button:active {
 /* =========================================================================
    SEMÁFORO DE VISITAS DE ALTO CONTRASTE (VINCULADO AL ESTATUS)
    ========================================================================= */
-/* Localizado: Verde Esmeralda Institucional */
+
+/* 1. PENDIENTES / AÚN NO VISITADOS: Azul Cobalto Metálico Suave */
+.result-item {
+    padding: 14px 16px;
+    border-bottom: 1px solid #1E1F22;
+    cursor: pointer;
+    background-color: #1a243d !important; /* Azul cobalto de bajo consumo */
+    border-left: 5px solid #BC955C !important; /* Borde izquierdo dorado de control */
+    transition: background-color 0.15s, padding-left 0.15s;
+}
+.result-item:hover { 
+    background-color: #24325c !important; /* Brillo azul suave al pasar el dedo */
+    padding-left: 20px; 
+}
+
+/* 2. LOCALIZADOS: Verde Esmeralda Institucional */
 .result-item.status-localizado {
     border-left: 5px solid #236947 !important;
     background-color: #14291e !important; 
@@ -291,7 +306,7 @@ button:active {
     background-color: #1a3a27 !important;
 }
 
-/* No Localizado: Rojo Carmesí de Advertencia */
+/* 3. NO LOCALIZADOS: Rojo Carmesí de Advertencia */
 .result-item.status-nolocalizado {
     border-left: 5px solid #b91c1c !important;
     background-color: #2d1414 !important; 
@@ -299,6 +314,7 @@ button:active {
 .result-item.status-nolocalizado:hover {
     background-color: #3d1a1a !important;
 }
+
 
 /* =========================================================================
    BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL PREMIUM MODO OSCURO
