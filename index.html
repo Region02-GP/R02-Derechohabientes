@@ -9,7 +9,6 @@
 </head>
 <body>
 
-    <!-- ENCABEZADO GENERAL CON ESTILO INSTITUCIONAL -->
     <header class="main-header">
         <h1>R02-Derechohabientes</h1>
     </header>
@@ -17,7 +16,8 @@
     <main class="app-container">
         
         <!-- PANTALLA 1: ACCESO POR CURP AUTHORIZED -->
-        <section id="screen-login" class="app-screen">
+        <section id="screen-login" class="app-screen" style="position: relative;">
+            <div class="screen-number-badge">Pantalla 1</div>
             <h2>Acceso al Sistema</h2>
             <div class="form-group">
                 <label for="login-curp">Ingrese su CURP Autorizada:</label>
@@ -25,8 +25,10 @@
             </div>
             <button type="button" onclick="login()">Ingresar</button>
         </section>
+
         <!-- PANTALLA 2: BIENVENIDA Y CARGA TOTAL MASIVA INDEXADA -->
-        <section id="screen-welcome" class="app-screen hidden">
+        <section id="screen-welcome" class="app-screen hidden" style="position: relative;">
+            <div class="screen-number-badge">Pantalla 2</div>
             <div class="screen-toolbar">
                 <h2 id="welcome-message">Bienvenido</h2>
                 <button type="button" onclick="openHistoryScreen()" class="btn-toolbar-history">📋 Historial</button>
@@ -34,9 +36,13 @@
 
             <div class="card" style="margin-top: 15px;">
                 <h3>Sincronización Inicial de Base de Datos</h3>
+                
+                <p style="font-size:14px; font-weight:bold; color:var(--primary-color); margin-bottom:12px; background:#f7fafc; padding:8px; border-radius:6px; border-left:4px solid var(--primary-color);">
+                    📊 Registros cargados en el teléfono: <span id="local-db-count">0</span>
+                </p>
+
                 <p style="font-size:13px; color:#555; margin-bottom:15px;">Descarga los registros al teléfono para trabajar totalmente sin internet en campo.</p>
                 
-                <!-- CONTENEDOR Y BARRA DE PROGRESO DE DESCARGA MASIVA -->
                 <div id="progress-container" style="display:none; background:#eee; border-radius:4px; margin:10px 0; padding:2px;">
                     <div id="progress-bar" style="background:var(--primary-color); width:0%; height:15px; border-radius:4px; transition:width 0.2s;"></div>
                 </div>
@@ -51,7 +57,8 @@
         </section>
 
         <!-- PANTALLA 3: BUSCADOR MULTI-CRITERIO EN MEMORIA RAM CACHÉ -->
-        <section id="screen-search" class="app-screen hidden">
+        <section id="screen-search" class="app-screen hidden" style="position: relative;">
+            <div class="screen-number-badge">Pantalla 3</div>
             <div class="screen-toolbar">
                 <h2>Búsqueda</h2>
                 <button type="button" onclick="openHistoryScreen()" class="btn-toolbar-history">📋 Historial</button>
@@ -61,17 +68,15 @@
                 <input type="text" id="search-input" oninput="searchData()" placeholder="Buscar por Calle, Nombre, CURP o Apellidos...">
             </div>
             
-            <div id="search-results" class="results-list">
-                <!-- Los resultados aparecerán dinámicamente aquí -->
-            </div>
+            <div id="search-results" class="results-list"></div>
             
             <button type="button" onclick="changeScreen('screen-welcome')" class="btn-back">Volver al Menú Principal</button>
         </section>
         <!-- PANTALLA 4: FORMULARIO DE EDICIÓN, ESTATUS DE VISITA Y CAPTURA GPS -->
-        <section id="screen-form" class="app-screen hidden">
+        <section id="screen-form" class="app-screen hidden" style="position: relative;">
+            <div class="screen-number-badge">Pantalla 4</div>
             <h2>Actualización de Domicilio</h2>
             
-            <!-- BOTONES CON ACTIVADORES ONCLICK CORREGIDOS -->
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                 <button type="button" id="btn-status-localizado" onclick="seleccionarEstatusVisita('LOCALIZADO')" style="flex:1; padding:12px; font-weight:bold; border-radius:8px; border:1px solid #ddd; cursor:pointer;">
                     LOCALIZADO
@@ -81,12 +86,10 @@
                 </button>
             </div>
 
-            <!-- DETALLE DETECTADO: CAMPO OCULTO DE MOTIVO PARA COMPLETAR LAS 23 COLUMNAS -->
             <input type="hidden" id="f-motivo" value="">
 
             <form id="edit-form" onsubmit="saveData(event)">
                 <div id="form-fields-wrapper">
-                    <!-- Datos No Editables (IDs corregidos sin espacios internos) -->
                     <div class="form-grid text-disabled">
                         <div><label>CURP:</label><input type="text" id="f-curp" readonly></div>
                         <div><label>ID:</label><input type="text" id="f-id" readonly></div>
@@ -98,7 +101,6 @@
                     </div>
                     <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
                     
-                    <!-- Datos Editables y Obligatorios -->
                     <div class="form-group">
                         <label>Teléfono Fijo (10 dígitos):</label>
                         <input type="tel" id="f-telfijo" pattern="[0-9]{10}" maxlength="10">
@@ -143,7 +145,6 @@
 
                 <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
                 
-                <!-- Geolocalización en Tiempo Real -->
                 <div class="form-grid text-disabled">
                     <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
                     <div><label>Longitud GPS:</label><input type="text" id="f-lon" readonly></div>
@@ -155,7 +156,8 @@
         </section>
 
         <!-- PANTALLA 5: HISTORIAL, CONTROL OFFLINE Y REPORTES EXCEL/CSV -->
-        <section id="screen-history" class="app-screen hidden">
+        <section id="screen-history" class="app-screen hidden" style="position: relative;">
+            <div class="screen-number-badge">Pantalla 5</div>
             <h2>Historial y Sincronización</h2>
             <div class="metrics" style="background:#f7fafc; padding:15px; border-radius:4px; margin-bottom:15px; border-left:4px solid var(--primary-color);">
                 <p style="margin:0; font-size:15px;">Cambios pendientes por subir: <strong id="pending-count">0</strong></p>
@@ -170,12 +172,8 @@
             </div>
 
             <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-            
             <h3>Registro de Visitas del Día</h3>
-            <div id="history-log" class="log-list">
-                <!-- Se inyecta la bitácora desde JS -->
-            </div>
-            
+            <div id="history-log" class="log-list"></div>
             <button type="button" onclick="goBackFromHistory()" class="btn-back">Volver</button>
         </section>
 
