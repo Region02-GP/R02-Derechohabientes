@@ -255,31 +255,62 @@ function saveData(event) {
     event.preventDefault();
     const latValue = document.getElementById('f-lat').value;
     const lonValue = document.getElementById('f-lon').value;
-    if (latValue.includes("Buscando") || latValue === "" || latValue === "ERROR") return alert("No se puede guardar sin georreferencia.");
+
+    // Candado de seguridad: Evita guardar filas vacías si el satélite falló
+    if (latValue.includes("Buscando") || latValue === "" || latValue === "ERROR" || latValue === "NO COMPATIBLE") {
+        alert("🛑 BLOQUEO: No se puede guardar el registro sin la georreferencia del domicilio.");
+        return; 
+    }
     
     const targetCurp = document.getElementById('f-curp').value;
-    const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp);
+    const memoryIndex = localMemoryDatabase.findIndex(r => r['CURP'] === targetCurp);
     const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
 
     const record = {
-        'CURP': targetCurp, 'ID': document.getElementById('f-id').value, 'NOMBRE': document.getElementById('f-nombre').value,
-        'AP PATERNO': document.getElementById('f-paterno').value, 'AP MATERNO': document.getElementById('f-materno').value,
-        'TEL FIJO': document.getElementById('f-telfijo').value, 'TEL CEL': document.getElementById('f-telcel').value,
-        'MUNICIPIO': document.getElementById('f-municipio').value, 'LOCALIDAD': document.getElementById('f-localidad').value,
-        'SECCION': document.getElementById('f-seccion').value, 'COLONIA': document.getElementById('f-colonia').value,
-        'CP': document.getElementById('f-cp').value, 'CALLE': document.getElementById('f-calle').value,
-        'NUM EXT': document.getElementById('f-numext').value, 'REFERENCIA': document.getElementById('f-referencia').value,
-        'SITUACION': document.getElementById('f-situacion').value, 'CAUSAL': document.getElementById('f-causal').value,
-        'ESTATUS_VISITA': currentEstatusVisita, 'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue,
-        'Latitud': latValue, 'Longitud': lonValue,
-        'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"), 'USUARIO_MODIFICA': currentUser.name,
+        'CURP': targetCurp,
+        'ID': document.getElementById('f-id').value,
+        'NOMBRE': document.getElementById('f-nombre').value,
+        'AP PATERNO': document.getElementById('f-paterno').value,
+        'AP MATERNO': document.getElementById('f-materno').value,
+        'TEL FIJO': document.getElementById('f-telfijo').value,
+        'TEL CEL': document.getElementById('f-telcel').value,
+        'MUNICIPIO': document.getElementById('f-municipio').value,
+        'LOCALIDAD': document.getElementById('f-localidad').value,
+        'SECCION': document.getElementById('f-seccion').value,
+        'COLONIA': document.getElementById('f-colonia').value,
+        'CP': document.getElementById('f-cp').value,
+        'CALLE': document.getElementById('f-calle').value,
+        'NUM EXT': document.getElementById('f-numext').value,
+        'REFERENCIA': document.getElementById('f-referencia').value,
+        'SITUACION': document.getElementById('f-situacion').value,
+        'CAUSAL': document.getElementById('f-causal').value,
+        
+        'ESTATUS_VISITA': currentEstatusVisita,
+        'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue,
+        
+        // EMPAQUETADO EXACTO: Vincula las variables a las llaves de tus 23 columnas en Sheets
+        'Latitud': latValue,
+        'Longitud': lonValue,
+        'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"),
+        'USUARIO_MODIFICA': currentUser.name,
         'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || ""
     };
 
-    db.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).put(record);
-    if (memoryIndex !== -1) localMemoryDatabase[memoryIndex] = record; else localMemoryDatabase.push(record);
+    const txUpdate = db.transaction(STORE_NAME, "readwrite");
+    txUpdate.objectStore(STORE_NAME).put(record);
+
+    if (memoryIndex !== -1) {
+        localMemoryDatabase[memoryIndex] = record;
+    } else {
+        localMemoryDatabase.push(record);
+    }
+
     pendingSync.push(record);
     localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
+
+    alert("Confirmación: Modificación guardada localmente.");
+    document.getElementById('search-input').value = "";
+    document.getElementById('search-results').innerHTML = "";
     changeScreen('screen-search');
 }
 
