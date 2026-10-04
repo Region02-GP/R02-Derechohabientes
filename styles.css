@@ -401,28 +401,31 @@ button:active {
     box-shadow: none !important;
 }
 /* =========================================================================
-   ESTILOS DE LOGOTIPO CENTRADO CON TÍTULO ABAJO (TODAS LAS PANTALLAS)
+   LOGOTIPO INSTITUCIONAL AL TAMAÑO DE LA PANTALLA (ANCHO COMPLETO)
    ========================================================================= */
 .header-brand-wrapper {
     display: flex !important;
-    flex-direction: column !important; /* Fuerza a colocar el título DEBAJO de la imagen */
+    flex-direction: column !important;
     justify-content: center !important;
     align-items: center !important;
-    gap: 8px !important; /* Separación elegante entre la imagen superior y el texto inferior */
+    gap: 12px !important; /* Espaciado elegante antes del título */
     width: 100%;
 }
 
 .header-logo {
-    max-height: 45px;    /* Altura vertical elegante y proporcionada */
-    width: auto;         /* Evita que la imagen se estire o se deforme */
-    object-fit: contain;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+    width: 100% !important;      /* Fuerza a la imagen a abarcar todo el ancho de la pantalla */
+    max-width: 440px !important;  /* Margen estético para que no toque los bordes del contenedor (480px) */
+    height: auto !important;     /* Mantiene la proporción original de la imagen sin deformarla */
+    object-fit: contain !important;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15)); /* Relieve de profundidad */
+    margin: 5px 0 !important;
 }
 
 .main-header h1 {
     margin: 0 !important;
-    font-size: 18px !important; /* Tamaño estilizado para no saturar el espacio */
+    font-size: 19px !important;
     font-weight: 700 !important;
     letter-spacing: 0.5px !important;
     color: var(--white) !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Sombra al texto para mayor contraste */
 }
