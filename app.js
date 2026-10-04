@@ -63,16 +63,20 @@ function changeScreen(screenId) {
     if (screenId === 'screen-login' || screenId === 'screen-form') {
         bottomNav.style.setProperty('display', 'none', 'important');
         bottomNav.classList.add('hidden');
-    } else {
+     } else {
         bottomNav.style.setProperty('display', 'flex', 'important');
         bottomNav.classList.remove('hidden');
         
+        // Quita el estado activo de todos los botones de la barra inferior
         document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => btn.classList.remove('active'));
+        
+        // AGREGA LA CLASE active AL BOTÓN CORRESPONDIENTE DE LA BARRA INFERIOR
         if (screenId === 'screen-welcome') document.getElementById('nav-welcome').classList.add('active');
         if (screenId === 'screen-search') document.getElementById('nav-search').classList.add('active');
         if (screenId === 'screen-history') document.getElementById('nav-history').classList.add('active');
     }
 }
+
 // =========================================================================
 // MÓDULO 2: PANTALLA 1 (LOGIN) Y PANTALLA 2 (DESCARGA)
 // =========================================================================
