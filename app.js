@@ -101,6 +101,15 @@ function preloadDatabaseToMemory() {
     };
 }
 
+let localMemoryDatabase = [];
+function preloadDatabaseToMemory() {
+    if (!db) return;
+    const tx = db.transaction(STORE_NAME, "readonly");
+    tx.objectStore(STORE_NAME).getAll().onsuccess = (e) => {
+        localMemoryDatabase = e.target.result || [];
+    };
+}
+
 function searchData() {
     const query = document.getElementById('search-input').value.toLowerCase().trim();
     const resultsContainer = document.getElementById('search-results');
@@ -114,7 +123,6 @@ function searchData() {
         const item = localMemoryDatabase[i];
         if (!item) continue;
         
-        // Jalar todos los elementos requeridos de tus columnas reales
         const nombre = item['NOMBRE'] ? String(item['NOMBRE']).toLowerCase() : "";
         const apPaterno = item['AP PATERNO'] ? String(item['AP PATERNO']).toLowerCase() : "";
         const apMaterno = item['AP MATERNO'] ? String(item['AP MATERNO']).toLowerCase() : "";
@@ -123,7 +131,6 @@ function searchData() {
         const numExt = item['NUM EXT'] ? String(item['NUM EXT']).toLowerCase() : "";
         const colonia = item['COLONIA'] ? String(item['COLONIA']).toLowerCase() : "";
 
-        // Unificación para búsqueda flexible por cualquier criterio cruzado
         const combinedText = `${nombre} ${apPaterno} ${apMaterno} ${curp} ${calle} ${numExt} ${colonia}`;
         if (searchTokens.every(t => combinedText.includes(t))) {
             matchedRecords.push(item);
@@ -132,18 +139,36 @@ function searchData() {
 
     matchedRecords.sort((a, b) => String(a['NUM EXT']).localeCompare(String(b['NUM EXT'])));
     
-    // RENDERIZADO SOLICITADO: Despliega CURP, Nombre completo, Calle, Num Ext y Colonia
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div');
-        const fueVis = (item['Latitud'] && item['Latitud'] !== "0" && item['Latitud'] !== "ERROR") || pendingSync.some(p => p['CURP'] === item['CURP']);
         
-        div.className = fueVis ? "result-item status-visitado" : "result-item";
+        // =========================================================================
+        // LÓGICA DEL SEMÁFORO VISUAL POR COLUMNA ESTATUS_VISITA
+        // =========================================================================
+        // Revisamos si ya tiene un estatus guardado hoy localmente o si vino desde Sheets
+        const estatusActual = item['ESTATUS_VISITA'] || "";
+        const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']);
+        const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
         
-        const indicadorTexto = fueVis ? ' <span style="color:#236947; font-weight:bold; font-size:12px; margin-left:5px;">✓ Actualizado</span>' : '';
+        // Consolidamos cuál es el estatus final a mostrar
+        const estatusFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['ESTATUS_VISITA'] : estatusActual;
+
+        let claseColor = "result-item"; // Gris por defecto (Pendiente)
+        let textoIndicador = "";
+
+        if (estatusFinal === "LOCALIZADO") {
+            claseColor = "result-item status-localizado"; // Se pintará Verde
+            textoIndicador = ' <span style="color:#236947; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>';
+        } else if (estatusFinal === "NO LOCALIZADO") {
+            claseColor = "result-item status-nolocalizado"; // Se pintará Rojo
+            textoIndicador = ' <span style="color:#b91c1c; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
+        }
+
+        div.className = claseColor;
 
         div.innerHTML = `
             <div style="font-size:16px; font-weight:700; color:var(--dark-color); margin-bottom:2px;">
-                ${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${indicadorTexto}
+                ${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}
             </div>
             <div style="font-size:13px; font-weight:600; color:var(--primary-color); margin-bottom:4px; letter-spacing:0.3px;">
                 CURP: ${item['CURP'] || 'SIN CURP'}
@@ -159,6 +184,15 @@ function searchData() {
     if (matchedRecords.length === 0) {
         resultsContainer.innerHTML = "<div class='result-item' style='color: gray; text-align: center;'>No se encontraron derechohabientes.</div>";
     }
+}
+
+function seleccionarEstatusVisita(estatus) {
+    currentEstatusVisita = estatus.toUpperCase();
+    if (currentEstatusVisita === "NO LOCALIZADO") {
+        let mot = prompt("Escriba el motivo por el cual NO FUE LOCALIZADO:");
+        if (!mot) { currentEstatusVisita = "LOCALIZADO"; return; }
+        motivoNoLocalizadoValue = mot.trim();
+    } else { motivoNoLocalizadoValue = ""; }
 }
 
 function seleccionarEstatusVisita(estatus) {
