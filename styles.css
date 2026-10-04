@@ -375,6 +375,26 @@ button:active {
 .bottom-nav .nav-item.active span {
     opacity: 1 !important; /* Icono/Emoji con brillo total */
 }
+/* =========================================================================
+   ESTILOS ADICIONALES: CONTENEDOR DE LOGOTIPO (PANTALLA 1)
+   ========================================================================= */
+.login-logo-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px 0;
+    box-sizing: border-box;
+}
+
+.login-logo {
+    max-width: 180px;      /* Ancho máximo controlado y elegante para celulares */
+    width: 100%;
+    height: auto;          /* Mantiene la proporción original de la imagen sin deformarla */
+    object-fit: contain;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.08)); /* Sutil relieve de profundidad */
+}
 
 .bottom-nav .nav-item:hover {
     color: var(--primary-light) !important;
