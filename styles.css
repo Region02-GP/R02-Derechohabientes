@@ -65,8 +65,9 @@ body {
     border: 1px solid #E2E8F0;
     position: relative; /* Habilita que las insignias de pantalla se ubiquen de forma correcta */
 }
+/* BUSCA ESTA LÍNEA EN TU STYLES.CSS Y DÉJALA EXACTAMENTE ASÍ: */
+.hidden { display: none !important; opacity: 0 !important; visibility: hidden !important; }
 
-.hidden { display: none !important; }
 
 h2 { 
     color: var(--primary-color); 
