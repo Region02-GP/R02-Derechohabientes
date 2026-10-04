@@ -310,7 +310,7 @@ button:active {
 }
 
 /* =========================================================================
-   BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL CLARA (FIJA AL FONDO)
+   BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL (PANTALLAS 2, 3 Y 5)
    ========================================================================= */
 .bottom-nav {
     position: fixed;
@@ -320,55 +320,60 @@ button:active {
     width: 100%;
     max-width: 480px; 
     background-color: var(--white);
-    
-    /* ALINEACIÓN HORIZONTAL */
     display: flex !important;
     flex-direction: row !important; 
     justify-content: space-around !important;
     align-items: center !important;
-    
-    border-top: 3px solid var(--secondary-color); /* Contorno Dorado */
+    border-top: 3px solid #CBD5E0; /* Borde base gris claro neutral */
     box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.08);
     z-index: 100;
     padding: 8px 0;
     box-sizing: border-box;
 }
 
-/* BOTONES INTERNOS DE LA BARRA HORIZONTAL */
+/* BOTONES INACTIVOS POR DEFECTO (Gris elegante y limpio) */
 .bottom-nav .nav-item {
     background: none !important;
     border: none !important;
-    color: #4A5568 !important;
+    color: #718096 !important; /* Gris medio neutral */
     box-shadow: none !important;
     font-size: 13px !important;
-    font-weight: 700 !important;
+    font-weight: 600 !important;
     margin-top: 0 !important;
-    padding: 6px 12px !important;
+    padding: 6px 12px 4px 12px !important;
     cursor: pointer;
-    
-    /* ICONO ARRIBA Y TEXTO ABAJO */
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
     gap: 2px !important;
-    
     width: auto !important; 
     height: auto !important;
     letter-spacing: 0.3px !important;
-    transition: color 0.2s ease, transform 0.1s ease;
+    border-bottom: 3px solid transparent !important; /* Espacio reservado para la línea activa */
+    transition: all 0.2s ease;
 }
 
 .bottom-nav .nav-item span {
     font-size: 20px !important;
     line-height: 1 !important;
     margin-bottom: 2px !important;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
 }
 
-/* Estado Activo / Encendido (Guinda Institucional Activo) */
+/* =========================================================================
+   ESTADO ENCIENDIDO DE MÁXIMO CONTRASTE (PANTALLA SELECCIONADA ACTUAL)
+   ========================================================================= */
 .bottom-nav .nav-item.active {
-    color: var(--primary-color) !important;
-    transform: scale(1.05);
+    color: var(--primary-color) !important; /* Texto en Guinda Formal */
+    font-weight: 800 !important; /* Tipografía ultra gruesa */
+    border-bottom: 3px solid var(--secondary-color) !important; /* Línea de relieve Dorado */
+    transform: translateY(-2px); /* Pequeña elevación táctil */
+}
+
+.bottom-nav .nav-item.active span {
+    opacity: 1 !important; /* Icono/Emoji con brillo total */
 }
 
 .bottom-nav .nav-item:hover {
