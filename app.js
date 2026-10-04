@@ -43,6 +43,7 @@ function updateLocalCounter() {
 }
 
 // CONTROL DE CAMBIO DE PANTALLAS CON BARRA DE NAVEGACIÓN FIJA AUTOMÁTICA
+// REEMPLAZA ÚNICAMENTE ESTA FUNCIÓN DENTRO DE TU APP.JS:
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
@@ -53,8 +54,9 @@ function changeScreen(screenId) {
     document.getElementById(screenId).classList.remove('hidden');
 
     const bottomNav = document.getElementById('app-bottom-nav');
+    if (!bottomNav) return;
     
-    // La barra de navegación se oculta en la Pantalla 1 (Login) y Pantalla 4 (Formulario)
+    // CANDADO STRICTO: La barra se oculta en Pantalla 1 (screen-login) y Pantalla 4 (screen-form)
     if (screenId === 'screen-login' || screenId === 'screen-form') {
         bottomNav.classList.add('hidden');
     } else {
@@ -63,7 +65,7 @@ function changeScreen(screenId) {
         // Quitar la clase activa de todos los botones de la barra inferior
         document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
         
-        // Encender visualmente en dorado/guinda el botón de la sección seleccionada
+        // Encender visualmente en guinda el botón de la sección seleccionada
         if (screenId === 'screen-welcome') document.getElementById('nav-welcome').classList.add('active');
         if (screenId === 'screen-search') document.getElementById('nav-search').classList.add('active');
         if (screenId === 'screen-history') document.getElementById('nav-history').classList.add('active');
