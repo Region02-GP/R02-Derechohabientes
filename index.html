@@ -65,15 +65,19 @@
         <section id="screen-form" class="app-screen hidden">
             <h2>Actualización de Domicilio</h2>
             
-<!-- REEMPLAZA TUS DOS BOTONES EN EL INDEX.HTML POR ESTOS DE ALTO CONTRASANTE CLARO PASAL: -->
+<!-- BUSCA TUS DOS BOTONES EN EL INDEX.HTML Y REEMPLÁZALOS EXACTAMENTE POR ESTOS: -->
 <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-    <button type="button" id="btn-status-localizado" onclick="seleccionarEstatusVisita('LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #236947; background-color: #E6F4EA; color: #137333; cursor: pointer;">
+    <button type="button" id="btn-status-localizado" onclick="seleccionarEstatusVisita('LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s;">
         LOCALIZADO
     </button>
-    <button type="button" id="btn-status-nolocalizado" onclick="seleccionarEstatusVisita('NO LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #b91c1c; background-color: #FCE8E6; color: #C5221F; cursor: pointer;">
+    <button type="button" id="btn-status-nolocalizado" onclick="seleccionarEstatusVisita('NO LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s;">
         NO LOCALIZADO
     </button>
 </div>
+
+<!-- Campo oculto para almacenar el motivo de forma segura sin romper tu diseño -->
+<input type="hidden" id="f-motivo" value="">
+
 
 
 
