@@ -411,6 +411,34 @@ button:active {
     border-left: 5px solid #b91c1c !important;
     background-color: #fef2f2 !important; /* Rojo muy claro de fondo */
 }
+/* =========================================================================
+   INDICADORES DE PANTALLA EXIGIDOS Y SEMÁFORO VISUAL EN BUSQUEDA
+   ========================================================================= */
+.screen-number-badge {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background-color: var(--primary-color);
+    color: var(--white);
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.8;
+    z-index: 10;
+}
+
+.result-item.status-localizado {
+    border-left: 5px solid #236947 !important;
+    background-color: #f0fdf4 !important;
+}
+
+.result-item.status-nolocalizado {
+    border-left: 5px solid #b91c1c !important;
+    background-color: #fef2f2 !important;
+}
 
     opacity: 0.5;
     pointer-events: none; /* Bloquea clics y escrituras */
