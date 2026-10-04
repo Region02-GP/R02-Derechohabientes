@@ -226,18 +226,27 @@ function openForm(item) {
     document.getElementById('f-lat').value = "Buscando satélite...";
     document.getElementById('f-lon').value = "Buscando satélite...";
 
+    // CONFIGURACIÓN RECUPERADA: Fuerza al GPS a usar las antenas de alta precisión
+    const gpsOptions = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
+
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                document.getElementById('f-lat').value = String(position.coords.latitude.toFixed(6)).replace(",", ".");
-                document.getElementById('f-lon').value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
+                let cleanLat = String(position.coords.latitude.toFixed(6)).replace(",", ".");
+                let cleanLon = String(position.coords.longitude.toFixed(6)).replace(",", ".");
+                document.getElementById('f-lat').value = cleanLat;
+                document.getElementById('f-lon').value = cleanLon;
             },
-            () => { 
+            (error) => { 
                 document.getElementById('f-lat').value = "ERROR";
                 document.getElementById('f-lon').value = "ERROR";
+                alert("Atención: Otorgue permisos de ubicación para capturar la georreferencia.");
             },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+            gpsOptions
         );
+    } else {
+        document.getElementById('f-lat').value = "NO COMPATIBLE";
+        document.getElementById('f-lon').value = "NO COMPATIBLE";
     }
     changeScreen('screen-form');
 }
