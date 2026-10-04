@@ -1,5 +1,7 @@
+// URL del Web App de Google Apps Script 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzS4rEpvTBAfGdLgZXj2KKDCBdrZjLvOxeIif0nmivYbGMsIuJ_aiWRVerfxito5N34/exec";
 
+// CURPs Autorizadas en Código para la Pantalla de Acceso (Pantalla 1)
 const AUTHORIZED_CURPS = {
     "CURPVALIDA12345678": "Juan Pérez López",
     "CURPVALIDA87654321": "María Gómez García"
@@ -10,9 +12,11 @@ let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
 let currentUser = null;
 let previousScreen = 'screen-welcome';
 
+// VARIABLES PARA LOS BOTONES DE LOCALIZADO / NO LOCALIZADO
 let currentEstatusVisita = "LOCALIZADO"; 
 let motivoNoLocalizadoValue = "";        
 
+// INITIALIZACIÓN DE INDEXEDDB
 const DB_NAME = "R02_DB";
 const DB_VERSION = 1;
 const STORE_NAME = "derechohabientes";
@@ -42,13 +46,12 @@ function updateLocalCounter() {
     };
 }
 
-// REEMPLAZA ÚNICAMENTE ESTA FUNCIÓN EN TU APP.JS
+// CONTROL DE CAMBIO DE PANTALLAS CON CANDADO INLINE STYLE PARA LA BARRA INFERIOR
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
     if (screenId === 'screen-welcome') updateLocalCounter(); 
     
-    // 1. Esconder todas las pantallas nativas
     document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
     
     const targetScreen = document.getElementById(screenId);
@@ -57,7 +60,6 @@ function changeScreen(screenId) {
     const bottomNav = document.getElementById('app-bottom-nav');
     if (!bottomNav) return;
     
-    // 2. CANDADO ABSOLUTO CON REGLA INLINE STYLE (Evita que otra función la encienda por error)
     if (screenId === 'screen-login' || screenId === 'screen-form') {
         bottomNav.style.setProperty('display', 'none', 'important');
         bottomNav.classList.add('hidden');
@@ -65,16 +67,15 @@ function changeScreen(screenId) {
         bottomNav.style.setProperty('display', 'flex', 'important');
         bottomNav.classList.remove('hidden');
         
-        // Quitar la clase activa de todos los botones de la barra inferior
         document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => btn.classList.remove('active'));
-        
-        // Encender visualmente en guinda institucional el botón de la sección seleccionada
         if (screenId === 'screen-welcome') document.getElementById('nav-welcome').classList.add('active');
         if (screenId === 'screen-search') document.getElementById('nav-search').classList.add('active');
         if (screenId === 'screen-history') document.getElementById('nav-history').classList.add('active');
     }
 }
-
+// =========================================================================
+// MÓDULO 2: PANTALLA 1 (LOGIN) Y PANTALLA 2 (DESCARGA)
+// =========================================================================
 function login() {
     const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
     if (AUTHORIZED_CURPS[curpInput]) {
@@ -131,7 +132,6 @@ async function downloadAllDataMassive() {
         alert(`Error: ${error.message}`);
     } finally { btn.disabled = false; }
 }
-
 let localMemoryDatabase = [];
 function preloadDatabaseToMemory() {
     if (!db) return;
@@ -169,10 +169,10 @@ function searchData() {
 
         if (estatusFinal === "LOCALIZADO") {
             claseColor = "result-item status-localizado"; 
-            textoIndicador = ' <span style="color:#236947; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>';
+            textoIndicador = ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>';
         } else if (estatusFinal === "NO LOCALIZADO") {
             claseColor = "result-item status-nolocalizado"; 
-            textoIndicador = ' <span style="color:#b91c1c; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
+            textoIndicador = ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
         }
 
         div.className = claseColor;
@@ -194,7 +194,6 @@ function searchData() {
 
 function seleccionarEstatusVisita(estatus) {
     currentEstatusVisita = estatus.toUpperCase();
-    
     if (currentEstatusVisita === "NO LOCALIZADO") {
         let mot = prompt("Escriba el motivo por el cual NO FUE LOCALIZADO:");
         if (!mot || mot.trim() === "") { 
@@ -208,41 +207,34 @@ function seleccionarEstatusVisita(estatus) {
     } else { 
         motivoNoLocalizadoValue = ""; 
     }
-    
-    // Fuerza el cambio visual inmediato de los botones al hacer clic
     actualizarEstilosBotonesFormulario();
 }
 
-// FUNCIÓN NUEVA: Controla el encendido y apagado visual de alto contraste
+// CANDADO AGREGADO: Valida si los botones existen antes de pintarlos (Evita colapso en Pantalla 1)
 function actualizarEstilosBotonesFormulario() {
     const btnLoc = document.getElementById('btn-status-localizado');
     const btnNoLoc = document.getElementById('btn-status-nolocalizado');
-    
-    if (!btnLoc || !btnNoLoc) return;
+    if (!btnLoc || !btnNoLoc) return; // Si la pantalla 4 está oculta, aborta sin romper la app
 
     if (currentEstatusVisita === "LOCALIZADO") {
-        // Encender Localizado (Verde Menta con borde grueso y sombra)
         btnLoc.style.backgroundColor = "#E6F4EA";
         btnLoc.style.borderColor = "#137333";
         btnLoc.style.color = "#137333";
         btnLoc.style.boxShadow = "0 4px 12px rgba(19, 115, 51, 0.25), inset 0 2px 4px rgba(255,255,255,0.6)";
         btnLoc.style.transform = "scale(1.02)";
         
-        // Apagar No Localizado (Gris neutro inactivo)
         btnNoLoc.style.backgroundColor = "#F3F4F6";
         btnNoLoc.style.borderColor = "#CBD5E0";
         btnNoLoc.style.color = "#9CA3AF";
         btnNoLoc.style.boxShadow = "none";
         btnNoLoc.style.transform = "scale(1)";
     } else if (currentEstatusVisita === "NO LOCALIZADO") {
-        // Encender No Localizado (Rojo Rosáceo con borde carmesí y sombra)
         btnNoLoc.style.backgroundColor = "#FCE8E6";
         btnNoLoc.style.borderColor = "#C5221F";
         btnNoLoc.style.color = "#C5221F";
         btnNoLoc.style.boxShadow = "0 4px 12px rgba(197, 34, 31, 0.25), inset 0 2px 4px rgba(255,255,255,0.6)";
         btnNoLoc.style.transform = "scale(1.02)";
         
-        // Apagar Localizado (Gris neutro inactivo)
         btnLoc.style.backgroundColor = "#F3F4F6";
         btnLoc.style.borderColor = "#CBD5E0";
         btnLoc.style.color = "#9CA3AF";
@@ -250,7 +242,6 @@ function actualizarEstilosBotonesFormulario() {
         btnLoc.style.transform = "scale(1)";
     }
 }
-
 function openForm(item) {
     if (!item) return;
     document.getElementById('f-curp').value = item['CURP'] || '';
@@ -274,107 +265,59 @@ function openForm(item) {
     currentEstatusVisita = item['ESTATUS_VISITA'] || "LOCALIZADO";
     motivoNoLocalizadoValue = item['MOTIVO_NO_LOCALIZADO'] || "";
 
+    // Pinta con alto contraste el botón correspondiente al cargar la Pantalla 4
+    actualizarEstilosBotonesFormulario();
+
     document.getElementById('f-lat').value = "Buscando satélite...";
     document.getElementById('f-lon').value = "Buscando satélite...";
-
-    // CONFIGURACIÓN RECUPERADA: Fuerza al GPS a usar las antenas de alta precisión
-    const gpsOptions = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
 
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                let cleanLat = String(position.coords.latitude.toFixed(6)).replace(",", ".");
-                let cleanLon = String(position.coords.longitude.toFixed(6)).replace(",", ".");
-                document.getElementById('f-lat').value = cleanLat;
-                document.getElementById('f-lon').value = cleanLon;
+                document.getElementById('f-lat').value = String(position.coords.latitude.toFixed(6)).replace(",", ".");
+                document.getElementById('f-lon').value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
             },
-            (error) => { 
+            () => { 
                 document.getElementById('f-lat').value = "ERROR";
                 document.getElementById('f-lon').value = "ERROR";
-                alert("Atención: Otorgue permisos de ubicación para capturar la georreferencia.");
             },
-            gpsOptions
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
         );
-    } else {
-        document.getElementById('f-lat').value = "NO COMPATIBLE";
-        document.getElementById('f-lon').value = "NO COMPATIBLE";
     }
     changeScreen('screen-form');
-        // ... todo el código anterior de openForm se queda idéntico ...
-    currentEstatusVisita = item['ESTATUS_VISITA'] || "LOCALIZADO";
-    motivoNoLocalizadoValue = item['MOTIVO_NO_LOCALIZADO'] || "";
-
-    // LÍNEA NUEVA A AGREGAR: Pinta el botón correcto al cargar los datos del derechohabiente
-    actualizarEstilosBotonesFormulario();
-
-    changeScreen('screen-form');
-}
-
 }
 
 function saveData(event) {
     event.preventDefault();
     const latValue = document.getElementById('f-lat').value;
     const lonValue = document.getElementById('f-lon').value;
-
-    // Candado de seguridad: Evita guardar filas vacías si el satélite falló
-    if (latValue.includes("Buscando") || latValue === "" || latValue === "ERROR" || latValue === "NO COMPATIBLE") {
-        alert("🛑 BLOQUEO: No se puede guardar el registro sin la georreferencia del domicilio.");
-        return; 
-    }
+    if (latValue.includes("Buscando") || latValue === "" || latValue === "ERROR") return alert("No se puede guardar sin georreferencia.");
     
     const targetCurp = document.getElementById('f-curp').value;
-    const memoryIndex = localMemoryDatabase.findIndex(r => r['CURP'] === targetCurp);
+    const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp);
     const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
 
     const record = {
-        'CURP': targetCurp,
-        'ID': document.getElementById('f-id').value,
-        'NOMBRE': document.getElementById('f-nombre').value,
-        'AP PATERNO': document.getElementById('f-paterno').value,
-        'AP MATERNO': document.getElementById('f-materno').value,
-        'TEL FIJO': document.getElementById('f-telfijo').value,
-        'TEL CEL': document.getElementById('f-telcel').value,
-        'MUNICIPIO': document.getElementById('f-municipio').value,
-        'LOCALIDAD': document.getElementById('f-localidad').value,
-        'SECCION': document.getElementById('f-seccion').value,
-        'COLONIA': document.getElementById('f-colonia').value,
-        'CP': document.getElementById('f-cp').value,
-        'CALLE': document.getElementById('f-calle').value,
-        'NUM EXT': document.getElementById('f-numext').value,
-        'REFERENCIA': document.getElementById('f-referencia').value,
-        'SITUACION': document.getElementById('f-situacion').value,
-        'CAUSAL': document.getElementById('f-causal').value,
-        
-        'ESTATUS_VISITA': currentEstatusVisita,
-        'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue,
-        
-        // EMPAQUETADO EXACTO: Vincula las variables a las llaves de tus 23 columnas en Sheets
-        'Latitud': latValue,
-        'Longitud': lonValue,
-        'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"),
-        'USUARIO_MODIFICA': currentUser.name,
+        'CURP': targetCurp, 'ID': document.getElementById('f-id').value, 'NOMBRE': document.getElementById('f-nombre').value,
+        'AP PATERNO': document.getElementById('f-paterno').value, 'AP MATERNO': document.getElementById('f-materno').value,
+        'TEL FIJO': document.getElementById('f-telfijo').value, 'TEL CEL': document.getElementById('f-telcel').value,
+        'MUNICIPIO': document.getElementById('f-municipio').value, 'LOCALIDAD': document.getElementById('f-localidad').value,
+        'SECCION': document.getElementById('f-seccion').value, 'COLONIA': document.getElementById('f-colonia').value,
+        'CP': document.getElementById('f-cp').value, 'CALLE': document.getElementById('f-calle').value,
+        'NUM EXT': document.getElementById('f-numext').value, 'REFERENCIA': document.getElementById('f-referencia').value,
+        'SITUACION': document.getElementById('f-situacion').value, 'CAUSAL': document.getElementById('f-causal').value,
+        'ESTATUS_VISITA': currentEstatusVisita, 'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue,
+        'Latitud': latValue, 'Longitud': lonValue,
+        'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"), 'USUARIO_MODIFICA': currentUser.name,
         'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || ""
     };
 
-    const txUpdate = db.transaction(STORE_NAME, "readwrite");
-    txUpdate.objectStore(STORE_NAME).put(record);
-
-    if (memoryIndex !== -1) {
-        localMemoryDatabase[memoryIndex] = record;
-    } else {
-        localMemoryDatabase.push(record);
-    }
-
+    db.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).put(record);
+    if (memoryIndex !== -1) localMemoryDatabase[memoryIndex] = record; else localMemoryDatabase.push(record);
     pendingSync.push(record);
     localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
-
-    alert("Confirmación: Modificación guardada localmente.");
-    document.getElementById('search-input').value = "";
-    document.getElementById('search-results').innerHTML = "";
     changeScreen('screen-search');
 }
-
 function openHistoryScreen() {
     changeScreen('screen-history');
     document.getElementById('pending-count').innerText = pendingSync.length;
