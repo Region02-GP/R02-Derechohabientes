@@ -16,8 +16,7 @@
     <main class="app-container">
         
         <!-- PANTALLA 1: ACCESO POR CURP AUTHORIZED -->
-        <section id="screen-login" class="app-screen" style="position: relative;">
-            <div class="screen-number-badge">Pantalla 1</div>
+        <section id="screen-login" class="app-screen">
             <h2>Acceso al Sistema</h2>
             <div class="form-group">
                 <label for="login-curp">Ingrese su CURP Autorizada:</label>
@@ -27,11 +26,9 @@
         </section>
 
         <!-- PANTALLA 2: BIENVENIDA Y CARGA TOTAL MASIVA INDEXADA -->
-        <section id="screen-welcome" class="app-screen hidden" style="position: relative;">
-            <div class="screen-number-badge">Pantalla 2</div>
+        <section id="screen-welcome" class="app-screen hidden">
             <div class="screen-toolbar">
                 <h2 id="welcome-message">Bienvenido</h2>
-                <button type="button" onclick="openHistoryScreen()" class="btn-toolbar-history">📋 Historial</button>
             </div>
 
             <div class="card" style="margin-top: 15px;">
@@ -50,18 +47,11 @@
 
                 <button type="button" onclick="downloadAllDataMassive()" id="btn-massive-download" class="btn-secondary">📥 Descargar Base Completa</button>
             </div>
-            
-            <div class="nav-buttons">
-                <button type="button" onclick="changeScreen('screen-search')">Ir a Búsqueda de Derechohabientes</button>
-            </div>
         </section>
-
         <!-- PANTALLA 3: BUSCADOR MULTI-CRITERIO EN MEMORIA RAM CACHÉ -->
-        <section id="screen-search" class="app-screen hidden" style="position: relative;">
-            <div class="screen-number-badge">Pantalla 3</div>
+        <section id="screen-search" class="app-screen hidden">
             <div class="screen-toolbar">
                 <h2>Búsqueda</h2>
-                <button type="button" onclick="openHistoryScreen()" class="btn-toolbar-history">📋 Historial</button>
             </div>
 
             <div class="form-group" style="margin-top: 15px;">
@@ -69,12 +59,10 @@
             </div>
             
             <div id="search-results" class="results-list"></div>
-            
-            <button type="button" onclick="changeScreen('screen-welcome')" class="btn-back">Volver al Menú Principal</button>
         </section>
+
         <!-- PANTALLA 4: FORMULARIO DE EDICIÓN, ESTATUS DE VISITA Y CAPTURA GPS -->
-        <section id="screen-form" class="app-screen hidden" style="position: relative;">
-            <div class="screen-number-badge">Pantalla 4</div>
+        <section id="screen-form" class="app-screen hidden">
             <h2>Actualización de Domicilio</h2>
             
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
@@ -154,10 +142,8 @@
                 <button type="button" onclick="changeScreen('screen-search')" class="btn-back">Cancelar</button>
             </form>
         </section>
-
         <!-- PANTALLA 5: HISTORIAL, CONTROL OFFLINE Y REPORTES EXCEL/CSV -->
-        <section id="screen-history" class="app-screen hidden" style="position: relative;">
-            <div class="screen-number-badge">Pantalla 5</div>
+        <section id="screen-history" class="app-screen hidden">
             <h2>Historial y Sincronización</h2>
             <div class="metrics" style="background:#f7fafc; padding:15px; border-radius:4px; margin-bottom:15px; border-left:4px solid var(--primary-color);">
                 <p style="margin:0; font-size:15px;">Cambios pendientes por subir: <strong id="pending-count">0</strong></p>
@@ -174,8 +160,20 @@
             <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
             <h3>Registro de Visitas del Día</h3>
             <div id="history-log" class="log-list"></div>
-            <button type="button" onclick="goBackFromHistory()" class="btn-back">Volver</button>
         </section>
+
+        <!-- BARRA DE NAVEGACIÓN INFERIOR DINÁMICA DE TRES BOTONES -->
+        <nav id="app-bottom-nav" class="bottom-nav hidden">
+            <button type="button" id="nav-welcome" onclick="changeScreen('screen-welcome')" class="nav-item">
+                <span>📥</span>Inicio
+            </button>
+            <button type="button" id="nav-search" onclick="changeScreen('screen-search')" class="nav-item">
+                <span>🔍</span>Búsqueda
+            </button>
+            <button type="button" id="nav-history" onclick="openHistoryScreen()" class="nav-item">
+                <span>📋</span>Historial
+            </button>
+        </nav>
 
     </main>
 
