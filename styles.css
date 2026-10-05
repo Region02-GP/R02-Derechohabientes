@@ -72,14 +72,58 @@ body {
 .hidden { display: none !important; opacity: 0 !important; visibility: hidden !important; }
 
 /* CABECERA FIJA SUPERIOR */
+/* =========================================================================
+   REGLAS DE FIJACIÓN TOTAL EN PANTALLA (EVITA BRINCOS O DESPLAZAMIENTOS)
+   ========================================================================= */
+
+/* Forzar que el Header se quede pegado arriba de forma global */
 .main-header {
     background-color: var(--primary-color);
     color: var(--white);
     text-align: center;
     padding: 12px !important;
-    border-bottom: 3px solid var(--secondary-color);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    margin: -15px -20px 10px -20px !important; /* Se expande al borde de la tarjeta */
+    border-bottom: 4px solid var(--secondary-color);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    width: 100%;
+    box-sizing: border-box;
+    position: sticky !important;
+    top: 0;
+    z-index: 110;
+}
+
+/* Forzar que la barra de navegación se quede clavada abajo pase lo que pase */
+.bottom-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 100% !important;
+    max-width: 480px !important; 
+    background-color: var(--white) !important;
+    display: flex !important;
+    flex-direction: row !important; 
+    justify-content: space-around !important;
+    align-items: center !important;
+    border-top: 3px solid var(--secondary-color) !important; 
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.08) !important;
+    z-index: 1000 !important;
+    padding: 8px 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* El túnel de desplazamiento ajustado para no empujar los menús */
+.app-screen {
+    background: rgba(255, 255, 255, 0.94) !important;
+    border-radius: 12px;
+    box-shadow: var(--shadow-screen);
+    border: 1px solid #E5E7EB;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    padding: 20px !important;
+    margin-top: 10px;
+    margin-bottom: 75px; /* Espacio de seguridad para no tapar la barra inferior */
+    max-height: calc(100vh - 160px) !important; /* Limita la tarjeta al tamaño de pantalla */
+    overflow-y: auto !important; /* El formulario se desliza por dentro de la tarjeta */
 }
 
 .header-brand-wrapper {
