@@ -312,24 +312,20 @@ button:active {
 /* =========================================================================
    BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL (PANTALLAS 2, 3 Y 5)
    ========================================================================= */
+/* REEMPLAZA LA CLASE .bottom-nav AL FINAL DE TU STYLES.CSS POR ESTA: */
 .bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 480px; 
-    background-color: var(--white);
+    width: 100% !important;
+    background-color: var(--white) !important;
     display: flex !important;
     flex-direction: row !important; 
     justify-content: space-around !important;
     align-items: center !important;
-    border-top: 3px solid #CBD5E0; /* Borde base gris claro neutral */
-    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.08);
-    z-index: 100;
-    padding: 8px 0;
-    box-sizing: border-box;
+    border-top: 3px solid var(--secondary-color) !important; 
+    margin-top: 20px !important;
+    padding: 10px 0 2px 0 !important;
+    box-sizing: border-box !important;
 }
+
 
 /* BOTONES INACTIVOS POR DEFECTO (Gris elegante y limpio) */
 .bottom-nav .nav-item {
