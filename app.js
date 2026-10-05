@@ -3,7 +3,7 @@
 // =========================================================================
 
 // URL del Web App de Google Apps Script 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxEGZ62Jdsea38absoEDWDCA1Gy1cUr_TxuWTIlHvrRfCa5_A-a2fVkp00WLRaQcA/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzdQ-GKTL8S65NTLOMtEcVL-cSioRBnBrNoHdsXYCVNXgcVnt2wFIBzLkX8Oud-kl1B/exec";
 
 // =========================================================================
 // BASE DE DATO LOCAL DE BRIGADISTAS CON ACCESO INSTANTÁNEO Y MUNICIPIO
