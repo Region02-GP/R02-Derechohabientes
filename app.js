@@ -1,12 +1,7 @@
 // URL del Web App de Google Apps Script 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzS4rEpvTBAfGdLgZXj2KKDCBdrZjLvOxeIif0nmivYbGMsIuJ_aiWRVerfxito5N34/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxe0qb86opmmCAfbI5Qk_-ZR28ziFvVwyYal1svU0yytxHuH2qq8d6zXPpcoZ8iT8-K/exec";
 
-// CURPs Autorizadas en Código para la Pantalla de Acceso (Pantalla 1)
-const AUTHORIZED_CURPS = {
-    "CURPVALIDA12345678": "Juan Pérez López",
-    "CURPVALIDA87654321": "María Gómez García"
-};
-
+// ELIMINADO EL DICCIONARIO FIJO: Ahora los brigadistas se consultan directamente del Excel
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
 let currentUser = null;
@@ -46,7 +41,6 @@ function updateLocalCounter() {
     };
 }
 
-// CONTROL DE CAMBIO DE PANTALLAS CON CANDADO INLINE STYLE PARA LA BARRA INFERIOR
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
@@ -67,27 +61,45 @@ function changeScreen(screenId) {
         bottomNav.style.setProperty('display', 'flex', 'important');
         bottomNav.classList.remove('hidden');
         
-        // Quita el estado activo de todos los botones de la barra inferior
         document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => btn.classList.remove('active'));
-        
-        // AGREGA LA CLASE active AL BOTÓN CORRESPONDIENTE DE LA BARRA INFERIOR
         if (screenId === 'screen-welcome') document.getElementById('nav-welcome').classList.add('active');
         if (screenId === 'screen-search') document.getElementById('nav-search').classList.add('active');
         if (screenId === 'screen-history') document.getElementById('nav-history').classList.add('active');
     }
 }
-
-// =========================================================================
-// MÓDULO 2: PANTALLA 1 (LOGIN) Y PANTALLA 2 (DESCARGA)
-// =========================================================================
-function login() {
+// NUEVA FUNCIÓN DE ACCESO: Consulta la pestaña "Brigadistas" en tiempo real desde Google Sheets
+async function login() {
     const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
-    if (AUTHORIZED_CURPS[curpInput]) {
-        currentUser = { curp: curpInput, name: AUTHORIZED_CURPS[curpInput] };
-        document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
-        changeScreen('screen-welcome');
-    } else {
-        alert("CURP no autorizada o inválida.");
+    if (curpInput.length !== 18) {
+        return alert("Por favor, introduce una CURP válida de 18 caracteres.");
+    }
+    
+    const loginButton = document.querySelector('#screen-login button');
+    loginButton.disabled = true;
+    loginButton.innerText = "Verificando en red...";
+    
+    try {
+        // Petición hacia la acción de consulta de brigadistas autorizados
+        const url = `${GOOGLE_SCRIPT_URL}?action=getBrigadistas&_=${new Date().getTime()}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Fallo de respuesta del servidor de Google.");
+        
+        const brigadistasAutorizados = await response.json();
+        
+        // Verifica si la CURP tipeada existe como llave en el objeto devuelto
+        if (brigadistasAutorizados && brigadistasAutorizados[curpInput]) {
+            currentUser = { curp: curpInput, name: brigadistasAutorizados[curpInput] };
+            document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
+            changeScreen('screen-welcome');
+        } else {
+            alert("Acceso Denegado: Esta CURP no se encuentra registrada en la hoja 'Brigadistas'.");
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Error de conexión: No se pudo verificar la lista de brigadistas. Asegúrate de tener internet para iniciar sesión.");
+    } finally {
+        loginButton.disabled = false;
+        loginButton.innerText = "Ingresar";
     }
 }
 
@@ -214,11 +226,10 @@ function seleccionarEstatusVisita(estatus) {
     actualizarEstilosBotonesFormulario();
 }
 
-// CANDADO AGREGADO: Valida si los botones existen antes de pintarlos (Evita colapso en Pantalla 1)
 function actualizarEstilosBotonesFormulario() {
     const btnLoc = document.getElementById('btn-status-localizado');
     const btnNoLoc = document.getElementById('btn-status-nolocalizado');
-    if (!btnLoc || !btnNoLoc) return; // Si la pantalla 4 está oculta, aborta sin romper la app
+    if (!btnLoc || !btnNoLoc) return;
 
     if (currentEstatusVisita === "LOCALIZADO") {
         btnLoc.style.backgroundColor = "#E6F4EA";
@@ -226,24 +237,18 @@ function actualizarEstilosBotonesFormulario() {
         btnLoc.style.color = "#137333";
         btnLoc.style.boxShadow = "0 4px 12px rgba(19, 115, 51, 0.25), inset 0 2px 4px rgba(255,255,255,0.6)";
         btnLoc.style.transform = "scale(1.02)";
-        
         btnNoLoc.style.backgroundColor = "#F3F4F6";
         btnNoLoc.style.borderColor = "#CBD5E0";
         btnNoLoc.style.color = "#9CA3AF";
-        btnNoLoc.style.boxShadow = "none";
-        btnNoLoc.style.transform = "scale(1)";
     } else if (currentEstatusVisita === "NO LOCALIZADO") {
         btnNoLoc.style.backgroundColor = "#FCE8E6";
         btnNoLoc.style.borderColor = "#C5221F";
         btnNoLoc.style.color = "#C5221F";
         btnNoLoc.style.boxShadow = "0 4px 12px rgba(197, 34, 31, 0.25), inset 0 2px 4px rgba(255,255,255,0.6)";
         btnNoLoc.style.transform = "scale(1.02)";
-        
         btnLoc.style.backgroundColor = "#F3F4F6";
         btnLoc.style.borderColor = "#CBD5E0";
         btnLoc.style.color = "#9CA3AF";
-        btnLoc.style.boxShadow = "none";
-        btnLoc.style.transform = "scale(1)";
     }
 }
 function openForm(item) {
@@ -268,8 +273,6 @@ function openForm(item) {
 
     currentEstatusVisita = item['ESTATUS_VISITA'] || "LOCALIZADO";
     motivoNoLocalizadoValue = item['MOTIVO_NO_LOCALIZADO'] || "";
-
-    // Pinta con alto contraste el botón correspondiente al cargar la Pantalla 4
     actualizarEstilosBotonesFormulario();
 
     document.getElementById('f-lat').value = "Buscando satélite...";
@@ -322,6 +325,7 @@ function saveData(event) {
     localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
     changeScreen('screen-search');
 }
+
 function openHistoryScreen() {
     changeScreen('screen-history');
     document.getElementById('pending-count').innerText = pendingSync.length;
