@@ -1,5 +1,5 @@
 // URL del Web App de Google Apps Script 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxMxTR8noWb558lVY7beRXWQ5uJbMzMRZL2l3nzn8PUT4lnUogUTxH34R1zfATPoCht/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzOQcXC_sCZLI8EAB916MbOUpWwE2c1szsLMphOZARvoR0zmNM_8rXGgne3NwyPHQ/exec";
 
 // ELIMINADO EL DICCIONARIO FIJO: Ahora los brigadistas se consultan directamente del Excel
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
@@ -68,7 +68,6 @@ function changeScreen(screenId) {
     }
 }
 async function login() {
-    // Expresión regular que remueve espacios ordinarios, saltos de línea e invisibles (U+200B, etc.)
     const curpInput = document.getElementById('login-curp').value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase().trim();
     
     if (curpInput.length !== 18) {
@@ -105,8 +104,6 @@ async function login() {
         }
     }
 }
-
-
 
 async function downloadAllDataMassive() {
     const btn = document.getElementById('btn-massive-download');
