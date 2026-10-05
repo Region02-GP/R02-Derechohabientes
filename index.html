@@ -9,21 +9,22 @@
 </head>
 <body>
 
+    <!-- ENCABEZADO GLOBAL UNIFICADO FIJO ARRIBA -->
+    <header class="main-header">
+        <div class="header-brand-wrapper">
+            <img src="https://bienestar.gob.mx" alt="Logotipo Institucional" class="header-logo">
+            <h1>R02-Derechohabientes</h1>
+        </div>
+    </header>
+
     <main class="app-container">
         
-        <!-- PANTALLA 1: ACCESO INTEGRADO INDEPENDIENTE -->
+        <!-- PANTALLA 1: ACCESO "CASA POR CASA" -->
         <section id="screen-login" class="app-screen">
             <div class="screen-number-badge">Pantalla 1</div>
             
-            <header class="main-header">
-                <div class="header-brand-wrapper">
-                    <img src="https://pub.bienestar.gob.mx/static/media/padrones01.e4252fd6.jpg" alt="Logotipo Institucional" class="header-logo">
-                    <h1>R02-Derechohabientes</h1>
-                </div>
-            </header>
-
-            <h1 style="font-size: 20px; text-align: center; margin-top: 15px;">Sistema de actualización de datos</h1>
-            <div class="screen-toolbar" style="margin-bottom: 20px;">
+            <h1 style="font-size: 19px; text-align: center; margin-top: 5px; margin-bottom: 5px;">Sistema de actualización de datos</h1>
+            <div class="screen-toolbar" style="margin-bottom: 15px;">
                 <h2>R02-GOMEZ PALACIO</h2>
             </div>
 
@@ -32,7 +33,7 @@
             </div>
 
             <h2>Acceso</h2>
-            <div class="form-group" style="margin-top: 25px;">
+            <div class="form-group" style="margin-top: 15px;">
                 <label for="input-curp">Ingrese su CURP para ingresar *</label>
                 <input type="text" id="input-curp" maxlength="18" placeholder="18 caracteres" style="text-transform: uppercase;">
             </div>
@@ -41,22 +42,15 @@
             <div id="login-error" style="color: #66001c; font-weight: bold; font-size: 14px; margin-top: 10px; display: none;"></div>
         </section>
 
-        <!-- PANTALLA 2: BIENVENIDA Y CARGA MASIVA OFFLINE -->
+        <!-- PANTALLA 2: BIENVENIDA Y CARGA MASIVA -->
         <section id="screen-welcome" class="app-screen hidden">
             <div class="screen-number-badge">Pantalla 2</div>
-            
-            <header class="main-header">
-                <div class="header-brand-wrapper">
-                    <img src="https://bienestar.gob.mx" alt="Logotipo Institucional" class="header-logo">
-                    <h1>R02-Derechohabientes</h1>
-                </div>
-            </header>
 
-            <div class="screen-toolbar" style="margin-top: 15px;">
+            <div class="screen-toolbar">
                 <h2 id="welcome-message">Bienvenido</h2>
             </div>
 
-            <div class="card" style="margin-top: 15px;">
+            <div class="card" style="margin-top: 10px;">
                 <h3>Sincronización Inicial de Base de Datos</h3>
                 <p style="font-size:14px; font-weight:bold; color:var(--primary-color); margin-bottom:12px; background:#f7fafc; padding:8px; border-radius:6px; border-left:4px solid var(--primary-color);">
                     📊 Registros cargados en el teléfono: <span id="local-db-count">0</span>
@@ -70,60 +64,32 @@
 
                 <button type="button" onclick="downloadAllDataMassive()" id="btn-massive-download" class="btn-secondary">📥 Descargar Base Completa</button>
             </div>
-
-            <!-- BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL INTERNA -->
-            <nav class="bottom-nav">
-                <button type="button" onclick="changeScreen('screen-welcome')" class="nav-item active"><span>📥</span>Inicio</button>
-                <button type="button" onclick="changeScreen('screen-search')" class="nav-item"><span>🔍</span>Búsqueda</button>
-                <button type="button" onclick="openHistoryScreen()" class="nav-item"><span>📋</span>Historial</button>
-            </nav>
         </section>
         <!-- PANTALLA 3: BUSCADOR MULTI-CRITERIO EN MEMORIA RAM CACHÉ -->
         <section id="screen-search" class="app-screen hidden">
             <div class="screen-number-badge">Pantalla 3</div>
             
-            <header class="main-header">
-                <div class="header-brand-wrapper">
-                    <img src="https://bienestar.gob.mx" alt="Logotipo Institucional" class="header-logo">
-                    <h1>R02-Derechohabientes</h1>
-                </div>
-            </header>
-
-            <div class="screen-toolbar" style="margin-top: 15px;">
+            <div class="screen-toolbar">
                 <h2>Búsqueda</h2>
             </div>
 
-            <div class="form-group" style="margin-top: 15px;">
+            <div class="form-group" style="margin-top: 10px;">
                 <input type="text" id="search-input" oninput="searchData()" placeholder="Buscar por Calle, Nombre, CURP o Apellidos...">
             </div>
             
             <div id="search-results" class="results-list"></div>
-
-            <!-- BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL INTERNA -->
-            <nav class="bottom-nav">
-                <button type="button" onclick="changeScreen('screen-welcome')" class="nav-item"><span>📥</span>Inicio</button>
-                <button type="button" onclick="changeScreen('screen-search')" class="nav-item active"><span>🔍</span>Búsqueda</button>
-                <button type="button" onclick="openHistoryScreen()" class="nav-item"><span>📋</span>Historial</button>
-            </nav>
         </section>
         <!-- PANTALLA 4: FORMULARIO DE EDICIÓN, ESTATUS DE VISITA Y CAPTURA GPS -->
         <section id="screen-form" class="app-screen hidden">
             <div class="screen-number-badge">Pantalla 4</div>
-            
-            <header class="main-header">
-                <div class="header-brand-wrapper">
-                    <img src="https://bienestar.gob.mx" alt="Logotipo Institucional" class="header-logo">
-                    <h1>R02-Derechohabientes</h1>
-                </div>
-            </header>
 
-            <h2 style="margin-top: 15px;">Actualización de Domicilio</h2>
+            <h2>Actualización de Domicilio</h2>
             
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                 <button type="button" id="btn-status-localizado" onclick="seleccionarEstatusVisita('LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 1px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s;">
                     LOCALIZADO
                 </button>
-                <button type="button" id="btn-status-nolocalizado" onclick="seleccionarEstatusVisita('NO LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 1px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s;">
+                <button type="button" id="btn-status-nolocalizado" onclick="seleccionarEstatusVisita('NO LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s;">
                     NO LOCALIZADO
                 </button>
             </div>
@@ -193,7 +159,6 @@
                 </div>
 
                 <button type="submit" style="margin-top: 20px;">Guardar Localmente</button>
-                <!-- BOTÓN CANCELAR RECUPERADO EXIGIDO -->
                 <button type="button" onclick="changeScreen('screen-search')" class="btn-back">Cancelar</button>
             </form>
         </section>
@@ -202,14 +167,7 @@
         <section id="screen-history" class="app-screen hidden">
             <div class="screen-number-badge">Pantalla 5</div>
             
-            <header class="main-header">
-                <div class="header-brand-wrapper">
-                    <img src="https://bienestar.gob.mx" alt="Logotipo Institucional" class="header-logo">
-                    <h1>R02-Derechohabientes</h1>
-                </div>
-            </header>
-
-            <h2 style="margin-top: 15px;">Historial y Sincronización</h2>
+            <h2>Historial y Sincronización</h2>
             <div class="metrics" style="background:#f7fafc; padding:15px; border-radius:4px; margin-bottom:15px; border-left:4px solid var(--primary-color);">
                 <p style="margin:0; font-size:15px;">Cambios pendientes por subir: <strong id="pending-count">0</strong></p>
             </div>
@@ -225,14 +183,20 @@
             <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
             <h3>Registro de Visitas del Día</h3>
             <div id="history-log" class="log-list"></div>
-
-            <!-- BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL INTERNA -->
-            <nav class="bottom-nav">
-                <button type="button" onclick="changeScreen('screen-welcome')" class="nav-item"><span>📥</span>Inicio</button>
-                <button type="button" onclick="changeScreen('screen-search')" class="nav-item"><span>🔍</span>Búsqueda</button>
-                <button type="button" onclick="openHistoryScreen()" class="nav-item active"><span>📋</span>Historial</button>
-            </nav>
         </section>
+
+        <!-- UNICA BARRA DE NAVEGACIÓN GLOBAL FIJA ABSOLUTA AL RAS DEL DISPOSITIVO -->
+        <nav id="app-bottom-nav" class="bottom-nav hidden">
+            <button type="button" id="nav-welcome" onclick="changeScreen('screen-welcome')" class="nav-item">
+                <span>📥</span>Inicio
+            </button>
+            <button type="button" id="nav-search" onclick="changeScreen('screen-search')" class="nav-item">
+                <span>🔍</span>Búsqueda
+            </button>
+            <button type="button" id="nav-history" onclick="openHistoryScreen()" class="nav-item">
+                <span>📋</span>Historial
+            </button>
+        </nav>
 
     </main>
 
