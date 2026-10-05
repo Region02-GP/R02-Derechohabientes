@@ -1,30 +1,22 @@
 // URL del Web App de Google Apps Script 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzdQ-GKTL8S65NTLOMtEcVL-cSioRBnBrNoHdsXYCVNXgcVnt2wFIBzLkX8Oud-kl1B/exec";
 
-// =========================================================================
-// BASE DE DATO LOCAL DE BRIGADISTAS CON ACCESO INSTANTÁNEO Y MUNICIPIO
-// =========================================================================
-const AUTHORIZED_BRIGADISTAS = {
-    "AACG640516MCLLRD01": {
-        nombre: "ALVARADO CORDERO MARIA GUADALUPE",
-        municipio: "GÓMEZ PALACIO"
-    },
-    "CURPVALIDA12345678": {
-        nombre: "Juan Pérez López",
-        municipio: "LERDO"
-    }
+// CURPs Autorizadas en Código para la Pantalla de Acceso (Pantalla 1)
+const AUTHORIZED_CURPS = {
+    "CURPVALIDA12345678": "Juan Pérez López",
+    "CURPVALIDA87654321": "María Gómez García"
 };
 
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
-let currentUser = null; 
-let currentBrigadistaMunicipio = ""; 
+let currentUser = null;
 let previousScreen = 'screen-welcome';
 
+// VARIABLES PARA LOS BOTONES DE LOCALIZADO / NO LOCALIZADO
 let currentEstatusVisita = "LOCALIZADO"; 
 let motivoNoLocalizadoValue = "";        
 
-// INITIALIZACIÓN DE INDEXEDDB (Base de Datos Local para soporte masivo)
+// INITIALIZACIÓN DE INDEXEDDB (Soporte masivo offline de derechohabientes)
 const DB_NAME = "R02_DB";
 const DB_VERSION = 1;
 const STORE_NAME = "derechohabientes";
@@ -53,61 +45,60 @@ function updateLocalCounter() {
         if (countElement) countElement.innerText = countRequest.result;
     };
 }
-// CONTROL DE CAMBIO DE PANTALLAS CON CANDADO INLINE STYLE PARA LA BARRA INFERIOR
+// CONTROL DE CAMBIO DE PANTALLAS: Inyecta la animación de tu otra app
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
     if (screenId === 'screen-welcome') updateLocalCounter(); 
-    
-    document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
-    const targetScreen = document.getElementById(screenId);
-    if (targetScreen) targetScreen.classList.remove('hidden');
 
-    const bottomNav = document.getElementById('app-bottom-nav');
-    if (!bottomNav) return;
-    
-    if (screenId === 'screen-login' || screenId === 'screen-form') {
-        bottomNav.style.setProperty('display', 'none', 'important');
-        bottomNav.classList.add('hidden');
-    } else {
-        bottomNav.style.setProperty('display', 'flex', 'important');
-        bottomNav.classList.remove('hidden');
-        document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => btn.classList.remove('active'));
-        if (screenId === 'screen-welcome') document.getElementById('nav-welcome').classList.add('active');
-        if (screenId === 'screen-search') document.getElementById('nav-search').classList.add('active');
-        if (screenId === 'screen-history') document.getElementById('nav-history').classList.add('active');
+    // Quita la clase activa con un sutil efecto de desvanecimiento de salida
+    const activeScreen = document.querySelector('.app-screen.active');
+    if (activeScreen) {
+        activeScreen.classList.remove('active');
     }
-}
 
-// FUNCIÓN DE LOGIN ADAPTADA DE TU OTRA APP (A velocidad de rayo sin internet)
-function validarAccesoCURP() {
-    const curpInput = document.getElementById('input-curp').value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase().trim();
-    const errorDiv = document.getElementById('login-error');
-    
-    if (errorDiv) errorDiv.style.display = "none";
-
-    if (curpInput.length !== 18) {
-        if (errorDiv) {
-            errorDiv.innerText = "🛑 Por favor, ingresa una CURP válida de 18 caracteres.";
-            errorDiv.style.display = "block";
+    // Espera milisegundos a que termine la animación antes de revelar la siguiente
+    setTimeout(() => {
+        document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
+        const targetScreen = document.getElementById(screenId);
+        
+        if (targetScreen) {
+            targetScreen.classList.remove('hidden');
+            setTimeout(() => {
+                targetScreen.classList.add('active'); // Activa el fade-in suave
+            }, 20);
         }
-        return;
-    }
-    
-    const datosBrigadista = AUTHORIZED_BRIGADISTAS[curpInput];
-    
-    if (datosBrigadista) {
-        currentUser = { curp: curpInput, name: datosBrigadista.nombre };
-        currentBrigadistaMunicipio = datosBrigadista.municipio;
+
+        const bottomNav = document.getElementById('app-bottom-nav');
+        if (!bottomNav) return;
+        
+        // La barra inferior de tres botones se apaga en la Pantalla 1 y la Pantalla 4
+        if (screenId === 'screen-login' || screenId === 'screen-form') {
+            bottomNav.style.setProperty('display', 'none', 'important');
+            bottomNav.classList.add('hidden');
+        } else {
+            bottomNav.style.setProperty('display', 'flex', 'important');
+            bottomNav.classList.remove('hidden');
+            
+            // Ilumina en guinda institucional la pestaña activa del menú inferior
+            document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => btn.classList.remove('active'));
+            if (screenId === 'screen-welcome') document.getElementById('nav-welcome').classList.add('active');
+            if (screenId === 'screen-search') document.getElementById('nav-search').classList.add('active');
+            if (screenId === 'screen-history') document.getElementById('nav-history').classList.add('active');
+        }
+    }, 150);
+}
+function login() {
+    const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
+    if (AUTHORIZED_CURPS[curpInput]) {
+        currentUser = { curp: curpInput, name: AUTHORIZED_CURPS[curpInput] };
         document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
         changeScreen('screen-welcome');
     } else {
-        if (errorDiv) {
-            errorDiv.innerText = "❌ Acceso Denegado: Esta CURP no está registrada en el sistema R02.";
-            errorDiv.style.display = "block";
-        }
+        alert("CURP no autorizada o inválida.");
     }
 }
+
 async function downloadAllDataMassive() {
     const btn = document.getElementById('btn-massive-download');
     const progressContainer = document.getElementById('progress-container');
@@ -118,6 +109,7 @@ async function downloadAllDataMassive() {
     btn.disabled = true;
     progressContainer.style.display = "block";
     let offset = 0, limit = 10000, isDone = false, totalCargados = 0;
+    
     const txClear = db.transaction(STORE_NAME, "readwrite");
     txClear.objectStore(STORE_NAME).clear();
     
@@ -195,10 +187,10 @@ function searchData() {
 
         div.className = claseColor;
         div.innerHTML = `
-            <div style="font-size:16px; font-weight:700; color:var(--dark-color); margin-bottom:2px;">
+            <div style="font-size:16px; font-weight:700; color:#1a1a1a; margin-bottom:2px;">
                 ${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}
             </div>
-            <div style="font-size:13px; font-weight:600; color:var(--primary-color); margin-bottom:4px; letter-spacing:0.3px;">
+            <div style="font-size:13px; font-weight:600; color:#66001c; margin-bottom:4px; letter-spacing:0.3px;">
                 CURP: ${item['CURP'] || 'SIN CURP'}
             </div>
             <div style="font-size:13px; color:#555555;">
@@ -209,7 +201,6 @@ function searchData() {
         resultsContainer.appendChild(div);
     });
 }
-
 function seleccionarEstatusVisita(estatus) {
     currentEstatusVisita = estatus.toUpperCase();
     if (currentEstatusVisita === "NO LOCALIZADO") {
@@ -240,8 +231,6 @@ function actualizarEstilosBotonesFormulario() {
         btnNoLoc.style.backgroundColor = "#F3F4F6";
         btnNoLoc.style.borderColor = "#CBD5E0";
         btnNoLoc.style.color = "#9CA3AF";
-        btnNoLoc.style.boxShadow = "none";
-        btnNoLoc.style.transform = "scale(1)";
     } else if (currentEstatusVisita === "NO LOCALIZADO") {
         btnNoLoc.style.backgroundColor = "#FCE8E6";
         btnNoLoc.style.borderColor = "#C5221F";
@@ -251,8 +240,6 @@ function actualizarEstilosBotonesFormulario() {
         btnLoc.style.backgroundColor = "#F3F4F6";
         btnLoc.style.borderColor = "#CBD5E0";
         btnLoc.style.color = "#9CA3AF";
-        btnLoc.style.boxShadow = "none";
-        btnLoc.style.transform = "scale(1)";
     }
 }
 function openForm(item) {
@@ -353,8 +340,6 @@ async function syncWithSheets() {
         });
         const result = await response.json();
         if (result.status === "success") {
-            syncedHistory = syncedHistory.concat(pendingSync);
-            localStorage.setItem('syncedHistory', JSON.stringify(syncedHistory));
             pendingSync = []; localStorage.removeItem('pendingSync');
             openHistoryScreen(); alert("¡Sincronizado!");
         }
@@ -362,7 +347,7 @@ async function syncWithSheets() {
 }
 
 function downloadBackupCSV() {
-    const allVisitsOfDay = pendingSync.concat(syncedHistory);
+    const allVisitsOfDay = pendingSync;
     if (allVisitsOfDay.length === 0) return alert("No hay datos.");
     const headers = ["CURP", "ID", "NOMBRE", "AP PATERNO", "AP MATERNO", "TEL FIJO", "TEL CEL", "MUNICIPIO", "LOCALIDAD", "SECCION", "COLONIA", "CP", "CALLE", "NUM EXT", "REFERENCIA", "SITUACION", "CAUSAL", "ESTATUS_VISITA", "MOTIVO_NO_LOCALIZADO", "Latitud", "Longitud", "FECHA_MODIFICACION", "USUARIO_MODIFICA"];
     let csvRows = [headers.join(",")];
@@ -380,7 +365,7 @@ function downloadBackupCSV() {
 
 function clearLocalStorage() {
     if (confirm("🚨 ADVERTENCIA: ¿Estás seguro de vaciar por completo la memoria?")) {
-        pendingSync = []; syncedHistory = []; localMemoryDatabase = []; localStorage.clear();
+        pendingSync = []; localMemoryDatabase = []; localStorage.clear();
         if (db) {
             db.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).clear().onsuccess = () => {
                 document.getElementById('search-input').value = "";
@@ -390,10 +375,4 @@ function clearLocalStorage() {
             };
         } else { changeScreen('screen-welcome'); }
     }
-}
-
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));
-    });
 }
