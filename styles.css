@@ -7,17 +7,14 @@
     --secondary-color: #BC955C; /* Dorado Institucional Premium */
     --secondary-dark: #987242;  /* Dorado Oscuro (Hover) */
     
-    /* Fondos Claros Limpios para Lectura en Exteriores */
     --bg-color: #F3F4F6;        /* Fondo General Gris Claro */
     --surface-color: #FFFFFF;   /* Blanco Puro para tarjetas y pantallas */
     --surface-light: #F9FAFB;   /* Gris Sutil para campos de texto */
     
-    /* Textos de Máxima Legibilidad */
     --text-main: #1F2937;       /* Negro Antracita para contenido */
     --text-muted: #4B5563;      /* Gris Medio para etiquetas */
     --white: #ffffff;
     
-    /* Efectos de Relieve Tridimensional Tactil */
     --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     --shadow-screen: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
     --shadow-button: 0 4px 14px 0 rgba(98, 17, 50, 0.25);
@@ -25,61 +22,92 @@
 }
 
 /* =========================================================================
-   ESTILOS BASE DE LA APLICACIÓN
+   ESTILOS BASE: BLINDAJE DE ALTURA FIJA PARA EVITAR DESPLAZAMIENTOS
    ========================================================================= */
+html, body {
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important; /* Bloquea por completo el scroll de toda la pantalla */
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-main);
-    margin: 0;
-    padding: 0;
-    line-height: 1.5;
+    /* Inyecta tu marca de agua fija en el fondo */
+    background-image: url('https://postimg.cc') !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    background-size: cover !important;
+    background-attachment: fixed !important;
+    background-color: var(--bg-color) !important;
 }
 
-.main-header {
-    background-color: var(--primary-color);
-    color: var(--white);
-    text-align: center;
-    padding: 18px;
-    border-bottom: 4px solid var(--secondary-color); /* Línea dorada */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-}
-
-.main-header h1 {
-    margin: 0;
-    font-size: 22px;
-    letter-spacing: 0.5px;
-    font-weight: 700;
-    color: var(--white);
-}
-
-/* Margen de seguridad inferior para evitar que la barra tape contenido */
+/* ANCHURA MAX DE LA APP MÓVIL CENTRADA */
 .app-container {
     max-width: 480px;
-    margin: 15px auto;
-    padding: 10px;
-    padding-bottom: 90px !important; 
+    height: 100vh !important; /* Ocupa exactamente el alto del celular */
+    margin: 0 auto !important;
+    padding: 0 !important;
     box-sizing: border-box;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
+/* CONFIGURACIÓN INDEPENDIENTE POR TARJETA DE PANTALLA */
 .app-screen {
-    background: var(--surface-color);
-    padding: 22px;
-    border-radius: 12px;
-    box-shadow: var(--shadow-screen);
-    border: 1px solid #E5E7EB;
+    background: rgba(255, 255, 255, 0.96) !important; /* Blanco premium texturizado */
+    backdrop-filter: blur(4px) !important;
+    box-shadow: var(--shadow-screen) !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    
+    /* CONVERTIR PANTALLA EN CONTENEDOR FLEXIBLE VERTICAL */
+    height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 15px 20px 20px 20px !important;
     position: relative;
 }
 
 .hidden { display: none !important; opacity: 0 !important; visibility: hidden !important; }
 
+/* CABECERA FIJA SUPERIOR */
+.main-header {
+    background-color: var(--primary-color);
+    color: var(--white);
+    text-align: center;
+    padding: 12px !important;
+    border-bottom: 3px solid var(--secondary-color);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    margin: -15px -20px 10px -20px !important; /* Se expande al borde de la tarjeta */
+}
+
+.header-brand-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+.header-logo {
+    max-height: 32px !important;
+    width: auto !important;
+    object-fit: contain !important;
+}
+
+.main-header h1 {
+    margin: 0 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: var(--white) !important;
+}
+
 h2 { 
     color: var(--primary-color); 
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 20px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    font-size: 18px;
     font-weight: 700;
-    letter-spacing: 0.3px;
 }
 
 .screen-toolbar {
@@ -87,409 +115,185 @@ h2 {
     justify-content: space-between;
     align-items: center;
     border-bottom: 2px solid var(--primary-color);
-    padding-bottom: 8px;
+    padding-bottom: 4px;
+    margin-bottom: 10px;
 }
 .screen-toolbar h2 { margin: 0; border: none; }
 /* =========================================================================
-   ESTILOS DE CAMPOS DE FORMULARIO DE ALTA VISIBILIDAD
+   TÚNEL DE DESPLAZAMIENTO CENTRAL INDEPENDIENTE (SCROLL INTERNO)
    ========================================================================= */
-.form-group {
-    margin-bottom: 16px;
+#edit-form, .results-list, .log-list, .banner-container {
+    flex: 1 !important;        /* Ocupa todo el espacio intermedio sobrante */
+    overflow-y: auto !important; /* Activa el scroll vertical solo en esta zona */
+    padding-right: 4px;
+    box-sizing: border-box;
 }
 
+/* Ocultar barra de scroll fea en navegadores móviles para mayor limpieza */
+#edit-form::-webkit-scrollbar, .results-list::-webkit-scrollbar {
+    width: 4px;
+}
+#edit-form::-webkit-scrollbar-thumb {
+    background: #CBD5E0;
+    border-radius: 4px;
+}
+
+.form-group { margin-bottom: 12px; }
 .form-group label {
     display: block;
     font-weight: 600;
-    margin-bottom: 6px;
-    font-size: 14px;
+    margin-bottom: 4px;
+    font-size: 13px;
     color: var(--text-muted);
 }
 
 input[type="text"], input[type="tel"], input[type="number"], textarea {
     width: 100%;
-    padding: 11px 14px;
+    padding: 9px 12px;
     border: 1px solid #CBD5E0;
-    border-radius: 8px;
+    border-radius: 6px;
     box-sizing: border-box;
-    font-size: 16px;
+    font-size: 15px;
     background-color: var(--surface-light);
-    color: var(--text-main);
-    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 input:focus, textarea:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(98, 17, 50, 0.15);
+    box-shadow: 0 0 0 2px rgba(98, 17, 50, 0.1);
     outline: none;
 }
 
-/* Bloqueo de lectura (CURP, ID, etc.) */
 .text-disabled input {
     background-color: #EDF2F7;
     color: #4A5568;
-    cursor: not-allowed;
     border-color: #E2E8F0;
 }
 
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 8px;
 }
 
-hr {
-    margin: 20px 0; 
-    border: 0; 
-    border-top: 1px solid #E5E7EB;
-}
+hr { margin: 12px 0; border: 0; border-top: 1px solid #E5E7EB; }
 
-/* =========================================================================
-   DISEÑO AVANZADO DE BOTONES INTERACTIVOS TRIDIMENSIONALES
-   ========================================================================= */
+/* BOTONES INTEGRADOS */
 button {
     background-color: var(--primary-color);
     color: var(--white);
-    border: 1px solid rgba(255,255,255,0.1);
-    padding: 14px;
-    width: 100%;
-    border-radius: 8px;
-    font-size: 16px;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 15px;
     font-weight: bold;
-    cursor: pointer;
     box-shadow: var(--shadow-button);
-    transition: all 0.2s ease;
-    margin-top: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    letter-spacing: 0.5px;
+    margin-top: 8px;
 }
+button:hover { background-color: var(--primary-light); transform: translateY(-1px); }
+button:active { transform: translateY(1px); }
 
-button:hover { 
-    background-color: var(--primary-light);
-    box-shadow: 0 6px 20px rgba(98, 17, 50, 0.35);
-    transform: translateY(-1px);
-}
+.btn-secondary { background-color: #1F1F1F; }
+.btn-back { background-color: #5A6A80; }
 
-button:active { 
-    transform: translateY(1px);
-    box-shadow: 0 2px 6px rgba(98, 17, 50, 0.25);
-}
-
-.btn-secondary { 
-    background-color: #1F1F1F; 
-    box-shadow: 0 4px 14px rgba(31, 31, 31, 0.2);
-}
-.btn-secondary:hover { background-color: #333333; }
-
-.btn-back { 
-    background-color: #5A6A80; 
-    box-shadow: 0 4px 14px rgba(90, 106, 128, 0.2);
-}
-.btn-back:hover { background-color: #4A5568; }
-
-/* Botón Sincronizar Guinda Formal */
-.btn-primary-guinda {
-    background-color: var(--primary-color);
-    color: var(--white);
-    box-shadow: var(--shadow-button);
-}
-.btn-primary-guinda:hover { background-color: var(--primary-light); }
-
-/* Botón Excel Premium */
 .btn-excel-gold {
     background: linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 100%) !important;
     color: var(--secondary-color) !important;
     border: 2px solid var(--secondary-color) !important;
-    box-shadow: var(--shadow-gold) !important;
-}
-.btn-excel-gold:hover {
-    background: var(--secondary-color) !important;
-    color: #1A1A1A !important;
-}
-
-/* Listados y Tarjetas */
-.results-list, .log-list {
-    max-height: 280px;
-    overflow-y: auto;
-    border: 1px solid #E5E7EB;
-    border-radius: 8px;
-    margin: 15px 0;
-    background: var(--white);
-}
-
-.result-item {
-    padding: 14px 16px;
-    border-bottom: 1px solid #F3F4F6;
-    cursor: pointer;
-    background-color: var(--white);
-    transition: background-color 0.15s, padding-left 0.15s;
-}
-.result-item:hover { 
-    background-color: #F9FAFB;
-    padding-left: 20px; 
 }
 
 .card {
     background: var(--white);
     border: 1px solid #E5E7EB;
-    border-radius: 10px;
-    padding: 18px;
-    margin-bottom: 15px;
-    box-shadow: var(--shadow-soft);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 10px;
 }
-.card h3 { 
-    margin-top: 0; 
-    color: var(--text-main); 
-    font-size: 16px; 
-    font-weight: 700; 
-}
-
-.nav-buttons, .action-buttons-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-top: 10px;
-}
+.card h3 { margin-top: 0; font-size: 15px; }
 
 .button-row-grid {
     display: grid;
     grid-template-columns: 1fr 1fr; 
-    gap: 10px;                     
-    margin-top: 10px;              
+    gap: 8px;                     
+    margin-top: 8px;              
 }
 /* =========================================================================
-   INSIGNIAS IDENTIFICADORAS DE NÚMERO DE PANTALLA
+   INSIGNIAS DE PANTALLA Y SEMÁFORO COMPACTO PASTEL
    ========================================================================= */
 .screen-number-badge {
     position: absolute;
-    top: 10px;
-    right: 15px;
+    top: 52px; /* Posicionada justo abajo de la barra guinda */
+    right: 20px;
     background-color: var(--primary-color);
     color: var(--white);
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 800;
-    padding: 4px 10px;
-    border-radius: 20px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 10px;
     z-index: 10;
     border: 1px solid var(--secondary-color);
 }
 
-/* =========================================================================
-   SEMÁFORO DE VISITAS CORPORATIVO SUAVE (REDUCE EL CANSANCIO VISUAL)
-   ========================================================================= */
-
-/* 1. PENDIENTES / NO TOCADOS: Azul Glaciar Pastel / Borde Dorado */
 .result-item {
+    padding: 12px 14px;
+    border-bottom: 1px solid #F3F4F6;
     border-left: 5px solid var(--secondary-color) !important;
-    background-color: #EDF4F9 !important; /* Azul pastel muy claro */
-    color: var(--text-main);
+    background-color: #EDF4F9 !important;
 }
-.result-item:hover {
-    background-color: #DEEBF4 !important;
-}
-
-/* 2. LOCALIZADOS: Verde Menta / Borde Esmeralda */
-.result-item.status-localizado {
-    border-left: 5px solid #236947 !important;
-    background-color: #E6F4EA !important; /* Verde claro pastel */
-}
-.result-item.status-localizado:hover {
-    background-color: #D2EBD4 !important;
-}
-
-/* 3. NO LOCALIZADOS: Rojo Rosáceo / Borde Carmesí */
-.result-item.status-nolocalizado {
-    border-left: 5px solid #b91c1c !important;
-    background-color: #FCE8E6 !important; /* Rojo claro pastel */
-}
-.result-item.status-nolocalizado:hover {
-    background-color: #FAD2CF !important;
-}
+.result-item.status-localizado { border-left: 5px solid #236947 !important; background-color: #E6F4EA !important; }
+.result-item.status-nolocalizado { border-left: 5px solid #b91c1c !important; background-color: #FCE8E6 !important; }
 
 /* =========================================================================
-   BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL (PANTALLAS 2, 3 Y 5)
+   BARRA DE NAVEGACIÓN HORIZONTAL FIJA ABSOLUTA AL FONDO DE LA PANTALLA
    ========================================================================= */
-/* REEMPLAZA LA CLASE .bottom-nav AL FINAL DE TU STYLES.CSS POR ESTA: */
 .bottom-nav {
-    width: 100% !important;
+    width: calc(100% + 40px) !important; /* Se expande simétricamente al borde */
     background-color: var(--white) !important;
     display: flex !important;
     flex-direction: row !important; 
     justify-content: space-around !important;
     align-items: center !important;
     border-top: 3px solid var(--secondary-color) !important; 
-    margin-top: 20px !important;
-    padding: 10px 0 2px 0 !important;
+    margin: auto -20px -20px -20px !important; /* Se clava fijamente abajo */
+    padding: 6px 0 !important;
     box-sizing: border-box !important;
 }
 
-
-/* BOTONES INACTIVOS POR DEFECTO (Gris elegante y limpio) */
 .bottom-nav .nav-item {
     background: none !important;
     border: none !important;
-    color: #718096 !important; /* Gris medio neutral */
-    box-shadow: none !important;
-    font-size: 13px !important;
+    color: #718096 !important;
+    font-size: 12px !important;
     font-weight: 600 !important;
     margin-top: 0 !important;
-    padding: 6px 12px 4px 12px !important;
+    padding: 4px 10px !important;
     cursor: pointer;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 2px !important;
+    gap: 1px !important;
     width: auto !important; 
-    height: auto !important;
-    letter-spacing: 0.3px !important;
-    border-bottom: 3px solid transparent !important; /* Espacio reservado para la línea activa */
-    transition: all 0.2s ease;
+    border-bottom: 3px solid transparent !important;
+    transition: all 0.15s ease;
 }
 
-.bottom-nav .nav-item span {
-    font-size: 20px !important;
-    line-height: 1 !important;
-    margin-bottom: 2px !important;
-    opacity: 0.7;
-    transition: opacity 0.2s ease;
-}
+.bottom-nav .nav-item span { font-size: 18px !important; opacity: 0.7; }
 
-/* =========================================================================
-   ESTADO ENCIENDIDO DE MÁXIMO CONTRASTE (PANTALLA SELECCIONADA ACTUAL)
-   ========================================================================= */
+/* Estado Activo en Contraste Guinda y Dorado */
 .bottom-nav .nav-item.active {
-    color: var(--primary-color) !important; /* Texto en Guinda Formal */
-    font-weight: 800 !important; /* Tipografía ultra gruesa */
-    border-bottom: 3px solid var(--secondary-color) !important; /* Línea de relieve Dorado */
-    transform: translateY(-2px); /* Pequeña elevación táctil */
+    color: var(--primary-color) !important;
+    font-weight: 800 !important;
+    border-bottom: 3px solid var(--secondary-color) !important;
 }
+.bottom-nav .nav-item.active span { opacity: 1 !important; }
 
-.bottom-nav .nav-item.active span {
-    opacity: 1 !important; /* Icono/Emoji con brillo total */
-}
-/* =========================================================================
-   ESTILOS ADICIONALES: CONTENEDOR DE LOGOTIPO (PANTALLA 1)
-   ========================================================================= */
-.login-logo-container {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-    padding: 10px 0;
-    box-sizing: border-box;
-}
-
-.login-logo {
-    max-width: 180px;      /* Ancho máximo controlado y elegante para celulares */
-    width: 100%;
-    height: auto;          /* Mantiene la proporción original de la imagen sin deformarla */
-    object-fit: contain;
-    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.08)); /* Sutil relieve de profundidad */
-}
-
-.bottom-nav .nav-item:hover {
-    color: var(--primary-light) !important;
-    box-shadow: none !important;
-}
-/* =========================================================================
-   LOGOTIPO INSTITUCIONAL AL TAMAÑO DE LA PANTALLA (ANCHO COMPLETO)
-   ========================================================================= */
-.header-brand-wrapper {
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    align-items: center !important;
-    gap: 12px !important; /* Espaciado elegante antes del título */
-    width: 100%;
-}
-
-.header-logo {
-    width: 100% !important;      /* Fuerza a la imagen a abarcar todo el ancho de la pantalla */
-    max-width: 440px !important;  /* Margen estético para que no toque los bordes del contenedor (480px) */
-    height: auto !important;     /* Mantiene la proporción original de la imagen sin deformarla */
-    object-fit: contain !important;
-    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15)); /* Relieve de profundidad */
-    margin: 5px 0 !important;
-}
-
-.main-header h1 {
-    margin: 0 !important;
-    font-size: 19px !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.5px !important;
-    color: var(--white) !important;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Sombra al texto para mayor contraste */
-}
-/* =========================================================================
-   TEXTURA INSTITUCIONAL DE FONDO PARA TODAS LAS PANTALLAS (PWA)
-   ========================================================================= */
-body {
-    /* Inyecta la imagen fija que se adapta de fondo sin importar el scroll */
-    background-image: url('https://i.postimg.cc/FKt1w11W/fondo.png') !important;
-    background-position: center center !important;
-    background-repeat: no-repeat !important;
-    background-size: cover !important;
-    background-attachment: fixed !important;
-    background-color: var(--bg-color) !important; /* Mantiene el gris claro base de contraste */
-}
-
-/* Transparencia sutil a las pantallas para que la marca de agua del fondo se alcance a notar */
-.app-screen {
-    background: rgba(255, 255, 255, 0.94) !important; /* Blanco con 94% de opacidad fija */
-    backdrop-filter: blur(4px) !important; /* Efecto esmerilado premium en navegadores modernos */
-    border: 1px solid #E5E7EB !important;
-    box-shadow: var(--shadow-screen) !important;
-}
-
-/* Transparencia sutil a las tarjetas del menú para homogeneizar el diseño */
-.card {
-    background: rgba(255, 255, 255, 0.85) !important;
-    border: 1px solid #E5E7EB !important;
-}
-
-/* =========================================================================
-   ESTILOS DE LOGOTIPO EXTRAÍDOS DE TU OTRA APP (PANTALLA 1)
-   ========================================================================= */
+/* PRESENTACIÓN DEL BANNER COMPACTO EN CASO POR CASA */
 .banner-container {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-    padding: 10px 0;
-    box-sizing: border-box;
+    text-align: center;
+    max-height: 180px !important;
+    margin-bottom: 10px;
 }
-
 .banner-img {
-    width: 100% !important;
-    max-width: 440px !important;
-    height: auto !important;
-    object-fit: contain !important;
-    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
-}
-
-/* Botón Guinda Formal Tridimensional Personalizado */
-.btn-guinda {
-    background-color: var(--primary-color) !important;
-    color: var(--white) !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
-    padding: 14px !important;
-    width: 100% !important;
-    border-radius: 8px !important;
-    font-size: 16px !important;
-    font-weight: bold !important;
-    cursor: pointer !important;
-    box-shadow: var(--shadow-button) !important;
-    letter-spacing: 0.5px !important;
-    transition: all 0.2s ease !important;
-}
-
-.btn-guinda:hover {
-    background-color: var(--primary-light) !important;
-    box-shadow: 0 6px 20px rgba(98, 17, 50, 0.35) !important;
+    max-height: 100% !important;
+    width: auto !important;
+    object-fit: contain;
 }
