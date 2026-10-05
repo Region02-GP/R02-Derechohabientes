@@ -1,17 +1,38 @@
+// =========================================================================
+// R02-DERECHOHABIENTES: CONFIGURACIÓN GENERAL Y ESTADO DE LA APP
+// =========================================================================
+
 // URL del Web App de Google Apps Script 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxEGZ62Jdsea38absoEDWDCA1Gy1cUr_TxuWTIlHvrRfCa5_A-a2fVkp00WLRaQcA/exec";
 
-// ELIMINADO EL DICCIONARIO FIJO: Ahora los brigadistas se consultan directamente del Excel
+// =========================================================================
+// BASE DE DATO LOCAL DE BRIGADISTAS CON ACCESO INSTANTÁNEO Y MUNICIPIO
+// =========================================================================
+const AUTHORIZED_BRIGADISTAS = {
+    "AACG640516MCLLRD01": {
+        nombre: "ALVARADO CORDERO MARIA GUADALUPE",
+        municipio: "GÓMEZ PALACIO"
+    },
+    "CURPVALIDA12345678": {
+        nombre: "Juan Pérez López",
+        municipio: "LERDO"
+    }
+};
+
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
-let currentUser = null;
+
+// Estados del usuario firmados localmente
+let currentUser = null; 
+let currentBrigadistaMunicipio = ""; // Almacén preparado para tu próximo cambio geográfico
+
 let previousScreen = 'screen-welcome';
 
 // VARIABLES PARA LOS BOTONES DE LOCALIZADO / NO LOCALIZADO
 let currentEstatusVisita = "LOCALIZADO"; 
 let motivoNoLocalizadoValue = "";        
 
-// INITIALIZACIÓN DE INDEXEDDB
+// INITIALIZACIÓN DE INDEXEDDB (Base de Datos Local para soporte masivo)
 const DB_NAME = "R02_DB";
 const DB_VERSION = 1;
 const STORE_NAME = "derechohabientes";
@@ -40,7 +61,7 @@ function updateLocalCounter() {
         if (countElement) countElement.innerText = countRequest.result;
     };
 }
-
+// CONTROL DE CAMBIO DE PANTALLAS CON CANDADO INLINE STYLE PARA LA BARRA INFERIOR
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
@@ -67,41 +88,26 @@ function changeScreen(screenId) {
         if (screenId === 'screen-history') document.getElementById('nav-history').classList.add('active');
     }
 }
-async function login() {
+
+// NUEVA FUNCIÓN DE LOGIN: Validación local inmediata a velocidad de rayo
+function login() {
     const curpInput = document.getElementById('login-curp').value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase().trim();
     
     if (curpInput.length !== 18) {
         return alert("Por favor, ingresa una CURP válida de 18 caracteres.");
     }
     
-    const loginButton = document.querySelector('#screen-login button');
-    if (loginButton) {
-        loginButton.disabled = true;
-        loginButton.innerText = "Verificando acceso...";
-    }
+    // Busca directo en la base de datos interna declarada en el Bloque 1
+    const datosBrigadista = AUTHORIZED_BRIGADISTAS[curpInput];
     
-    try {
-        const url = `${GOOGLE_SCRIPT_URL}?action=getBrigadistas&_=${new Date().getTime()}`;
-        const response = await fetch(url);
-        if (!response.ok) throw new Error("Error en canal de datos con Google Sheets.");
+    if (datosBrigadista) {
+        currentUser = { curp: curpInput, name: datosBrigadista.nombre };
+        currentBrigadistaMunicipio = datosBrigadista.municipio; // Registra su municipio operativo
         
-        const brigadistasAutorizados = await response.json();
-        
-        if (brigadistasAutorizados && brigadistasAutorizados[curpInput]) {
-            currentUser = { curp: curpInput, name: brigadistasAutorizados[curpInput] };
-            document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
-            changeScreen('screen-welcome');
-        } else {
-            alert("Acceso Denegado: La CURP '" + curpInput + "' no está registrada en la hoja 'Brigadistas'. Revisa la ortografía en tu Excel.");
-        }
-    } catch (error) {
-        console.error(error);
-        alert("Fallo de red: No se pudo verificar la lista de brigadistas. Revisa tu conexión a internet.");
-    } finally {
-        if (loginButton) {
-            loginButton.disabled = false;
-            loginButton.innerText = "Ingresar";
-        }
+        document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
+        changeScreen('screen-welcome');
+    } else {
+        alert("Acceso Denegado: Esta CURP no se encuentra registrada ni autorizada en el sistema R02.");
     }
 }
 
