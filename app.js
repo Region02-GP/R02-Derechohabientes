@@ -1,5 +1,5 @@
 // URL del Web App de Google Apps Script 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxe0qb86opmmCAfbI5Qk_-ZR28ziFvVwyYal1svU0yytxHuH2qq8d6zXPpcoZ8iT8-K/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwGdRyMkkG0dpfmuJjgGoGThNedvTZ95o65EVWJzIzyNx8_byz1ftIycTu6YGPvw1ZD/exec";
 
 // ELIMINADO EL DICCIONARIO FIJO: Ahora los brigadistas se consultan directamente del Excel
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
