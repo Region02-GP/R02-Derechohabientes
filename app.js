@@ -1,7 +1,3 @@
-// =========================================================================
-// R02-DERECHOHABIENTES: CONFIGURACIÓN GENERAL Y ESTADO DE LA APP
-// =========================================================================
-
 // URL del Web App de Google Apps Script 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzdQ-GKTL8S65NTLOMtEcVL-cSioRBnBrNoHdsXYCVNXgcVnt2wFIBzLkX8Oud-kl1B/exec";
 
@@ -21,14 +17,10 @@ const AUTHORIZED_BRIGADISTAS = {
 
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
-
-// Estados del usuario firmados localmente
 let currentUser = null; 
-let currentBrigadistaMunicipio = ""; // Almacén preparado para tu próximo cambio geográfico
-
+let currentBrigadistaMunicipio = ""; 
 let previousScreen = 'screen-welcome';
 
-// VARIABLES PARA LOS BOTONES DE LOCALIZADO / NO LOCALIZADO
 let currentEstatusVisita = "LOCALIZADO"; 
 let motivoNoLocalizadoValue = "";        
 
@@ -68,7 +60,6 @@ function changeScreen(screenId) {
     if (screenId === 'screen-welcome') updateLocalCounter(); 
     
     document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
-    
     const targetScreen = document.getElementById(screenId);
     if (targetScreen) targetScreen.classList.remove('hidden');
 
@@ -78,10 +69,9 @@ function changeScreen(screenId) {
     if (screenId === 'screen-login' || screenId === 'screen-form') {
         bottomNav.style.setProperty('display', 'none', 'important');
         bottomNav.classList.add('hidden');
-     } else {
+    } else {
         bottomNav.style.setProperty('display', 'flex', 'important');
         bottomNav.classList.remove('hidden');
-        
         document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => btn.classList.remove('active'));
         if (screenId === 'screen-welcome') document.getElementById('nav-welcome').classList.add('active');
         if (screenId === 'screen-search') document.getElementById('nav-search').classList.add('active');
@@ -89,28 +79,35 @@ function changeScreen(screenId) {
     }
 }
 
-// NUEVA FUNCIÓN DE LOGIN: Validación local inmediata a velocidad de rayo
-function login() {
-    const curpInput = document.getElementById('login-curp').value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase().trim();
+// FUNCIÓN DE LOGIN ADAPTADA DE TU OTRA APP (A velocidad de rayo sin internet)
+function validarAccesoCURP() {
+    const curpInput = document.getElementById('input-curp').value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase().trim();
+    const errorDiv = document.getElementById('login-error');
     
+    if (errorDiv) errorDiv.style.display = "none";
+
     if (curpInput.length !== 18) {
-        return alert("Por favor, ingresa una CURP válida de 18 caracteres.");
+        if (errorDiv) {
+            errorDiv.innerText = "🛑 Por favor, ingresa una CURP válida de 18 caracteres.";
+            errorDiv.style.display = "block";
+        }
+        return;
     }
     
-    // Busca directo en la base de datos interna declarada en el Bloque 1
     const datosBrigadista = AUTHORIZED_BRIGADISTAS[curpInput];
     
     if (datosBrigadista) {
         currentUser = { curp: curpInput, name: datosBrigadista.nombre };
-        currentBrigadistaMunicipio = datosBrigadista.municipio; // Registra su municipio operativo
-        
+        currentBrigadistaMunicipio = datosBrigadista.municipio;
         document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
         changeScreen('screen-welcome');
     } else {
-        alert("Acceso Denegado: Esta CURP no se encuentra registrada ni autorizada en el sistema R02.");
+        if (errorDiv) {
+            errorDiv.innerText = "❌ Acceso Denegado: Esta CURP no está registrada en el sistema R02.";
+            errorDiv.style.display = "block";
+        }
     }
 }
-
 async function downloadAllDataMassive() {
     const btn = document.getElementById('btn-massive-download');
     const progressContainer = document.getElementById('progress-container');
@@ -121,7 +118,6 @@ async function downloadAllDataMassive() {
     btn.disabled = true;
     progressContainer.style.display = "block";
     let offset = 0, limit = 10000, isDone = false, totalCargados = 0;
-    
     const txClear = db.transaction(STORE_NAME, "readwrite");
     txClear.objectStore(STORE_NAME).clear();
     
@@ -152,9 +148,7 @@ async function downloadAllDataMassive() {
         progressText.innerText = `¡Descarga completa! ${totalCargados} registros listos.`;
         updateLocalCounter(); 
         alert(`Éxito: Se guardaron ${totalCargados} registros.`);
-    } catch (error) {
-        alert(`Error: ${error.message}`);
-    } finally { btn.disabled = false; }
+    } catch (error) { alert(`Error: ${error.message}`); } finally { btn.disabled = false; }
 }
 let localMemoryDatabase = [];
 function preloadDatabaseToMemory() {
@@ -228,9 +222,7 @@ function seleccionarEstatusVisita(estatus) {
             return; 
         }
         motivoNoLocalizadoValue = mot.trim();
-    } else { 
-        motivoNoLocalizadoValue = ""; 
-    }
+    } else { motivoNoLocalizadoValue = ""; }
     actualizarEstilosBotonesFormulario();
 }
 
@@ -248,6 +240,8 @@ function actualizarEstilosBotonesFormulario() {
         btnNoLoc.style.backgroundColor = "#F3F4F6";
         btnNoLoc.style.borderColor = "#CBD5E0";
         btnNoLoc.style.color = "#9CA3AF";
+        btnNoLoc.style.boxShadow = "none";
+        btnNoLoc.style.transform = "scale(1)";
     } else if (currentEstatusVisita === "NO LOCALIZADO") {
         btnNoLoc.style.backgroundColor = "#FCE8E6";
         btnNoLoc.style.borderColor = "#C5221F";
@@ -257,6 +251,8 @@ function actualizarEstilosBotonesFormulario() {
         btnLoc.style.backgroundColor = "#F3F4F6";
         btnLoc.style.borderColor = "#CBD5E0";
         btnLoc.style.color = "#9CA3AF";
+        btnLoc.style.boxShadow = "none";
+        btnLoc.style.transform = "scale(1)";
     }
 }
 function openForm(item) {
@@ -346,14 +342,6 @@ function openHistoryScreen() {
         div.innerHTML = `<strong>⏳ ${item['NOMBRE'] || 'Derechohabiente'} (${item['CURP']})</strong><br><small>Pendiente de subir | Estatus: ${item['ESTATUS_VISITA']}</small>`;
         logList.appendChild(div);
     });
-
-    syncedHistory.forEach((item) => {
-        const div = document.createElement('div');
-        div.className = "result-item";
-        div.style.opacity = "0.6"; 
-        div.innerHTML = `<strong>✅ ${item['NOMBRE'] || 'Derechohabiente'} (${item['CURP']})</strong><br><small style="color:green;">Sincronizado con Sheets con éxito | Estatus: ${item['ESTATUS_VISITA']}</small>`;
-        logList.appendChild(div);
-    });
 }
 
 async function syncWithSheets() {
@@ -391,13 +379,13 @@ function downloadBackupCSV() {
 }
 
 function clearLocalStorage() {
-    if (confirm("🚨 ADVERTENCIA: ¿Estás seguro de vaciar por completo la memoria? Se borrarán todos los registros descargados y pendientes.")) {
+    if (confirm("🚨 ADVERTENCIA: ¿Estás seguro de vaciar por completo la memoria?")) {
         pendingSync = []; syncedHistory = []; localMemoryDatabase = []; localStorage.clear();
         if (db) {
             db.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).clear().onsuccess = () => {
                 document.getElementById('search-input').value = "";
                 document.getElementById('search-results').innerHTML = "";
-                alert("Memoria interna e IndexedDB limpiadas correctamente.");
+                alert("Memoria interna limpiada.");
                 changeScreen('screen-welcome'); 
             };
         } else { changeScreen('screen-welcome'); }
