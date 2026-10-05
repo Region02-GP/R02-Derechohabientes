@@ -68,40 +68,50 @@ function changeScreen(screenId) {
     }
 }
 // NUEVA FUNCIÓN DE ACCESO: Consulta la pestaña "Brigadistas" en tiempo real desde Google Sheets
+// REEMPLAZA ÚNICAMENTE ESTA FUNCIÓN DENTRO DE TU APP.JS:
 async function login() {
-    const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
+    // Limpia espacios y fuerza mayúsculas automáticas al teclear en campo
+    const curpInput = document.getElementById('login-curp').value.replace(/ /g, "").toUpperCase().trim();
+    
     if (curpInput.length !== 18) {
-        return alert("Por favor, introduce una CURP válida de 18 caracteres.");
+        return alert("Por favor, ingresa una CURP válida de 18 caracteres.");
     }
     
     const loginButton = document.querySelector('#screen-login button');
-    loginButton.disabled = true;
-    loginButton.innerText = "Verificando en red...";
+    if (loginButton) {
+        loginButton.disabled = true;
+        loginButton.innerText = "Verificando acceso...";
+    }
     
     try {
-        // Petición hacia la acción de consulta de brigadistas autorizados
+        // Petición blindada rompiendo la caché de los navegadores móviles con un timestamp
         const url = `${GOOGLE_SCRIPT_URL}?action=getBrigadistas&_=${new Date().getTime()}`;
         const response = await fetch(url);
-        if (!response.ok) throw new Error("Fallo de respuesta del servidor de Google.");
+        if (!response.ok) throw new Error("Error en canal de datos con Google Sheets.");
         
         const brigadistasAutorizados = await response.json();
         
-        // Verifica si la CURP tipeada existe como llave en el objeto devuelto
+        // Control de depuración en la consola del teléfono
+        console.log("Brigadistas autorizados descargados: ", brigadistasAutorizados);
+        
         if (brigadistasAutorizados && brigadistasAutorizados[curpInput]) {
             currentUser = { curp: curpInput, name: brigadistasAutorizados[curpInput] };
             document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
             changeScreen('screen-welcome');
         } else {
-            alert("Acceso Denegado: Esta CURP no se encuentra registrada en la hoja 'Brigadistas'.");
+            alert("Acceso Denegado: La CURP '" + curpInput + "' no está registrada en la hoja 'Brigadistas'. Revisa que coincidan mayúsculas y minúsculas.");
         }
     } catch (error) {
         console.error(error);
-        alert("Error de conexión: No se pudo verificar la lista de brigadistas. Asegúrate de tener internet para iniciar sesión.");
+        alert("Fallo de red: No se pudo verificar la lista de brigadistas. Revisa tu conexión a internet.");
     } finally {
-        loginButton.disabled = false;
-        loginButton.innerText = "Ingresar";
+        if (loginButton) {
+            loginButton.disabled = false;
+            loginButton.innerText = "Ingresar";
+        }
     }
 }
+
 
 async function downloadAllDataMassive() {
     const btn = document.getElementById('btn-massive-download');
