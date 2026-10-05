@@ -9,10 +9,10 @@
 </head>
 <body>
 
-    <!-- ENCABEZADO GLOBAL UNIFICADO FIJO ARRIBA -->
+    <!-- ENCABEZADO GLOBAL ANCLADO DE FORMA ABSOLUTA ARRIBA -->
     <header class="main-header">
         <div class="header-brand-wrapper">
-            <img src="https://i.postimg.cc/hjnYkjQg/bienestar.png" alt="Logotipo Institucional" class="header-logo">
+            <img src="https://bienestar.gob.mx" alt="Logotipo Institucional" class="header-logo">
             <h1>R02-Derechohabientes</h1>
         </div>
     </header>
@@ -65,7 +65,7 @@
                 <button type="button" onclick="downloadAllDataMassive()" id="btn-massive-download" class="btn-secondary">📥 Descargar Base Completa</button>
             </div>
         </section>
-        <!-- PANTALLA 3: BUSCADOR MULTI-CRITERIO EN MEMORIA RAM CACHÉ -->
+        <!-- PANTALLA 3: BUSCADOR MULTI-CRITERIO OFF-LINE -->
         <section id="screen-search" class="app-screen hidden">
             <div class="screen-number-badge">Pantalla 3</div>
             
@@ -86,7 +86,7 @@
             <h2>Actualización de Domicilio</h2>
             
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button type="button" id="btn-status-localizado" onclick="seleccionarEstatusVisita('LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 1px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s;">
+                <button type="button" id="btn-status-localizado" onclick="seleccionarEstatusVisita('LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s;">
                     LOCALIZADO
                 </button>
                 <button type="button" id="btn-status-nolocalizado" onclick="seleccionarEstatusVisita('NO LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s;">
@@ -163,7 +163,7 @@
             </form>
         </section>
 
-        <!-- PANTALLA 5: HISTORIAL, CONTROL OFFLINE Y REPORTES EXCEL/CSV -->
+        <!-- PANTALLA 5: HISTORIAL Y CONTROL OFFLINE -->
         <section id="screen-history" class="app-screen hidden">
             <div class="screen-number-badge">Pantalla 5</div>
             
@@ -179,7 +179,6 @@
                     <button type="button" onclick="clearLocalStorage()" class="btn-excel-gold" style="margin-top:0;">🗑️ Borrar Datos</button>
                 </div>
             </div>
-
             <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
             <h3>Registro de Visitas del Día</h3>
             <div id="history-log" class="log-list"></div>
@@ -203,3 +202,4 @@
     <script src="app.js"></script>
 </body>
 </html>
+
