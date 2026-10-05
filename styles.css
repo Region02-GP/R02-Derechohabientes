@@ -429,3 +429,29 @@ button:active {
     color: var(--white) !important;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Sombra al texto para mayor contraste */
 }
+/* =========================================================================
+   TEXTURA INSTITUCIONAL DE FONDO PARA TODAS LAS PANTALLAS (PWA)
+   ========================================================================= */
+body {
+    /* Inyecta la imagen fija que se adapta de fondo sin importar el scroll */
+    background-image: url('https://i.postimg.cc/FKt1w11W/fondo.png') !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    background-size: cover !important;
+    background-attachment: fixed !important;
+    background-color: var(--bg-color) !important; /* Mantiene el gris claro base de contraste */
+}
+
+/* Transparencia sutil a las pantallas para que la marca de agua del fondo se alcance a notar */
+.app-screen {
+    background: rgba(255, 255, 255, 0.94) !important; /* Blanco con 94% de opacidad fija */
+    backdrop-filter: blur(4px) !important; /* Efecto esmerilado premium en navegadores modernos */
+    border: 1px solid #E5E7EB !important;
+    box-shadow: var(--shadow-screen) !important;
+}
+
+/* Transparencia sutil a las tarjetas del menú para homogeneizar el diseño */
+.card {
+    background: rgba(255, 255, 255, 0.85) !important;
+    border: 1px solid #E5E7EB !important;
+}
