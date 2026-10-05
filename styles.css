@@ -1,61 +1,57 @@
 /* =========================================================================
-   PALETA DE COLORES CLARO INSTITUCIONAL (ALTO CONTRASTE / ANTIRREFLEJO)
+   PALETA DE COLORES CLARO INSTITUCIONAL DE ALTO CONTRASTE Y SERIF
    ========================================================================= */
 :root {
-    --primary-color: #621132;   /* Guinda Formal */
-    --primary-light: #851c44;   /* Guinda Claro (Hover) */
-    --secondary-color: #BC955C; /* Dorado Institucional Premium */
-    --secondary-dark: #987242;  /* Dorado Oscuro (Hover) */
-    --bg-color: #F3F4F6;        
+    --primary-color: #66001c;   /* Guinda de tu app de ejemplo VCXC */
+    --primary-light: #4a0014;   
+    --secondary-color: #b4924c; /* Dorado Premium de tu ejemplo */
+    --secondary-dark: #987242;  
+    --bg-color: #1a1a1a;        
     --surface-color: #FFFFFF;   
-    --surface-light: #F9FAFB;   
-    --text-main: #1F2937;       
-    --text-muted: #4B5563;      
+    --surface-light: #fdfdfd;   
+    --text-main: #1a1a1a;       
     --white: #ffffff;
-    --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    --shadow-screen: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-    --shadow-button: 0 4px 14px 0 rgba(98, 17, 50, 0.25);
-    --shadow-gold: 0 4px 14px 0 rgba(188, 149, 92, 0.2);
+    --shadow-screen: 0 6px 20px rgba(0,0,0,0.7);
+    --shadow-button: 0 4px 14px rgba(102, 0, 28, 0.35);
 }
 
-/* CONGELACIÓN DE MEDIDAS DE DISPOSITIVO */
 html, body {
     height: 100vh !important;
     margin: 0 !important;
     padding: 0 !important;
-    overflow: hidden !important; 
+    overflow: hidden !important; /* Anula el rebote global de la pantalla */
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-image: url('https://postimg.cc') !important;
-    background-position: center center !important;
-    background-repeat: no-repeat !important;
+    font-family: 'Times New Roman', Times, serif, Arial, sans-serif;
+    background-image: url('https://postimg.cc') !important; /* Textura fondo.png de tu ejemplo */
     background-size: cover !important;
+    background-position: center center !important;
     background-attachment: fixed !important;
     background-color: var(--bg-color) !important;
 }
 
-/* EL CONTENEDOR ENLAZA LA APLICACIÓN COMO CELULAR CENTRADO EN MONITORES ANCHOS */
+/* CONTENEDOR ENLAZA LA APP COMO CELULAR CENTRADO EN MONITORES ANCHOS */
 .app-container {
     width: 100% !important;
-    max-width: 450px !important; 
+    max-width: 480px !important; /* El ancho exacto de tu card de ejemplo */
     height: 100vh !important;
     margin: 0 auto !important; 
     padding: 0 !important;
     box-sizing: border-box;
     display: grid !important;
-    grid-template-rows: 75px 1fr 65px !important; /* 3 pisos matemáticos rígidamente fijados */
+    grid-template-rows: 75px 1fr 65px !important; /* 3 niveles fijos matemáticos */
     position: relative;
 }
-
-/* PISO 1: ENCABEZADO GLOBAL SUPERIOR INAMOVIBLE */
+/* =========================================================================
+   PISO 1: ENCABEZADO GLOBAL (SIEMPRE FIJO, VISIBLE Y BIENESTAR ENLACE REPARADO)
+   ========================================================================= */
 .main-header {
     background-color: var(--primary-color) !important;
     color: var(--white) !important;
     text-align: center;
     border-bottom: 4px solid var(--secondary-color);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     width: 100%;
     height: 75px !important;
     box-sizing: border-box;
@@ -81,88 +77,318 @@ body {
 .main-header h1 {
     margin: 0 !important;
     font-size: 14px !important;
-    font-weight: 700 !important;
+    font-weight: bold !important;
     color: var(--white) !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
-/* PISO 2: TARJETAS DE PANTALLA CON DESPLAZAMIENTO CENTRAL PROPIO */
+
+/* =========================================================================
+   PISO 2: TARJETAS DE PANTALLA CON SCROLL INTERNO Y EFECTO FADE
+   ========================================================================= */
 .app-screen {
-    background: rgba(255, 255, 255, 0.96) !important;
-    backdrop-filter: blur(4px) !important;
-    border: 1px solid #E5E7EB;
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.98) !important;
+    background-image: url('https://postimg.cc') !important; /* Textura interna de tu card de ejemplo */
+    background-size: cover !important;
+    border-top: 8px solid var(--primary-color) !important;
+    border-radius: 4px;
     box-shadow: var(--shadow-screen);
     box-sizing: border-box !important;
     
-    grid-row: 2 !important; 
+    grid-row: 2 !important; /* Fijo en el nivel intermedio */
     height: calc(100vh - 160px) !important; 
-    margin: 10px !important;
-    padding: 16px !important;
+    margin: 15px !important;
+    padding: 25px !important;
     
     overflow-y: auto !important;
+    
+    /* EFECTO ANMATIVO DE DESVANECIMIENTO SUAVE ADAPTADO */
+    display: none !important;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.app-screen.active {
     display: flex !important;
     flex-direction: column !important;
+    opacity: 1 !important;
+    transform: translateY(0) !important;
 }
 
-/* Controles de Formulario */
-.form-group { margin-bottom: 12px; }
-.form-group label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 13px; color: var(--text-muted); }
+.hidden { display: none !important; }
+h2 { 
+    color: var(--primary-color); 
+    margin-top: 5px; 
+    margin-bottom: 5px; 
+    font-weight: bold; 
+    text-transform: uppercase; 
+    letter-spacing: 1px; 
+    font-size: 26px; 
+    text-align: center; 
+}
+
+.subtitle { 
+    color: var(--secondary-color); 
+    font-size: 15px; 
+    font-weight: bold; 
+    margin-bottom: 20px; 
+    text-transform: uppercase; 
+    letter-spacing: 2px; 
+    text-align: center; 
+}
+
+h3 { 
+    color: var(--primary-color); 
+    border-bottom: 2px solid var(--secondary-color); 
+    padding-bottom: 5px; 
+    margin-top: 25px; 
+    text-align: left; 
+    font-size: 15px; 
+    text-transform: uppercase; 
+    letter-spacing: 1px; 
+}
+
+.form-group { 
+    margin-bottom: 16px; 
+    text-align: left; 
+}
+
+.form-group label { 
+    display: block; 
+    font-weight: bold; 
+    margin-bottom: 6px; 
+    color: var(--text-main); 
+    font-size: 14px; 
+}
+
+/* Entradas de Datos e Inputs */
 input[type="text"], input[type="tel"], input[type="number"], textarea {
-    width: 100%; padding: 9px 12px; border: 1px solid #CBD5E0; border-radius: 8px; box-sizing: border-box; font-size: 15px; background-color: var(--surface-light); color: var(--text-main);
+    width: 100%; 
+    padding: 11px; 
+    font-size: 15px; 
+    border-radius: 2px; 
+    border: 1px solid var(--text-main); 
+    box-sizing: border-box; 
+    font-family: Arial, sans-serif; 
+    background-color: var(--surface-light); 
+    color: #333; 
 }
-input:focus, textarea:focus { border-color: var(--primary-color); outline: none; }
-.text-disabled input { background-color: #EDF2F7; color: #4A5568; border-color: #E2E8F0; }
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-hr { margin: 12px 0; border: 0; border-top: 1px solid #E5E7EB; }
 
-/* Botones de Acción */
-button { background-color: var(--primary-color); color: var(--white); border: none; padding: 12px; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; box-shadow: var(--shadow-button); width: 100%; margin-top: 5px; }
-button:hover { background-color: var(--primary-light); }
-.btn-secondary { background-color: #1F1F1F; }
-.btn-back { background-color: #5A6A80; }
-.btn-primary-guinda { background-color: var(--primary-color); }
-.btn-excel-gold { background: linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 100%) !important; color: var(--secondary-color) !important; border: 2px solid var(--secondary-color) !important; }
-/* PISO 3: BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL (SIEMPRE FIJA ABAJO) */
+input:focus, textarea:focus { 
+    border-color: var(--primary-color); 
+    outline: none; 
+    box-shadow: 0 0 5px rgba(102,0,28,0.3); 
+}
+
+.text-disabled input { 
+    background-color: #EDF2F7; 
+    color: #4A5568; 
+    cursor: not-allowed; 
+}
+
+.form-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 10px; 
+}
+
+hr { 
+    margin: 15px 0; 
+    border: 0; 
+    border-top: 1px solid var(--secondary-color); 
+}
+
+/* Grids de métricas idénticos a los de tu panel de bienvenida */
+.metrics-grid { 
+    display: flex; 
+    gap: 10px; 
+    margin-bottom: 20px; 
+}
+
+.metric-card { 
+    flex: 1; 
+    background: #ffffff; 
+    border: 1px solid var(--text-main); 
+    border-top: 4px solid var(--secondary-color); 
+    padding: 12px; 
+    border-radius: 2px; 
+    text-align: center; 
+}
+
+.metric-val { 
+    display: block; 
+    font-size: 24px; 
+    font-weight: bold; 
+    color: var(--primary-color); 
+    margin-top: 5px; 
+}
+
+.metric-lbl { 
+    font-size: 11px; 
+    text-transform: uppercase; 
+    color: var(--text-main); 
+    font-weight: bold; 
+    letter-spacing: 0.5px; 
+}
+/* Botones de acción tridimensionales de tu ejemplo */
+.btn-guinda, button[type="submit"] { 
+    background-color: var(--primary-color) !important; 
+    color: var(--white) !important; 
+    border: 1px solid var(--primary-color) !important; 
+    padding: 14px; 
+    font-size: 14px; 
+    font-weight: bold; 
+    border-radius: 2px; 
+    cursor: pointer; 
+    text-transform: uppercase; 
+    letter-spacing: 1px; 
+    width: 100%; 
+    margin-top: 10px; 
+    box-shadow: var(--shadow-button); 
+    transition: all 0.2s ease;
+}
+
+.btn-guinda:hover, button[type="submit"]:hover { 
+    background-color: var(--primary-light) !important; 
+}
+
+.btn-secondary { 
+    background-color: var(--bg-color); 
+    color: var(--secondary-color); 
+    border: 1px solid var(--secondary-color); 
+}
+
+.btn-back, .btn-danger { 
+    background-color: #5A6A80; 
+    color: white; 
+    border: none; 
+    padding: 12px; 
+    border-radius: 2px; 
+    width: 100%; 
+    margin-top: 8px; 
+    font-weight: bold; 
+}
+
+.btn-excel-gold { 
+    background: linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 100%) !important; 
+    color: var(--secondary-color) !important; 
+    border: 2px solid var(--secondary-color) !important; 
+}
+
+/* Tablas y Contenedores */
+.results-list, .log-list { 
+    max-height: 100% !important; 
+    overflow-y: auto !important; 
+    border: 1px solid var(--bg-color); 
+    border-radius: 2px; 
+    margin: 10px 0; 
+    background: var(--white); 
+    flex: 1; 
+}
+
+.result-item { 
+    padding: 12px; 
+    border-bottom: 1px solid #e0e0e0; 
+    cursor: pointer; 
+    background-color: var(--white); 
+    text-align: left; 
+}
+
+.card { 
+    background: var(--white); 
+    border: 1px solid var(--bg-color); 
+    border-top: 4px solid var(--secondary-color); 
+    padding: 14px; 
+    margin-bottom: 12px; 
+    border-radius: 2px; 
+}
+
+.button-row-grid { 
+    display: flex; 
+    gap: 10px; 
+    width: 100%; 
+    margin-top: 5px; 
+}
+
+.button-row-grid button { 
+    flex: 1; 
+    margin-top: 5px; 
+}
+
+.status-box { 
+    background: #fdfaf2; 
+    color: var(--primary-color); 
+    padding: 12px; 
+    font-weight: bold; 
+    font-size: 14px; 
+    border-radius: 2px; 
+    margin-bottom: 15px; 
+    border: 1px solid var(--secondary-color); 
+    border-left: 6px solid var(--primary-color); 
+    text-align: left; 
+}
+/* =========================================================================
+   PISO 3: BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL GLOBAL (SOLDADA ABAJO)
+   ========================================================================= */
 .bottom-nav {
     grid-row: 3 !important; 
     width: 100% !important;
+    max-width: 480px;
     background-color: var(--white) !important;
     display: flex !important;
     flex-direction: row !important; 
     justify-content: space-around !important;
     align-items: center !important;
     border-top: 3px solid var(--secondary-color) !important; 
-    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.4) !important;
     z-index: 1000 !important;
-    box-sizing: border-box !important;
     height: 65px !important;
     margin: 0 !important;
     padding: 0 !important;
 }
 
 .bottom-nav .nav-item {
-    background: none !important; border: none !important; color: #718096 !important; font-size: 13px !important; font-weight: 600 !important; margin-top: 0 !important; padding: 4px 12px !important; cursor: pointer; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; gap: 2px !important; border-bottom: 3px solid transparent !important; transition: all 0.2s ease;
+    background: none !important; 
+    border: none !important; 
+    color: #718096 !important; 
+    font-size: 13px !important; 
+    font-weight: 600 !important; 
+    margin-top: 0 !important; 
+    padding: 4px 12px !important; 
+    cursor: pointer; 
+    display: flex !important; 
+    flex-direction: column !important; 
+    align-items: center !important; 
+    justify-content: center !important; 
+    gap: 2px !important; 
+    border-bottom: 3px solid transparent !important; 
+    transition: all 0.2s ease;
 }
-.bottom-nav .nav-item span { font-size: 18px !important; opacity: 0.7; }
-.bottom-nav .nav-item.active { color: var(--primary-color) !important; font-weight: 800 !important; border-bottom: 3px solid var(--secondary-color) !important; }
-.bottom-nav .nav-item.active span { opacity: 1 !important; }
 
-/* Contenedores de Listas Internas */
-.results-list, .log-list { max-height: 100% !important; overflow-y: auto !important; border: 1px solid #E5E7EB; border-radius: 8px; margin: 8px 0; background: var(--white); flex: 1; }
-.result-item { padding: 11px 13px; border-bottom: 1px solid #F3F4F6; cursor: pointer; background-color: var(--white); }
-.card { background: var(--white); border: 1px solid #E5E7EB; border-radius: 10px; padding: 14px; margin-bottom: 10px; }
-.button-row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 5px; }
+.bottom-nav .nav-item span { 
+    font-size: 18px !important; 
+    opacity: 0.7; 
+}
 
-/* PRESENTACIÓN DEL LOGO CASA POR CASA */
-.banner-container { text-align: center; margin-bottom: 8px; width: 100%; max-height: 100px !important; }
-.banner-img { max-height: 100px !important; width: auto !important; object-fit: contain; }
-.screen-number-badge { position: absolute; top: 10px; right: 12px; background-color: var(--primary-color); color: var(--white); font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 8px; z-index: 10; border: 1px solid var(--secondary-color); }
+.bottom-nav .nav-item.active { 
+    color: var(--primary-color) !important; 
+    font-weight: 800 !important; 
+    border-bottom: 3px solid var(--secondary-color) !important; 
+}
+
+.bottom-nav .nav-item.active span { 
+    opacity: 1 !important; 
+}
+
+/* Ajustes de componentes flotantes e insignias */
+.banner-container { text-align: center; margin-bottom: 12px; width: 100%; max-height: 110px !important; }
+.banner-img { max-height: 110px !important; width: auto !important; object-fit: contain; }
+.screen-number-badge { position: absolute; top: 85px; right: 25px; background-color: var(--primary-color); color: var(--white); font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 10px; z-index: 10; border: 1px solid var(--secondary-color); }
 .screen-toolbar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary-color); padding-bottom: 4px; margin-bottom: 10px; }
 
-/* Semáforo visual corporativo */
+/* Semáforo visual claro suave antirreflejo */
 .result-item { border-left: 5px solid var(--secondary-color) !important; background-color: #EDF4F9 !important; }
 .result-item.status-localizado { border-left: 5px solid #236947 !important; background-color: #E6F4EA !important; }
 .result-item.status-nolocalizado { border-left: 5px solid #b91c1c !important; background-color: #FCE8E6 !important; }
 
-.btn-guinda {
-    background-color: var(--primary-color) !important; color: var(--white) !important; border: 1px solid rgba(255,255,255,0.1) !important; padding: 12px !important; width: 100% !important; border-radius: 6px !important; font-size: 15px !important; font-weight: bold !important; cursor: pointer !important; box-shadow: var(--shadow-button) !important; letter-spacing: 0.5px !important; transition: all 0.2s ease !important;
-}
