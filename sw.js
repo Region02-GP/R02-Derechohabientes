@@ -1,4 +1,4 @@
-const CACHE_NAME = 'r02-v10';
+const CACHE_NAME = 'r02-v20-congelado'; // NUEVA VERSIÓN: Destruye la caché vieja del celular
 const ASSETS = [
     './',
     './index.html',
@@ -7,7 +7,6 @@ const ASSETS = [
     './manifest.json'
 ];
 
-// Instalación e inyección limpia de archivos obligatorios
 self.addEventListener('install', (e) => {
     e.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
@@ -16,14 +15,13 @@ self.addEventListener('install', (e) => {
     );
 });
 
-// Limpieza automática de cachés viejos
 self.addEventListener('activate', (e) => {
     e.waitUntil(
         caches.keys().then((keys) => {
             return Promise.all(
                 keys.map((key) => {
                     if (key !== CACHE_NAME) {
-                        return caches.delete(key);
+                        return caches.delete(key); // Borrado absoluto de basura visual previa
                     }
                 })
             );
@@ -31,7 +29,6 @@ self.addEventListener('activate', (e) => {
     );
 });
 
-// Estrategia de red: Intenta ir a internet, si no hay, usa la caché (A prueba de errores 404)
 self.addEventListener('fetch', (e) => {
     e.respondWith(
         fetch(e.request).catch(() => {
