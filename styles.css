@@ -7,33 +7,32 @@
     --secondary-color: #BC955C; /* Dorado Institucional Premium */
     --secondary-dark: #987242;  /* Dorado Oscuro (Hover) */
     
-    --bg-color: #F3F4F6;        /* Fondo General Gris Claro */
-    --surface-color: #FFFFFF;   /* Blanco Puro para tarjetas y pantallas */
-    --surface-light: #F9FAFB;   /* Gris Sutil para campos de texto */
+    --bg-color: #F3F4F6;        
+    --surface-color: #FFFFFF;   
+    --surface-light: #F9FAFB;   
     
-    --text-main: #1F2937;       /* Negro Antracita para contenido */
-    --text-muted: #4B5563;      /* Gris Medio para etiquetas */
+    --text-main: #1F2937;       
+    --text-muted: #4B5563;      
     --white: #ffffff;
     
-    --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    --shadow-screen: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --shadow-screen: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
     --shadow-button: 0 4px 14px 0 rgba(98, 17, 50, 0.25);
     --shadow-gold: 0 4px 14px 0 rgba(188, 149, 92, 0.2);
 }
 
 /* =========================================================================
-   ESTILOS BASE: BLINDAJE DE ALTURA FIJA PARA EVITAR DESPLAZAMIENTOS
+   BLINDAJE DE ALTURA DISPOSITIVO (100% FIJO SIN DESPLAZAMIENTO GLOBAL)
    ========================================================================= */
 html, body {
-    height: 100% !important;
+    height: 100vh !important;
     margin: 0 !important;
     padding: 0 !important;
-    overflow: hidden !important; /* Bloquea por completo el scroll de toda la pantalla */
+    overflow: hidden !important; /* Congela la pantalla completa */
 }
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    /* Inyecta tu marca de agua fija en el fondo */
     background-image: url('https://postimg.cc') !important;
     background-position: center center !important;
     background-repeat: no-repeat !important;
@@ -42,63 +41,116 @@ body {
     background-color: var(--bg-color) !important;
 }
 
-/* ANCHURA MAX DE LA APP MÓVIL CENTRADA */
+/* CONTENEDOR ANCLADO RESPONSIVO */
 .app-container {
     max-width: 480px;
-    height: 100vh !important; /* Ocupa exactamente el alto del celular */
+    height: 100vh !important;
     margin: 0 auto !important;
     padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative;
+}
+/* =========================================================================
+   HEADER GLOBAL FIJO ABSOLUTO (SIEMPRE ARRIBA Y VISIBLE)
+   ========================================================================= */
+.main-header {
+    background-color: var(--primary-color) !important;
+    color: var(--white) !important;
+    text-align: center;
+    padding: 10px 0 !important;
+    border-bottom: 4px solid var(--secondary-color);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    width: 100%;
+    height: 70px !important; /* Altura fija controlada */
     box-sizing: border-box;
     display: flex !important;
-    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
 }
 
-/* CONFIGURACIÓN INDEPENDIENTE POR TARJETA DE PANTALLA */
-.app-screen {
-    background: rgba(255, 255, 255, 0.96) !important; /* Blanco premium texturizado */
-    backdrop-filter: blur(4px) !important;
-    box-shadow: var(--shadow-screen) !important;
-    box-sizing: border-box !important;
-    width: 100% !important;
-    
-    /* CONVERTIR PANTALLA EN CONTENEDOR FLEXIBLE VERTICAL */
-    height: 100vh !important;
+.header-brand-wrapper {
     display: flex !important;
     flex-direction: column !important;
-    padding: 15px 20px 20px 20px !important;
-    position: relative;
+    align-items: center !important;
+    gap: 2px !important;
+}
+
+.header-logo {
+    height: 24px !important; 
+    width: auto !important;
+    object-fit: contain !important;
+}
+
+.main-header h1 {
+    margin: 0 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    color: var(--white) !important;
+}
+
+/* =========================================================================
+   TARJETAS DE PANTALLA CON SCROLL INTERNO (TÚNEL DE DATOS)
+   ========================================================================= */
+.app-screen {
+    background: rgba(255, 255, 255, 0.94) !important;
+    backdrop-filter: blur(4px) !important;
+    border: 1px solid #E5E7EB;
+    border-radius: 14px;
+    box-shadow: var(--shadow-screen);
+    box-sizing: border-box !important;
+    
+    /* SE CLAVA EN EL CENTRO ENTRE EL HEADER Y EL NAV */
+    position: absolute !important;
+    top: 80px !important; /* Justo abajo del header */
+    bottom: 75px !important; /* Justo arriba del nav */
+    left: 10px !important;
+    right: 10px !important;
+    
+    /* ACTIVA EL SCROLL VERTICAL SÓLO ADENTRO DE LA TARJETA */
+    overflow-y: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 18px !important;
 }
 
 .hidden { display: none !important; opacity: 0 !important; visibility: hidden !important; }
-
-/* CABECERA FIJA SUPERIOR */
-/* =========================================================================
-   REGLAS DE FIJACIÓN TOTAL EN PANTALLA (EVITA BRINCOS O DESPLAZAMIENTOS)
-   ========================================================================= */
-
-/* Forzar que el Header se quede pegado arriba de forma global */
-.main-header {
-    background-color: var(--primary-color);
-    color: var(--white);
-    text-align: center;
-    padding: 12px !important;
-    border-bottom: 4px solid var(--secondary-color);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-    width: 100%;
-    box-sizing: border-box;
-    position: sticky !important;
-    top: 0;
-    z-index: 110;
+/* Controles de Formulario */
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px; color: var(--text-muted); }
+input[type="text"], input[type="tel"], input[type="number"], textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid #CBD5E0; border-radius: 8px; box-sizing: border-box; font-size: 15px; background-color: var(--surface-light); color: var(--text-main);
 }
+input:focus, textarea:focus { border-color: var(--primary-color); outline: none; }
+.text-disabled input { background-color: #EDF2F7; color: #4A5568; border-color: #E2E8F0; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+hr { margin: 15px 0; border: 0; border-top: 1px solid #E5E7EB; }
 
-/* Forzar que la barra de navegación se quede clavada abajo pase lo que pase */
+/* Botonera */
+button { background-color: var(--primary-color); color: var(--white); border: none; padding: 13px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; box-shadow: var(--shadow-button); width: 100%; margin-top: 5px; }
+button:hover { background-color: var(--primary-light); }
+.btn-secondary { background-color: #1F1F1F; }
+.btn-back { background-color: #5A6A80; }
+.btn-primary-guinda { background-color: var(--primary-color); }
+.btn-excel-gold { background: linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 100%) !important; color: var(--secondary-color) !important; border: 2px solid var(--secondary-color) !important; }
+
+/* Contenedores de Listas */
+.results-list, .log-list { max-height: 100% !important; overflow-y: auto !important; border: 1px solid #E5E7EB; border-radius: 8px; margin: 10px 0; background: var(--white); flex: 1; }
+.result-item { padding: 12px 14px; border-bottom: 1px solid #F3F4F6; cursor: pointer; background-color: var(--white); transition: padding-left 0.15s; }
+.result-item:hover { padding-left: 18px; background-color: var(--surface-light); }
+.card { background: var(--white); border: 1px solid #E5E7EB; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+.button-row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
+/* =========================================================================
+   BARRA DE NAVEGACIÓN INFERIOR FIJA ABSOLUTA (SIEMPRE ABAJO)
+   ========================================================================= */
 .bottom-nav {
     position: fixed !important;
     bottom: 0 !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: 100% !important;
-    max-width: 480px !important; 
+    max-width: 480px !important;
     background-color: var(--white) !important;
     display: flex !important;
     flex-direction: row !important; 
@@ -107,237 +159,25 @@ body {
     border-top: 3px solid var(--secondary-color) !important; 
     box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.08) !important;
     z-index: 1000 !important;
-    padding: 8px 0 !important;
-    box-sizing: border-box !important;
-}
-
-/* El túnel de desplazamiento ajustado para no empujar los menús */
-.app-screen {
-    background: rgba(255, 255, 255, 0.94) !important;
-    border-radius: 12px;
-    box-shadow: var(--shadow-screen);
-    border: 1px solid #E5E7EB;
-    box-sizing: border-box !important;
-    width: 100% !important;
-    padding: 20px !important;
-    margin-top: 10px;
-    margin-bottom: 75px; /* Espacio de seguridad para no tapar la barra inferior */
-    max-height: calc(100vh - 160px) !important; /* Limita la tarjeta al tamaño de pantalla */
-    overflow-y: auto !important; /* El formulario se desliza por dentro de la tarjeta */
-}
-
-.header-brand-wrapper {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    gap: 4px !important;
-}
-
-.header-logo {
-    max-height: 32px !important;
-    width: auto !important;
-    object-fit: contain !important;
-}
-
-.main-header h1 {
-    margin: 0 !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    color: var(--white) !important;
-}
-
-h2 { 
-    color: var(--primary-color); 
-    margin-top: 5px;
-    margin-bottom: 10px;
-    font-size: 18px;
-    font-weight: 700;
-}
-
-.screen-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid var(--primary-color);
-    padding-bottom: 4px;
-    margin-bottom: 10px;
-}
-.screen-toolbar h2 { margin: 0; border: none; }
-/* =========================================================================
-   TÚNEL DE DESPLAZAMIENTO CENTRAL INDEPENDIENTE (SCROLL INTERNO)
-   ========================================================================= */
-#edit-form, .results-list, .log-list, .banner-container {
-    flex: 1 !important;        /* Ocupa todo el espacio intermedio sobrante */
-    overflow-y: auto !important; /* Activa el scroll vertical solo en esta zona */
-    padding-right: 4px;
-    box-sizing: border-box;
-}
-
-/* Ocultar barra de scroll fea en navegadores móviles para mayor limpieza */
-#edit-form::-webkit-scrollbar, .results-list::-webkit-scrollbar {
-    width: 4px;
-}
-#edit-form::-webkit-scrollbar-thumb {
-    background: #CBD5E0;
-    border-radius: 4px;
-}
-
-.form-group { margin-bottom: 12px; }
-.form-group label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 4px;
-    font-size: 13px;
-    color: var(--text-muted);
-}
-
-input[type="text"], input[type="tel"], input[type="number"], textarea {
-    width: 100%;
-    padding: 9px 12px;
-    border: 1px solid #CBD5E0;
-    border-radius: 6px;
-    box-sizing: border-box;
-    font-size: 15px;
-    background-color: var(--surface-light);
-}
-
-input:focus, textarea:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(98, 17, 50, 0.1);
-    outline: none;
-}
-
-.text-disabled input {
-    background-color: #EDF2F7;
-    color: #4A5568;
-    border-color: #E2E8F0;
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-}
-
-hr { margin: 12px 0; border: 0; border-top: 1px solid #E5E7EB; }
-
-/* BOTONES INTEGRADOS */
-button {
-    background-color: var(--primary-color);
-    color: var(--white);
-    padding: 12px;
-    border-radius: 6px;
-    font-size: 15px;
-    font-weight: bold;
-    box-shadow: var(--shadow-button);
-    margin-top: 8px;
-}
-button:hover { background-color: var(--primary-light); transform: translateY(-1px); }
-button:active { transform: translateY(1px); }
-
-.btn-secondary { background-color: #1F1F1F; }
-.btn-back { background-color: #5A6A80; }
-
-.btn-excel-gold {
-    background: linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 100%) !important;
-    color: var(--secondary-color) !important;
-    border: 2px solid var(--secondary-color) !important;
-}
-
-.card {
-    background: var(--white);
-    border: 1px solid #E5E7EB;
-    border-radius: 8px;
-    padding: 14px;
-    margin-bottom: 10px;
-}
-.card h3 { margin-top: 0; font-size: 15px; }
-
-.button-row-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr; 
-    gap: 8px;                     
-    margin-top: 8px;              
-}
-/* =========================================================================
-   INSIGNIAS DE PANTALLA Y SEMÁFORO COMPACTO PASTEL
-   ========================================================================= */
-.screen-number-badge {
-    position: absolute;
-    top: 52px; /* Posicionada justo abajo de la barra guinda */
-    right: 20px;
-    background-color: var(--primary-color);
-    color: var(--white);
-    font-size: 10px;
-    font-weight: 800;
-    padding: 2px 8px;
-    border-radius: 10px;
-    z-index: 10;
-    border: 1px solid var(--secondary-color);
-}
-
-.result-item {
-    padding: 12px 14px;
-    border-bottom: 1px solid #F3F4F6;
-    border-left: 5px solid var(--secondary-color) !important;
-    background-color: #EDF4F9 !important;
-}
-.result-item.status-localizado { border-left: 5px solid #236947 !important; background-color: #E6F4EA !important; }
-.result-item.status-nolocalizado { border-left: 5px solid #b91c1c !important; background-color: #FCE8E6 !important; }
-
-/* =========================================================================
-   BARRA DE NAVEGACIÓN HORIZONTAL FIJA ABSOLUTA AL FONDO DE LA PANTALLA
-   ========================================================================= */
-.bottom-nav {
-    width: calc(100% + 40px) !important; /* Se expande simétricamente al borde */
-    background-color: var(--white) !important;
-    display: flex !important;
-    flex-direction: row !important; 
-    justify-content: space-around !important;
-    align-items: center !important;
-    border-top: 3px solid var(--secondary-color) !important; 
-    margin: auto -20px -20px -20px !important; /* Se clava fijamente abajo */
     padding: 6px 0 !important;
     box-sizing: border-box !important;
+    height: 65px !important; /* Altura fija */
 }
 
 .bottom-nav .nav-item {
-    background: none !important;
-    border: none !important;
-    color: #718096 !important;
-    font-size: 12px !important;
-    font-weight: 600 !important;
-    margin-top: 0 !important;
-    padding: 4px 10px !important;
-    cursor: pointer;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 1px !important;
-    width: auto !important; 
-    border-bottom: 3px solid transparent !important;
-    transition: all 0.15s ease;
+    background: none !important; border: none !important; color: #718096 !important; font-size: 13px !important; font-weight: 600 !important; margin-top: 0 !important; padding: 4px 12px !important; cursor: pointer; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; gap: 2px !important; border-bottom: 3px solid transparent !important; transition: all 0.2s ease;
 }
-
 .bottom-nav .nav-item span { font-size: 18px !important; opacity: 0.7; }
-
-/* Estado Activo en Contraste Guinda y Dorado */
-.bottom-nav .nav-item.active {
-    color: var(--primary-color) !important;
-    font-weight: 800 !important;
-    border-bottom: 3px solid var(--secondary-color) !important;
-}
+.bottom-nav .nav-item.active { color: var(--primary-color) !important; font-weight: 800 !important; border-bottom: 3px solid var(--secondary-color) !important; }
 .bottom-nav .nav-item.active span { opacity: 1 !important; }
 
-/* PRESENTACIÓN DEL BANNER COMPACTO EN CASO POR CASA */
-.banner-container {
-    text-align: center;
-    max-height: 180px !important;
-    margin-bottom: 10px;
-}
-.banner-img {
-    max-height: 100% !important;
-    width: auto !important;
-    object-fit: contain;
-}
+/* PRESENTACIÓN DEL LOGO CASA POR CASA */
+.banner-container { text-align: center; margin-bottom: 12px; width: 100%; }
+.banner-img { max-height: 120px !important; width: auto !important; object-fit: contain; }
+.screen-number-badge { position: absolute; top: 12px; right: 15px; background-color: var(--primary-color); color: var(--white); font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px; z-index: 10; border: 1px solid var(--secondary-color); }
+.screen-toolbar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary-color); padding-bottom: 6px; margin-bottom: 12px; }
+
+/* Semáforo visual */
+.result-item { border-left: 5px solid var(--secondary-color) !important; background-color: #EDF4F9 !important; }
+.result-item.status-localizado { border-left: 5px solid #236947 !important; background-color: #E6F4EA !important; }
+.result-item.status-nolocalizado { border-left: 5px solid #b91c1c !important; background-color: #FCE8E6 !important; }
