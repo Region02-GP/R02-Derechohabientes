@@ -455,3 +455,45 @@ body {
     background: rgba(255, 255, 255, 0.85) !important;
     border: 1px solid #E5E7EB !important;
 }
+
+/* =========================================================================
+   ESTILOS DE LOGOTIPO EXTRAÍDOS DE TU OTRA APP (PANTALLA 1)
+   ========================================================================= */
+.banner-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px 0;
+    box-sizing: border-box;
+}
+
+.banner-img {
+    width: 100% !important;
+    max-width: 440px !important;
+    height: auto !important;
+    object-fit: contain !important;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+/* Botón Guinda Formal Tridimensional Personalizado */
+.btn-guinda {
+    background-color: var(--primary-color) !important;
+    color: var(--white) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    padding: 14px !important;
+    width: 100% !important;
+    border-radius: 8px !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    box-shadow: var(--shadow-button) !important;
+    letter-spacing: 0.5px !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn-guinda:hover {
+    background-color: var(--primary-light) !important;
+    box-shadow: 0 6px 20px rgba(98, 17, 50, 0.35) !important;
+}
