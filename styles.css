@@ -18,9 +18,7 @@
     --shadow-gold: 0 4px 14px 0 rgba(188, 149, 92, 0.2);
 }
 
-/* =========================================================================
-   BLOQUEO DE VENTANA GLOBAL (ANULA DESPLAZAMIENTOS FUERA DE LA APP)
-   ========================================================================= */
+/* CONGELACIÓN DE MEDIDAS DE DISPOSITIVO */
 html, body {
     height: 100vh !important;
     margin: 0 !important;
@@ -38,23 +36,20 @@ body {
     background-color: var(--bg-color) !important;
 }
 
-/* CORRECCIÓN PRINCIPAL: El Grid controla el alto del celular centrado en tu monitor */
+/* EL CONTENEDOR ENLAZA LA APLICACIÓN COMO CELULAR CENTRADO EN MONITORES ANCHOS */
 .app-container {
     width: 100% !important;
-    max-width: 450px !important; /* Fuerza la forma perfecta de un celular */
+    max-width: 450px !important; 
     height: 100vh !important;
-    margin: 0 auto !important; /* Centra la app perfectamente en tu computadora */
+    margin: 0 auto !important; 
     padding: 0 !important;
     box-sizing: border-box;
     display: grid !important;
-    grid-template-rows: 75px 1fr 65px !important; /* 3 pisos matemáticos fijos */
-    background-color: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 0 30px rgba(0,0,0,0.1);
+    grid-template-rows: 75px 1fr 65px !important; /* 3 pisos matemáticos rígidamente fijados */
     position: relative;
 }
-/* =========================================================================
-   PISO 1: LOGOTIPO INSTITUTIONAL (SIEMPRE FIJO Y VISIBLE)
-   ========================================================================= */
+
+/* PISO 1: ENCABEZADO GLOBAL SUPERIOR INAMOVIBLE */
 .main-header {
     background-color: var(--primary-color) !important;
     color: var(--white) !important;
@@ -67,7 +62,7 @@ body {
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
-    grid-row: 1 !important; /* Asegura su posición fija arriba */
+    grid-row: 1 !important; 
 }
 
 .header-brand-wrapper {
@@ -78,7 +73,7 @@ body {
 }
 
 .header-logo {
-    height: 26px !important; /* Altura corregida para visualización plena de la imagen */
+    height: 26px !important; 
     width: auto !important;
     object-fit: contain !important;
 }
@@ -89,10 +84,7 @@ body {
     font-weight: 700 !important;
     color: var(--white) !important;
 }
-
-/* =========================================================================
-   PISO 2: TARJETAS DE PANTALLA AJUSTADAS AL ANCHO DEL CELULAR CENTRADO
-   ========================================================================= */
+/* PISO 2: TARJETAS DE PANTALLA CON DESPLAZAMIENTO CENTRAL PROPIO */
 .app-screen {
     background: rgba(255, 255, 255, 0.96) !important;
     backdrop-filter: blur(4px) !important;
@@ -101,24 +93,21 @@ body {
     box-shadow: var(--shadow-screen);
     box-sizing: border-box !important;
     
-    grid-row: 2 !important; /* Clavado en el segundo piso intermedio */
-    height: calc(100vh - 160px) !important; /* Altura matemática controlada */
+    grid-row: 2 !important; 
+    height: calc(100vh - 160px) !important; 
     margin: 10px !important;
     padding: 16px !important;
     
-    /* ACTIVA EL SCROLL DINÁMICO EXCLUSIVO POR DENTRO DEL FORMULARIO */
     overflow-y: auto !important;
     display: flex !important;
     flex-direction: column !important;
 }
 
-.hidden { display: none !important; }
-
-/* Elementos del Formulario */
+/* Controles de Formulario */
 .form-group { margin-bottom: 12px; }
 .form-group label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 13px; color: var(--text-muted); }
 input[type="text"], input[type="tel"], input[type="number"], textarea {
-    width: 100%; padding: 9px 12px; border: 1px solid #CBD5E0; border-radius: 6px; box-sizing: border-box; font-size: 15px; background-color: var(--surface-light); color: var(--text-main);
+    width: 100%; padding: 9px 12px; border: 1px solid #CBD5E0; border-radius: 8px; box-sizing: border-box; font-size: 15px; background-color: var(--surface-light); color: var(--text-main);
 }
 input:focus, textarea:focus { border-color: var(--primary-color); outline: none; }
 .text-disabled input { background-color: #EDF2F7; color: #4A5568; border-color: #E2E8F0; }
@@ -132,11 +121,9 @@ button:hover { background-color: var(--primary-light); }
 .btn-back { background-color: #5A6A80; }
 .btn-primary-guinda { background-color: var(--primary-color); }
 .btn-excel-gold { background: linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 100%) !important; color: var(--secondary-color) !important; border: 2px solid var(--secondary-color) !important; }
-/* =========================================================================
-   PISO 3: BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL (SIEMPRE FIJA ABAJO)
-   ========================================================================= */
+/* PISO 3: BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL (SIEMPRE FIJA ABAJO) */
 .bottom-nav {
-    grid-row: 3 !important; /* Forzado al tercer piso del Grid de forma estricta */
+    grid-row: 3 !important; 
     width: 100% !important;
     background-color: var(--white) !important;
     display: flex !important;
@@ -175,3 +162,7 @@ button:hover { background-color: var(--primary-light); }
 .result-item { border-left: 5px solid var(--secondary-color) !important; background-color: #EDF4F9 !important; }
 .result-item.status-localizado { border-left: 5px solid #236947 !important; background-color: #E6F4EA !important; }
 .result-item.status-nolocalizado { border-left: 5px solid #b91c1c !important; background-color: #FCE8E6 !important; }
+
+.btn-guinda {
+    background-color: var(--primary-color) !important; color: var(--white) !important; border: 1px solid rgba(255,255,255,0.1) !important; padding: 12px !important; width: 100% !important; border-radius: 6px !important; font-size: 15px !important; font-weight: bold !important; cursor: pointer !important; box-shadow: var(--shadow-button) !important; letter-spacing: 0.5px !important; transition: all 0.2s ease !important;
+}
