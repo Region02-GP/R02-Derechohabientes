@@ -2,14 +2,14 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>R02-Derechohabientes</title>
     <link rel="stylesheet" href="styles.css">
     <link class="manifest-link" rel="manifest" href="manifest.json">
 </head>
 <body>
 
-    <!-- ENCABEZADO GLOBAL ANCLADO DE FORMA ABSOLUTA ARRIBA -->
+    <!-- ENCABEZADO GLOBAL ANCLADO DE FORMA ABSOLUTA ARRIBA (PISO 1) -->
     <header class="main-header">
         <div class="header-brand-wrapper">
             <img src="https://i.postimg.cc/hjnYkjQg/bienestar.png" alt="Logotipo Institucional" class="header-logo">
@@ -18,7 +18,6 @@
     </header>
 
     <main class="app-container">
-        
         <!-- PANTALLA 1: ACCESO "CASA POR CASA" -->
         <section id="screen-login" class="app-screen">
             <div class="screen-number-badge">Pantalla 1</div>
@@ -41,7 +40,6 @@
             <button type="button" class="btn-guinda" onclick="validarAccesoCURP()">Validar Identidad</button>
             <div id="login-error" style="color: #66001c; font-weight: bold; font-size: 14px; margin-top: 10px; display: none;"></div>
         </section>
-
         <!-- PANTALLA 2: BIENVENIDA Y CARGA MASIVA -->
         <section id="screen-welcome" class="app-screen hidden">
             <div class="screen-number-badge">Pantalla 2</div>
@@ -65,6 +63,7 @@
                 <button type="button" onclick="downloadAllDataMassive()" id="btn-massive-download" class="btn-secondary">📥 Descargar Base Completa</button>
             </div>
         </section>
+
         <!-- PANTALLA 3: BUSCADOR MULTI-CRITERIO OFF-LINE -->
         <section id="screen-search" class="app-screen hidden">
             <div class="screen-number-badge">Pantalla 3</div>
@@ -79,7 +78,7 @@
             
             <div id="search-results" class="results-list"></div>
         </section>
-        <!-- PANTALLA 4: FORMULARIO DE EDICIÓN, ESTATUS DE VISITA Y CAPTURA GPS -->
+        <!-- PANTALLA 4: FORMULARIO DE EDICIÓN Y GPS -->
         <section id="screen-form" class="app-screen hidden">
             <div class="screen-number-badge">Pantalla 4</div>
 
@@ -89,7 +88,7 @@
                 <button type="button" id="btn-status-localizado" onclick="seleccionarEstatusVisita('LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s;">
                     LOCALIZADO
                 </button>
-                <button type="button" id="btn-status-nolocalizado" onclick="seleccionarEstatusVisita('NO LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s;">
+                <button type="button" id="btn-status-nolocalizado" onclick="seleccionarEstatusVisita('NO LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #b91c1c; background-color: #FCE8E6; color: #C5221F; cursor: pointer; transition: all 0.2s;">
                     NO LOCALIZADO
                 </button>
             </div>
@@ -162,11 +161,9 @@
                 <button type="button" onclick="changeScreen('screen-search')" class="btn-back">Cancelar</button>
             </form>
         </section>
-
-        <!-- PANTALLA 5: HISTORIAL Y CONTROL OFFLINE -->
+        <!-- PANTALLA 5: HISTORIAL, CONTROL OFFLINE Y REPORTES -->
         <section id="screen-history" class="app-screen hidden">
             <div class="screen-number-badge">Pantalla 5</div>
-            
             <h2>Historial y Sincronización</h2>
             <div class="metrics" style="background:#f7fafc; padding:15px; border-radius:4px; margin-bottom:15px; border-left:4px solid var(--primary-color);">
                 <p style="margin:0; font-size:15px;">Cambios pendientes por subir: <strong id="pending-count">0</strong></p>
@@ -184,7 +181,7 @@
             <div id="history-log" class="log-list"></div>
         </section>
 
-        <!-- UNICA BARRA DE NAVEGACIÓN GLOBAL FIJA ABSOLUTA AL RAS DEL DISPOSITIVO -->
+        <!-- UNICA BARRA DE NAVEGACIÓN GLOBAL FIJA ABSOLUTA (PISO 3 DEL GRID) -->
         <nav id="app-bottom-nav" class="bottom-nav hidden">
             <button type="button" id="nav-welcome" onclick="changeScreen('screen-welcome')" class="nav-item">
                 <span>📥</span>Inicio
