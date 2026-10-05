@@ -9,10 +9,15 @@
 </head>
 <body>
 
-    <!-- ENCABEZADO GLOBAL ANCLADO DE FORMA ABSOLUTA ARRIBA (PISO 1) -->
+    <!-- ENCABEZADO GLOBAL UNIFICADO (PISO 1 DEL GRID LAYOUT) -->
     <header class="main-header">
         <div class="header-brand-wrapper">
-            <img src="https://es.wikipedia.org/wiki/Archivo:BIENESTAR_Logo_%282024%29.png" alt="Logotipo Institucional" class="header-logo">
+            <!-- ESCUDO VECTORIAL BLINDADO NATIVO (No depende de enlaces externos de internet) -->
+            <svg class="header-logo" viewBox="0 0 100 100" xmlns="http://w3.org">
+                <circle cx="50" cy="50" r="45" fill="#BC955C"/>
+                <path d="M35,35 L50,15 L65,35 L55,35 L55,75 L45,75 L45,35 Z" fill="#621132"/>
+                <circle cx="50" cy="50" r="10" fill="#ffffff" opacity="0.3"/>
+            </svg>
             <h1>R02-Derechohabientes</h1>
         </div>
     </header>
@@ -27,8 +32,15 @@
                 <h2>R02-GOMEZ PALACIO</h2>
             </div>
 
+            <!-- BANNER DIGITAL EXCLUSIVO (Inmune a caídas de servidores) -->
             <div class="banner-container">
-                <img class="banner-img" alt="Casa por casa" src="https://es.wikipedia.org/wiki/Archivo:BIENESTAR_Logo_%282024%29.png">
+                <svg class="banner-img" viewBox="0 0 200 100" xmlns="http://w3.org">
+                    <rect width="200" height="100" rx="10" fill="#621132" opacity="0.05"/>
+                    <path d="M40,65 L50,35 L60,65 Z" fill="#621132"/>
+                    <path d="M45,35 L50,20 L55,35 Z" fill="#BC955C"/>
+                    <text x="75" y="48" font-family="'Segoe UI', sans-serif" font-size="20" font-weight="bold" fill="#621132">Casa</text>
+                    <text x="75" y="72" font-family="'Segoe UI', sans-serif" font-size="20" font-weight="bold" fill="#BC955C">por casa</text>
+                </svg>
             </div>
 
             <h2>Acceso</h2>
@@ -85,7 +97,7 @@
             <h2>Actualización de Domicilio</h2>
             
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button type="button" id="btn-status-localizado" onclick="seleccionarEstatusVisita('LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s;">
+                <button type="button" id="btn-status-localizado" onclick="seleccionarEstatusVisita('LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #E6F4EA; color: #137333; cursor: pointer; transition: all 0.2s;">
                     LOCALIZADO
                 </button>
                 <button type="button" id="btn-status-nolocalizado" onclick="seleccionarEstatusVisita('NO LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #b91c1c; background-color: #FCE8E6; color: #C5221F; cursor: pointer; transition: all 0.2s;">
@@ -181,7 +193,7 @@
             <div id="history-log" class="log-list"></div>
         </section>
 
-        <!-- UNICA BARRA DE NAVEGACIÓN GLOBAL FIJA ABSOLUTA (PISO 3 DEL GRID) -->
+        <!-- ÚNICA BARRA GLOBAL ADAPTADA (PISO 3 DEL GRID LAYOUT) -->
         <nav id="app-bottom-nav" class="bottom-nav hidden">
             <button type="button" id="nav-welcome" onclick="changeScreen('screen-welcome')" class="nav-item">
                 <span>📥</span>Inicio
@@ -199,4 +211,3 @@
     <script src="app.js"></script>
 </body>
 </html>
-
