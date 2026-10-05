@@ -22,13 +22,13 @@
 }
 
 /* =========================================================================
-   BLINDAJE DE ALTURA DISPOSITIVO (100% FIJO SIN DESPLAZAMIENTO GLOBAL)
+   CONGELACIÓN DE VENTANA: ESTRUCTURA GRID VERTICAL INAMOVIBLE
    ========================================================================= */
 html, body {
     height: 100vh !important;
     margin: 0 !important;
     padding: 0 !important;
-    overflow: hidden !important; /* Congela la pantalla completa */
+    overflow: hidden !important; /* Bloquea por completo el rebote de la pantalla */
 }
 
 body {
@@ -41,32 +41,33 @@ body {
     background-color: var(--bg-color) !important;
 }
 
-/* CONTENEDOR ANCLADO RESPONSIVO */
+/* EL CONTENEDOR SE CONVIERTE EN UN GRID DE 3 PISOS INMUTABLES */
 .app-container {
     max-width: 480px;
     height: 100vh !important;
     margin: 0 auto !important;
     padding: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
+    box-sizing: border-box;
+    display: grid !important;
+    grid-template-rows: 70px 1fr 65px !important; /* Piso 1: Header, Piso 2: Tarjetas, Piso 3: Nav Bar */
     position: relative;
 }
 /* =========================================================================
-   HEADER GLOBAL FIJO ABSOLUTO (SIEMPRE ARRIBA Y VISIBLE)
+   PISO 1: ENCABEZADO GLOBAL (SIEMPRE FIJO, VISIBLE Y CENTRADO)
    ========================================================================= */
 .main-header {
     background-color: var(--primary-color) !important;
     color: var(--white) !important;
     text-align: center;
-    padding: 10px 0 !important;
     border-bottom: 4px solid var(--secondary-color);
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     width: 100%;
-    height: 70px !important; /* Altura fija controlada */
+    height: 70px !important;
     box-sizing: border-box;
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
+    grid-row: 1 !important; /* Forzado al primer piso del Grid */
 }
 
 .header-brand-wrapper {
@@ -77,7 +78,7 @@ body {
 }
 
 .header-logo {
-    height: 24px !important; 
+    height: 24px !important; /* Altura corregida para visualización plena */
     width: auto !important;
     object-fit: contain !important;
 }
@@ -91,44 +92,41 @@ body {
 }
 
 /* =========================================================================
-   TARJETAS DE PANTALLA CON SCROLL INTERNO (TÚNEL DE DATOS)
+   PISO 2: TARJETAS DE PANTALLA CON DESPLAZAMIENTO CENTRAL PROPIO
    ========================================================================= */
 .app-screen {
-    background: rgba(255, 255, 255, 0.94) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
     backdrop-filter: blur(4px) !important;
     border: 1px solid #E5E7EB;
     border-radius: 14px;
     box-shadow: var(--shadow-screen);
     box-sizing: border-box !important;
     
-    /* SE CLAVA EN EL CENTRO ENTRE EL HEADER Y EL NAV */
-    position: absolute !important;
-    top: 80px !important; /* Justo abajo del header */
-    bottom: 75px !important; /* Justo arriba del nav */
-    left: 10px !important;
-    right: 10px !important;
+    grid-row: 2 !important; /* Forzado al segundo piso del Grid */
+    height: calc(100vh - 155px) !important; /* Alto exacto matemático disponible */
+    margin: 10px !important;
+    padding: 16px !important;
     
-    /* ACTIVA EL SCROLL VERTICAL SÓLO ADENTRO DE LA TARJETA */
+    /* ACTIVA EL SCROLL EXCLUSIVAMENTE ADENTRO DE LA TARJETA */
     overflow-y: auto !important;
     display: flex !important;
     flex-direction: column !important;
-    padding: 18px !important;
 }
 
-.hidden { display: none !important; opacity: 0 !important; visibility: hidden !important; }
+.hidden { display: none !important; }
 /* Controles de Formulario */
-.form-group { margin-bottom: 14px; }
-.form-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px; color: var(--text-muted); }
+.form-group { margin-bottom: 12px; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 13px; color: var(--text-muted); }
 input[type="text"], input[type="tel"], input[type="number"], textarea {
-    width: 100%; padding: 10px 12px; border: 1px solid #CBD5E0; border-radius: 8px; box-sizing: border-box; font-size: 15px; background-color: var(--surface-light); color: var(--text-main);
+    width: 100%; padding: 9px 12px; border: 1px solid #CBD5E0; border-radius: 8px; box-sizing: border-box; font-size: 15px; background-color: var(--surface-light); color: var(--text-main);
 }
 input:focus, textarea:focus { border-color: var(--primary-color); outline: none; }
 .text-disabled input { background-color: #EDF2F7; color: #4A5568; border-color: #E2E8F0; }
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-hr { margin: 15px 0; border: 0; border-top: 1px solid #E5E7EB; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+hr { margin: 12px 0; border: 0; border-top: 1px solid #E5E7EB; }
 
 /* Botonera */
-button { background-color: var(--primary-color); color: var(--white); border: none; padding: 13px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; box-shadow: var(--shadow-button); width: 100%; margin-top: 5px; }
+button { background-color: var(--primary-color); color: var(--white); border: none; padding: 12px; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; box-shadow: var(--shadow-button); width: 100%; margin-top: 5px; }
 button:hover { background-color: var(--primary-light); }
 .btn-secondary { background-color: #1F1F1F; }
 .btn-back { background-color: #5A6A80; }
@@ -136,21 +134,17 @@ button:hover { background-color: var(--primary-light); }
 .btn-excel-gold { background: linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 100%) !important; color: var(--secondary-color) !important; border: 2px solid var(--secondary-color) !important; }
 
 /* Contenedores de Listas */
-.results-list, .log-list { max-height: 100% !important; overflow-y: auto !important; border: 1px solid #E5E7EB; border-radius: 8px; margin: 10px 0; background: var(--white); flex: 1; }
-.result-item { padding: 12px 14px; border-bottom: 1px solid #F3F4F6; cursor: pointer; background-color: var(--white); transition: padding-left 0.15s; }
-.result-item:hover { padding-left: 18px; background-color: var(--surface-light); }
-.card { background: var(--white); border: 1px solid #E5E7EB; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
-.button-row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
+.results-list, .log-list { max-height: 100% !important; overflow-y: auto !important; border: 1px solid #E5E7EB; border-radius: 8px; margin: 8px 0; background: var(--white); flex: 1; }
+.result-item { padding: 11px 13px; border-bottom: 1px solid #F3F4F6; cursor: pointer; background-color: var(--white); transition: padding-left 0.15s; }
+.result-item:hover { padding-left: 16px; background-color: var(--surface-light); }
+.card { background: var(--white); border: 1px solid #E5E7EB; border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+.button-row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 5px; }
 /* =========================================================================
-   BARRA DE NAVEGACIÓN INFERIOR FIJA ABSOLUTA (SIEMPRE ABAJO)
+   PISO 3: BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL GLOBAL (SOLDADA ABAJO)
    ========================================================================= */
 .bottom-nav {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
+    grid-row: 3 !important; /* Forzado al tercer piso del Grid de forma estricta */
     width: 100% !important;
-    max-width: 480px !important;
     background-color: var(--white) !important;
     display: flex !important;
     flex-direction: row !important; 
@@ -159,9 +153,10 @@ button:hover { background-color: var(--primary-light); }
     border-top: 3px solid var(--secondary-color) !important; 
     box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.08) !important;
     z-index: 1000 !important;
-    padding: 6px 0 !important;
     box-sizing: border-box !important;
-    height: 65px !important; /* Altura fija */
+    height: 65px !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 .bottom-nav .nav-item {
@@ -171,13 +166,13 @@ button:hover { background-color: var(--primary-light); }
 .bottom-nav .nav-item.active { color: var(--primary-color) !important; font-weight: 800 !important; border-bottom: 3px solid var(--secondary-color) !important; }
 .bottom-nav .nav-item.active span { opacity: 1 !important; }
 
-/* PRESENTACIÓN DEL LOGO CASA POR CASA */
-.banner-container { text-align: center; margin-bottom: 12px; width: 100%; }
-.banner-img { max-height: 120px !important; width: auto !important; object-fit: contain; }
-.screen-number-badge { position: absolute; top: 12px; right: 15px; background-color: var(--primary-color); color: var(--white); font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px; z-index: 10; border: 1px solid var(--secondary-color); }
-.screen-toolbar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary-color); padding-bottom: 6px; margin-bottom: 12px; }
+/* PRESENTACIÓN DE BANNER LOGO CASA POR CASA */
+.banner-container { text-align: center; margin-bottom: 8px; width: 100%; max-height: 100px !important; }
+.banner-img { max-height: 100px !important; width: auto !important; object-fit: contain; }
+.screen-number-badge { position: absolute; top: 10px; right: 12px; background-color: var(--primary-color); color: var(--white); font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 8px; z-index: 10; border: 1px solid var(--secondary-color); }
+.screen-toolbar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary-color); padding-bottom: 4px; margin-bottom: 10px; }
 
-/* Semáforo visual */
+/* Semáforo corporativo suave */
 .result-item { border-left: 5px solid var(--secondary-color) !important; background-color: #EDF4F9 !important; }
 .result-item.status-localizado { border-left: 5px solid #236947 !important; background-color: #E6F4EA !important; }
 .result-item.status-nolocalizado { border-left: 5px solid #b91c1c !important; background-color: #FCE8E6 !important; }
