@@ -1,5 +1,5 @@
 // URL del Web App de Google Apps Script 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFyFO7J7MxY6iu1mVViQAByLx89XcZRNEdNs09YrgZnLotGCE9UjrWkVx0ZpWsxlHp/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxMxTR8noWb558lVY7beRXWQ5uJbMzMRZL2l3nzn8PUT4lnUogUTxH34R1zfATPoCht/exec";
 
 // ELIMINADO EL DICCIONARIO FIJO: Ahora los brigadistas se consultan directamente del Excel
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
@@ -67,11 +67,9 @@ function changeScreen(screenId) {
         if (screenId === 'screen-history') document.getElementById('nav-history').classList.add('active');
     }
 }
-// NUEVA FUNCIÓN DE ACCESO: Consulta la pestaña "Brigadistas" en tiempo real desde Google Sheets
-// REEMPLAZA ÚNICAMENTE ESTA FUNCIÓN DENTRO DE TU APP.JS:
 async function login() {
-    // Limpia espacios y fuerza mayúsculas automáticas al teclear en campo
-    const curpInput = document.getElementById('login-curp').value.replace(/ /g, "").toUpperCase().trim();
+    // Expresión regular que remueve espacios ordinarios, saltos de línea e invisibles (U+200B, etc.)
+    const curpInput = document.getElementById('login-curp').value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase().trim();
     
     if (curpInput.length !== 18) {
         return alert("Por favor, ingresa una CURP válida de 18 caracteres.");
@@ -84,22 +82,18 @@ async function login() {
     }
     
     try {
-        // Petición blindada rompiendo la caché de los navegadores móviles con un timestamp
         const url = `${GOOGLE_SCRIPT_URL}?action=getBrigadistas&_=${new Date().getTime()}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error("Error en canal de datos con Google Sheets.");
         
         const brigadistasAutorizados = await response.json();
         
-        // Control de depuración en la consola del teléfono
-        console.log("Brigadistas autorizados descargados: ", brigadistasAutorizados);
-        
         if (brigadistasAutorizados && brigadistasAutorizados[curpInput]) {
             currentUser = { curp: curpInput, name: brigadistasAutorizados[curpInput] };
             document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
             changeScreen('screen-welcome');
         } else {
-            alert("Acceso Denegado: La CURP '" + curpInput + "' no está registrada en la hoja 'Brigadistas'. Revisa que coincidan mayúsculas y minúsculas.");
+            alert("Acceso Denegado: La CURP '" + curpInput + "' no está registrada en la hoja 'Brigadistas'. Revisa la ortografía en tu Excel.");
         }
     } catch (error) {
         console.error(error);
@@ -111,6 +105,7 @@ async function login() {
         }
     }
 }
+
 
 
 async function downloadAllDataMassive() {
