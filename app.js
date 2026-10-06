@@ -309,6 +309,7 @@ function openForm(item) {
     changeScreen('screen-form');
 }
 
+// BUSCA TU SAVEDATA(EVENT) Y DEJA LA PARTE DE LA VALIDACIÓN ASÍ DE CORTA:
 function saveData(event) {
     event.preventDefault();
     
@@ -319,13 +320,13 @@ function saveData(event) {
     }
 
     const targetCurp = document.getElementById('f-curp').value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase().trim();
-    const isAltaNueva = (document.getElementById('f-id').value === 'NUEVO');
 
-    // --- 1. OBLIGATORIEDAD Y LONGITUD ESTRICTA DE LA CURP ---
+    // --- OBLIGATORIEDAD DE LA CURP AL GUARDAR ---
     if (!targetCurp || targetCurp.length !== 18) {
         return alert("🛑 ERROR: La CURP es obligatoria y debe tener exactamente 18 caracteres.");
     }
 
+    // ... (El resto de tu código de guardado tradicional y pendingSync de la función se queda exactamente igual)
     // --- 2. DETECTOR DE DUPLICADOS EN TODA LA BASE LOCAL ---
     if (isAltaNueva) {
         // Busca en toda la base cargada en el teléfono sin importar el municipio
