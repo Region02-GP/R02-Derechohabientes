@@ -1,5 +1,5 @@
 // URL del Web App de Google Apps Script 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzdQ-GKTL8S65NTLOMtEcVL-cSioRBnBrNoHdsXYCVNXgcVnt2wFIBzLkX8Oud-kl1B/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzs2aj0YMBdYa1PcfIIKv390RykvhKGN72dRVE5f4ZjnjhBbTZn18Xsg9lL184we7fK/exec";
 
 // CURPs Autorizadas en Código para la Pantalla de Acceso (Pantalla 1)
 const AUTHORIZED_CURPS = {
@@ -16,7 +16,7 @@ let previousScreen = 'screen-welcome';
 let currentEstatusVisita = "LOCALIZADO"; 
 let motivoNoLocalizadoValue = "";        
 
-// INITIALIZACIÓN DE INDEXEDDB (Soporte masivo offline de derechohabientes)
+// INITIALIZACIÓN DE INDEXEDDB
 const DB_NAME = "R02_DB";
 const DB_VERSION = 1;
 const STORE_NAME = "derechohabientes";
@@ -45,47 +45,41 @@ function updateLocalCounter() {
         if (countElement) countElement.innerText = countRequest.result;
     };
 }
-// BUSCA TU FUNCIÓN CHANGESCREEN ORIGINAL Y REEMPLÁZALA POR COMPLETO CON ESTA:
+
+// CONTROL DE CAMBIO DE PANTALLAS CON CANDADO INLINE STYLE PARA LA BARRA INFERIOR
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
     if (screenId === 'screen-welcome') updateLocalCounter(); 
+    
+    document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
+    
+    const targetScreen = document.getElementById(screenId);
+    if (targetScreen) targetScreen.classList.remove('hidden');
 
-    // Quita la clase activa con un sutil efecto de desvanecimiento de salida de tu ejemplo
-    const activeScreen = document.querySelector('.app-screen.active');
-    if (activeScreen) {
-        activeScreen.classList.remove('active');
+    const bottomNav = document.getElementById('app-bottom-nav');
+    if (!bottomNav) return;
+    
+    if (screenId === 'screen-login' || screenId === 'screen-form') {
+        bottomNav.style.setProperty('display', 'none', 'important');
+        bottomNav.classList.add('hidden');
+     } else {
+        bottomNav.style.setProperty('display', 'flex', 'important');
+        bottomNav.classList.remove('hidden');
+        
+        // Quita el estado activo de todos los botones de la barra inferior
+        document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => btn.classList.remove('active'));
+        
+        // AGREGA LA CLASE active AL BOTÓN CORRESPONDIENTE DE LA BARRA INFERIOR
+        if (screenId === 'screen-welcome') document.getElementById('nav-welcome').classList.add('active');
+        if (screenId === 'screen-search') document.getElementById('nav-search').classList.add('active');
+        if (screenId === 'screen-history') document.getElementById('nav-history').classList.add('active');
     }
-
-    // Espera milisegundos a que termine la animación antes de revelar la siguiente
-    setTimeout(() => {
-        document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
-        const targetScreen = document.getElementById(screenId);
-        
-        if (targetScreen) {
-            targetScreen.classList.remove('hidden');
-            setTimeout(() => {
-                targetScreen.classList.add('active'); // Activa el fade-in suave
-            }, 20);
-        }
-
-        const bottomNav = document.getElementById('app-bottom-nav');
-        if (!bottomNav) return;
-        
-        if (screenId === 'screen-login' || screenId === 'screen-form') {
-            bottomNav.style.setProperty('display', 'none', 'important');
-            bottomNav.classList.add('hidden');
-        } else {
-            bottomNav.style.setProperty('display', 'flex', 'important');
-            bottomNav.classList.remove('hidden');
-            
-            document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => btn.classList.remove('active'));
-            if (screenId === 'screen-welcome') document.getElementById('nav-welcome').classList.add('active');
-            if (screenId === 'screen-search') document.getElementById('nav-search').classList.add('active');
-            if (screenId === 'screen-history') document.getElementById('nav-history').classList.add('active');
-        }
-    }, 150);
 }
+
+// =========================================================================
+// MÓDULO 2: PANTALLA 1 (LOGIN) Y PANTALLA 2 (DESCARGA)
+// =========================================================================
 function login() {
     const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
     if (AUTHORIZED_CURPS[curpInput]) {
@@ -138,7 +132,9 @@ async function downloadAllDataMassive() {
         progressText.innerText = `¡Descarga completa! ${totalCargados} registros listos.`;
         updateLocalCounter(); 
         alert(`Éxito: Se guardaron ${totalCargados} registros.`);
-    } catch (error) { alert(`Error: ${error.message}`); } finally { btn.disabled = false; }
+    } catch (error) {
+        alert(`Error: ${error.message}`);
+    } finally { btn.disabled = false; }
 }
 let localMemoryDatabase = [];
 function preloadDatabaseToMemory() {
@@ -185,10 +181,10 @@ function searchData() {
 
         div.className = claseColor;
         div.innerHTML = `
-            <div style="font-size:16px; font-weight:700; color:#1a1a1a; margin-bottom:2px;">
+            <div style="font-size:16px; font-weight:700; color:var(--dark-color); margin-bottom:2px;">
                 ${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}
             </div>
-            <div style="font-size:13px; font-weight:600; color:#66001c; margin-bottom:4px; letter-spacing:0.3px;">
+            <div style="font-size:13px; font-weight:600; color:var(--primary-color); margin-bottom:4px; letter-spacing:0.3px;">
                 CURP: ${item['CURP'] || 'SIN CURP'}
             </div>
             <div style="font-size:13px; color:#555555;">
@@ -199,7 +195,7 @@ function searchData() {
         resultsContainer.appendChild(div);
     });
 }
-// BUSCA TU FUNCIÓN SELECCIONARESTATUSVISITA Y REEMPLÁZALA POR COMPLETO CON ESTA:
+
 function seleccionarEstatusVisita(estatus) {
     currentEstatusVisita = estatus.toUpperCase();
     if (currentEstatusVisita === "NO LOCALIZADO") {
@@ -212,14 +208,17 @@ function seleccionarEstatusVisita(estatus) {
             return; 
         }
         motivoNoLocalizadoValue = mot.trim();
-    } else { motivoNoLocalizadoValue = ""; }
+    } else { 
+        motivoNoLocalizadoValue = ""; 
+    }
     actualizarEstilosBotonesFormulario();
 }
 
+// CANDADO AGREGADO: Valida si los botones existen antes de pintarlos (Evita colapso en Pantalla 1)
 function actualizarEstilosBotonesFormulario() {
     const btnLoc = document.getElementById('btn-status-localizado');
     const btnNoLoc = document.getElementById('btn-status-nolocalizado');
-    if (!btnLoc || !btnNoLoc) return;
+    if (!btnLoc || !btnNoLoc) return; // Si la pantalla 4 está oculta, aborta sin romper la app
 
     if (currentEstatusVisita === "LOCALIZADO") {
         btnLoc.style.backgroundColor = "#E6F4EA";
@@ -227,43 +226,24 @@ function actualizarEstilosBotonesFormulario() {
         btnLoc.style.color = "#137333";
         btnLoc.style.boxShadow = "0 4px 12px rgba(19, 115, 51, 0.25), inset 0 2px 4px rgba(255,255,255,0.6)";
         btnLoc.style.transform = "scale(1.02)";
+        
         btnNoLoc.style.backgroundColor = "#F3F4F6";
         btnNoLoc.style.borderColor = "#CBD5E0";
         btnNoLoc.style.color = "#9CA3AF";
+        btnNoLoc.style.boxShadow = "none";
+        btnNoLoc.style.transform = "scale(1)";
     } else if (currentEstatusVisita === "NO LOCALIZADO") {
         btnNoLoc.style.backgroundColor = "#FCE8E6";
         btnNoLoc.style.borderColor = "#C5221F";
         btnNoLoc.style.color = "#C5221F";
         btnNoLoc.style.boxShadow = "0 4px 12px rgba(197, 34, 31, 0.25), inset 0 2px 4px rgba(255,255,255,0.6)";
         btnNoLoc.style.transform = "scale(1.02)";
+        
         btnLoc.style.backgroundColor = "#F3F4F6";
         btnLoc.style.borderColor = "#CBD5E0";
         btnLoc.style.color = "#9CA3AF";
-    }
-}
-function actualizarEstilosBotonesFormulario() {
-    const btnLoc = document.getElementById('btn-status-localizado');
-    const btnNoLoc = document.getElementById('btn-status-nolocalizado');
-    if (!btnLoc || !btnNoLoc) return;
-
-    if (currentEstatusVisita === "LOCALIZADO") {
-        btnLoc.style.backgroundColor = "#E6F4EA";
-        btnLoc.style.borderColor = "#137333";
-        btnLoc.style.color = "#137333";
-        btnLoc.style.boxShadow = "0 4px 12px rgba(19, 115, 51, 0.25), inset 0 2px 4px rgba(255,255,255,0.6)";
-        btnLoc.style.transform = "scale(1.02)";
-        btnNoLoc.style.backgroundColor = "#F3F4F6";
-        btnNoLoc.style.borderColor = "#CBD5E0";
-        btnNoLoc.style.color = "#9CA3AF";
-    } else if (currentEstatusVisita === "NO LOCALIZADO") {
-        btnNoLoc.style.backgroundColor = "#FCE8E6";
-        btnNoLoc.style.borderColor = "#C5221F";
-        btnNoLoc.style.color = "#C5221F";
-        btnNoLoc.style.boxShadow = "0 4px 12px rgba(197, 34, 31, 0.25), inset 0 2px 4px rgba(255,255,255,0.6)";
-        btnNoLoc.style.transform = "scale(1.02)";
-        btnLoc.style.backgroundColor = "#F3F4F6";
-        btnLoc.style.borderColor = "#CBD5E0";
-        btnLoc.style.color = "#9CA3AF";
+        btnLoc.style.boxShadow = "none";
+        btnLoc.style.transform = "scale(1)";
     }
 }
 function openForm(item) {
@@ -288,6 +268,8 @@ function openForm(item) {
 
     currentEstatusVisita = item['ESTATUS_VISITA'] || "LOCALIZADO";
     motivoNoLocalizadoValue = item['MOTIVO_NO_LOCALIZADO'] || "";
+
+    // Pinta con alto contraste el botón correspondiente al cargar la Pantalla 4
     actualizarEstilosBotonesFormulario();
 
     document.getElementById('f-lat').value = "Buscando satélite...";
@@ -340,7 +322,6 @@ function saveData(event) {
     localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
     changeScreen('screen-search');
 }
-
 function openHistoryScreen() {
     changeScreen('screen-history');
     document.getElementById('pending-count').innerText = pendingSync.length;
@@ -351,6 +332,14 @@ function openHistoryScreen() {
         const div = document.createElement('div');
         div.className = "result-item";
         div.innerHTML = `<strong>⏳ ${item['NOMBRE'] || 'Derechohabiente'} (${item['CURP']})</strong><br><small>Pendiente de subir | Estatus: ${item['ESTATUS_VISITA']}</small>`;
+        logList.appendChild(div);
+    });
+
+    syncedHistory.forEach((item) => {
+        const div = document.createElement('div');
+        div.className = "result-item";
+        div.style.opacity = "0.6"; 
+        div.innerHTML = `<strong>✅ ${item['NOMBRE'] || 'Derechohabiente'} (${item['CURP']})</strong><br><small style="color:green;">Sincronizado con Sheets con éxito | Estatus: ${item['ESTATUS_VISITA']}</small>`;
         logList.appendChild(div);
     });
 }
@@ -364,6 +353,8 @@ async function syncWithSheets() {
         });
         const result = await response.json();
         if (result.status === "success") {
+            syncedHistory = syncedHistory.concat(pendingSync);
+            localStorage.setItem('syncedHistory', JSON.stringify(syncedHistory));
             pendingSync = []; localStorage.removeItem('pendingSync');
             openHistoryScreen(); alert("¡Sincronizado!");
         }
@@ -371,7 +362,7 @@ async function syncWithSheets() {
 }
 
 function downloadBackupCSV() {
-    const allVisitsOfDay = pendingSync;
+    const allVisitsOfDay = pendingSync.concat(syncedHistory);
     if (allVisitsOfDay.length === 0) return alert("No hay datos.");
     const headers = ["CURP", "ID", "NOMBRE", "AP PATERNO", "AP MATERNO", "TEL FIJO", "TEL CEL", "MUNICIPIO", "LOCALIDAD", "SECCION", "COLONIA", "CP", "CALLE", "NUM EXT", "REFERENCIA", "SITUACION", "CAUSAL", "ESTATUS_VISITA", "MOTIVO_NO_LOCALIZADO", "Latitud", "Longitud", "FECHA_MODIFICACION", "USUARIO_MODIFICA"];
     let csvRows = [headers.join(",")];
@@ -388,15 +379,21 @@ function downloadBackupCSV() {
 }
 
 function clearLocalStorage() {
-    if (confirm("🚨 ADVERTENCIA: ¿Estás seguro de vaciar por completo la memoria?")) {
-        pendingSync = []; localMemoryDatabase = []; localStorage.clear();
+    if (confirm("🚨 ADVERTENCIA: ¿Estás seguro de vaciar por completo la memoria? Se borrarán todos los registros descargados y pendientes.")) {
+        pendingSync = []; syncedHistory = []; localMemoryDatabase = []; localStorage.clear();
         if (db) {
             db.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).clear().onsuccess = () => {
                 document.getElementById('search-input').value = "";
                 document.getElementById('search-results').innerHTML = "";
-                alert("Memoria interna limpiada.");
+                alert("Memoria interna e IndexedDB limpiadas correctamente.");
                 changeScreen('screen-welcome'); 
             };
         } else { changeScreen('screen-welcome'); }
     }
+}
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));
+    });
 }
