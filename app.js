@@ -164,6 +164,7 @@ const DB_VERSION = 1;
 const STORE_NAME = "derechohabientes";
 let db;
 
+// REEMPLAZA TU BLOQUE DE INICIALIZACIÓN DE INDEXEDDB POR ESTA VERSIÓN CON PRECARGA COMPILADA:
 const request = indexedDB.open(DB_NAME, DB_VERSION);
 request.onupgradeneeded = (e) => {
     db = e.target.result;
@@ -173,6 +174,37 @@ request.onupgradeneeded = (e) => {
         store.createIndex("by_calle", "CALLE", { unique: false });
     }
 };
+
+// Al abrir con éxito la base interna del teléfono, alimentamos la RAM en caliente
+request.onsuccess = (e) => { 
+    db = e.target.result; 
+    updateLocalCounter(); 
+    preloadDatabaseToMemory(); // ¡AQUÍ ESTÁ LA SOLUCIÓN! Sube los registros a la RAM al abrir la app
+};
+request.onerror = (e) => { console.error("Error IndexedDB:", e.target.error); };
+
+function updateLocalCounter() {
+    if (!db) return;
+    const countRequest = db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).count();
+    countRequest.onsuccess = () => {
+        const countElement = document.getElementById('local-db-count');
+        if (countElement) countElement.innerText = countRequest.result;
+    };
+    
+    // Alimenta el Panel de Resumen Ejecutivo de la Pantalla 2
+    const totalVisitasHoy = pendingSync.length + (syncedHistory ? syncedHistory.length : 0);
+    const pendientesPorSubir = pendingSync.length;
+
+    const elTotalVisitas = document.getElementById('metric-total-visitas');
+    const elPendientesVisitas = document.getElementById('metric-pendientes-visitas');
+    
+    if (elTotalVisitas) elTotalVisitas.innerText = totalVisitasHoy;
+    if (elPendientesVisitas) elPendientesVisitas.innerText = pendientesPorSubir;
+
+    const elContadorHistorial = document.getElementById('pending-count');
+    if (elContadorHistorial) elContadorHistorial.innerText = pendientesPorSubir;
+}
+
 request.onsuccess = (e) => { 
     db = e.target.result; 
     updateLocalCounter();
@@ -226,13 +258,17 @@ function changeScreen(screenId) {
     }
 }
 
+// REEMPLAZA TU FUNCIÓN LOGIN POR ESTA VERSIÓN CON DISPARO GEOGRÁFICO:
 function login() {
     const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
     const brigadistaEncontrado = AUTHORIZED_CURPS[curpInput];
     
     if (brigadistaEncontrado) {
         currentUser = { curp: curpInput, name: brigadistaEncontrado.name };
-        currentBrigadistaMunicipio = brigadistaEncontrado.municipio.toUpperCase().trim(); 
+        currentBrigadistaMunicipio = brigadistaEncontrado.municipio.toUpperCase().trim(); // Bloquea su territorio
+        
+        // Ejecuta la precarga asíncrona de seguridad en la RAM justo al entrar
+        preloadDatabaseToMemory(); 
         
         document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
         changeScreen('screen-welcome');
@@ -240,6 +276,7 @@ function login() {
         alert("CURP no autorizada o inválida.");
     }
 }
+
 async function downloadAllDataMassive() {
     const btn = document.getElementById('btn-massive-download');
     const progressContainer = document.getElementById('progress-container');
@@ -278,11 +315,21 @@ async function downloadAllDataMassive() {
             offset = data.nextOffset || (offset + limit);
             progressBar.style.width = `${Math.min(100, Math.round((offset / 25000) * 100))}%`;
         }
+        // BUSCA EL FINAL DE TU FUNCIÓN downloadAllDataMassive EN TU ARCHIVO Y ASEGÚRATE QUE TERMINE ASÍ:
         progressText.innerText = `¡Descarga completa! ${totalCargados} registros listos.`;
+        
+        // Obliga al teléfono a rellenar la RAM con los datos recién bajados de Google
+        preloadDatabaseToMemory(); 
         updateLocalCounter(); 
+        
         alert(`Éxito: Se guardaron ${totalCargados} registros.`);
-    } catch (error) { alert(`Error: ${error.message}`); } finally { btn.disabled = false; }
+    } catch (error) { 
+        alert(`Error: ${error.message}`); 
+    } finally { 
+        btn.disabled = false; 
+    }
 }
+
 let localMemoryDatabase = [];
 function preloadDatabaseToMemory() {
     if (!db) return;
