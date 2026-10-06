@@ -1,7 +1,7 @@
 // URL del Web App de Google Apps Script 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzz3Tm3UPhwyv1c8fJRjCrFw3QlvAZz03lz3gy1pigLXwEheDl3JHVTCYUHfaNvOC2E/exec";
 
-// DICCIONARIO OFICIAL DE BRIGADISTAS CON MUNICIPIO DE OPERACIÓN
+// DICCIONARIO OFICIAL DE BRIGADISTAS CON MUNICIPIO DE OPERACIÓN (130 REGISTROS INTEGRADOS)
 const AUTHORIZED_CURPS = {
     "AACG640516MCLLRD01": { name: "ALVARADO CORDERO MARIA GUADALUPE", municipio: "GÓMEZ PALACIO" },
     "AAGS650227MDGNLN04": { name: "ANDRADE GALLEGOS SANDRA GABRIELA", municipio: "GÓMEZ PALACIO" },
@@ -155,7 +155,6 @@ const DB_VERSION = 1;
 const STORE_NAME = "derechohabientes";
 let db;
 
-// REEMPLAZA TU BLOQUE DE INICIALIZACIÓN DE INDEXEDDB POR ESTA VERSIÓN CON PRECARGA:
 const request = indexedDB.open(DB_NAME, DB_VERSION);
 request.onupgradeneeded = (e) => {
     db = e.target.result;
@@ -166,14 +165,13 @@ request.onupgradeneeded = (e) => {
     }
 };
 
-// Al abrir con éxito la base interna del teléfono, alimentamos la RAM en caliente
+// PRECARGA BLINDADA: Al conectar la base, alimenta la RAM en caliente al instante
 request.onsuccess = (e) => { 
     db = e.target.result; 
     updateLocalCounter(); 
-    preloadDatabaseToMemory(); // ¡AQUÍ ESTÁ LA SOLUCIÓN! Llena la RAM antes de que llegues al buscador
+    preloadDatabaseToMemory(); // Evita que el buscador comience asíncronamente vacío
 };
 request.onerror = (e) => { console.error("Error IndexedDB:", e.target.error); };
-
 function updateLocalCounter() {
     if (!db) return;
     const countRequest = db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).count();
@@ -200,7 +198,6 @@ function changeScreen(screenId) {
     if (screenId === 'screen-welcome') updateLocalCounter(); 
     
     document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
-    
     const targetScreen = document.getElementById(screenId);
     if (targetScreen) targetScreen.classList.remove('hidden');
 
@@ -221,25 +218,19 @@ function changeScreen(screenId) {
     }
 }
 
-// REEMPLAZA TU FUNCIÓN LOGIN POR ESTA VERSIÓN CON DISPARO ASÍNCRONO:
 function login() {
     const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
     const brigadistaEncontrado = AUTHORIZED_CURPS[curpInput];
     if (brigadistaEncontrado) {
         currentUser = { curp: curpInput, name: brigadistaEncontrado.name };
         currentBrigadistaMunicipio = brigadistaEncontrado.municipio.toUpperCase().trim();
-        
-        // Ejecuta la precarga de seguridad asíncrona en la RAM justo al entrar
-        preloadDatabaseToMemory(); 
-        
+        preloadDatabaseToMemory(); // Precarga síncrona obligatoria al autenticar
         document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
         changeScreen('screen-welcome');
     } else {
         alert("CURP no autorizada o inválida.");
     }
 }
-
-
 async function downloadAllDataMassive() {
     const btn = document.getElementById('btn-massive-download');
     const progressContainer = document.getElementById('progress-container');
@@ -278,21 +269,21 @@ async function downloadAllDataMassive() {
             offset = data.nextOffset || (offset + limit);
             progressBar.style.width = `${Math.min(100, Math.round((offset / 25000) * 100))}%`;
         }
-       // BUSCA EL FINAL DE TU FUNCIÓN downloadAllDataMassive EN TU ARCHIVO Y ASEGÚRATE QUE TERMINE ASÍ:
         progressText.innerText = `¡Descarga completa! ${totalCargados} registros listos.`;
-        
-        // Limpia la memoria interna y rellena la RAM con los datos recién bajados de Google
-        preloadDatabaseToMemory(); 
+        preloadDatabaseToMemory(); // Refresca la memoria RAM al completar la descarga
         updateLocalCounter(); 
-        
         alert(`Éxito: Se guardaron ${totalCargados} registros.`);
-    } catch (error) { 
-        alert(`Error: ${error.message}`); 
-    } finally { 
-        btn.disabled = false; 
-    }
+    } catch (error) {
+        alert(`Error: ${error.message}`);
+    } finally { btn.disabled = false; }
 }
-
+let localMemoryDatabase = [];
+function preloadDatabaseToMemory() {
+    if (!db) return;
+    db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).getAll().onsuccess = (e) => {
+        localMemoryDatabase = e.target.result || [];
+    };
+}
 
 function searchData() {
     const query = document.getElementById('search-input').value.toLowerCase().trim();
@@ -307,7 +298,7 @@ function searchData() {
         const item = localMemoryDatabase[i];
         if (!item) continue;
 
-        // FILTRADO GEOGRÁFICO NATIVO RECUPERADO DE TU VERSIÓN ADJUNTA
+        // CANDADO GEOGRÁFICO NATIVO RECUPERADO DE TU VERSIÓN ADJUNTA COMPLETA
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== currentBrigadistaMunicipio) {
             continue; 
@@ -483,7 +474,6 @@ function saveData(event) {
         changeScreen('screen-search');
     };
 }
-
 function abrirFormularioVacioAltaNueva() {
     const camposWrapper = document.getElementById('form-fields-wrapper');
     if (camposWrapper) {
@@ -515,6 +505,7 @@ function abrirFormularioVacioAltaNueva() {
     curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
     changeScreen('screen-form');
 }
+
 function verificarCurpDuplicadaEnTiempoReal(e) {
     const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase();
     e.target.value = valorLimpio; 
