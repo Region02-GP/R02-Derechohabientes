@@ -45,13 +45,13 @@ function updateLocalCounter() {
         if (countElement) countElement.innerText = countRequest.result;
     };
 }
-// CONTROL DE CAMBIO DE PANTALLAS: Inyecta la animación de tu otra app
+// BUSCA TU FUNCIÓN CHANGESCREEN ORIGINAL Y REEMPLÁZALA POR COMPLETO CON ESTA:
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
     if (screenId === 'screen-welcome') updateLocalCounter(); 
 
-    // Quita la clase activa con un sutil efecto de desvanecimiento de salida
+    // Quita la clase activa con un sutil efecto de desvanecimiento de salida de tu ejemplo
     const activeScreen = document.querySelector('.app-screen.active');
     if (activeScreen) {
         activeScreen.classList.remove('active');
@@ -72,7 +72,6 @@ function changeScreen(screenId) {
         const bottomNav = document.getElementById('app-bottom-nav');
         if (!bottomNav) return;
         
-        // La barra inferior de tres botones se apaga en la Pantalla 1 y la Pantalla 4
         if (screenId === 'screen-login' || screenId === 'screen-form') {
             bottomNav.style.setProperty('display', 'none', 'important');
             bottomNav.classList.add('hidden');
@@ -80,7 +79,6 @@ function changeScreen(screenId) {
             bottomNav.style.setProperty('display', 'flex', 'important');
             bottomNav.classList.remove('hidden');
             
-            // Ilumina en guinda institucional la pestaña activa del menú inferior
             document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => btn.classList.remove('active'));
             if (screenId === 'screen-welcome') document.getElementById('nav-welcome').classList.add('active');
             if (screenId === 'screen-search') document.getElementById('nav-search').classList.add('active');
@@ -201,6 +199,7 @@ function searchData() {
         resultsContainer.appendChild(div);
     });
 }
+// BUSCA TU FUNCIÓN SELECCIONARESTATUSVISITA Y REEMPLÁZALA POR COMPLETO CON ESTA:
 function seleccionarEstatusVisita(estatus) {
     currentEstatusVisita = estatus.toUpperCase();
     if (currentEstatusVisita === "NO LOCALIZADO") {
@@ -217,6 +216,31 @@ function seleccionarEstatusVisita(estatus) {
     actualizarEstilosBotonesFormulario();
 }
 
+function actualizarEstilosBotonesFormulario() {
+    const btnLoc = document.getElementById('btn-status-localizado');
+    const btnNoLoc = document.getElementById('btn-status-nolocalizado');
+    if (!btnLoc || !btnNoLoc) return;
+
+    if (currentEstatusVisita === "LOCALIZADO") {
+        btnLoc.style.backgroundColor = "#E6F4EA";
+        btnLoc.style.borderColor = "#137333";
+        btnLoc.style.color = "#137333";
+        btnLoc.style.boxShadow = "0 4px 12px rgba(19, 115, 51, 0.25), inset 0 2px 4px rgba(255,255,255,0.6)";
+        btnLoc.style.transform = "scale(1.02)";
+        btnNoLoc.style.backgroundColor = "#F3F4F6";
+        btnNoLoc.style.borderColor = "#CBD5E0";
+        btnNoLoc.style.color = "#9CA3AF";
+    } else if (currentEstatusVisita === "NO LOCALIZADO") {
+        btnNoLoc.style.backgroundColor = "#FCE8E6";
+        btnNoLoc.style.borderColor = "#C5221F";
+        btnNoLoc.style.color = "#C5221F";
+        btnNoLoc.style.boxShadow = "0 4px 12px rgba(197, 34, 31, 0.25), inset 0 2px 4px rgba(255,255,255,0.6)";
+        btnNoLoc.style.transform = "scale(1.02)";
+        btnLoc.style.backgroundColor = "#F3F4F6";
+        btnLoc.style.borderColor = "#CBD5E0";
+        btnLoc.style.color = "#9CA3AF";
+    }
+}
 function actualizarEstilosBotonesFormulario() {
     const btnLoc = document.getElementById('btn-status-localizado');
     const btnNoLoc = document.getElementById('btn-status-nolocalizado');
