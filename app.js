@@ -472,51 +472,41 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));
     });
 }
-// =========================================================================
-// MÓDULO ADICIONAL: ALTA DE NUEVOS DERECHOHABIENTES EN CAMPO
-// =========================================================================
+// REEMPLAZA TU FUNCIÓN abrirFormularioVacioAltaNueva POR ESTA:
 function abrirFormularioVacioAltaNueva() {
-    // 1. Quita el candado de bloqueo de lectura a los campos clave para permitir escribir en ellos
+    // 1. Quitamos el candado de bloqueo de lectura a los campos clave
     const camposWrapper = document.getElementById('form-fields-wrapper');
     if (camposWrapper) {
-        // Removemos la clase visual gris de inhabilitado
         const gridBloqueado = camposWrapper.querySelector('.form-grid.text-disabled');
         if (gridBloqueado) gridBloqueado.classList.remove('text-disabled');
         
-        // Convertimos en editables los inputs que antes eran de solo lectura
         document.getElementById('f-curp').removeAttribute('readonly');
         document.getElementById('f-nombre').removeAttribute('readonly');
         document.getElementById('f-paterno').removeAttribute('readonly');
         document.getElementById('f-materno').removeAttribute('readonly');
     }
 
-    // 2. Vaciamos las 23 cajas de texto para una captura limpia desde cero
-    document.getElementById('f-curp').value = '';
-    document.getElementById('f-nombre').value = '';
-    document.getElementById('f-paterno').value = '';
-    document.getElementById('f-materno').value = '';
-    document.getElementById('f-telfijo').value = '';
-    document.getElementById('f-telcel').value = '';
-    document.getElementById('f-municipio').value = currentBrigadistaMunicipio || ''; // Auto-rellena su municipio activo
-    document.getElementById('f-localidad').value = '';
-    document.getElementById('f-seccion').value = '';
-    document.getElementById('f-colonia').value = '';
-    document.getElementById('f-cp').value = '';
-    document.getElementById('f-calle').value = '';
-    document.getElementById('f-numext').value = '';
-    document.getElementById('f-referencia').value = '';
-    document.getElementById('f-causal').value = '';
+    // 2. Vaciamos las cajas para una captura limpia
+    const inputs = ['f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-telfijo', 'f-telcel', 
+                    'f-localidad', 'f-seccion', 'f-colonia', 'f-cp', 'f-calle', 'f-numext', 'f-referencia', 'f-causal'];
+    inputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    
+    // Auto-rellenamos el municipio con el del brigadista activo por defecto para el alta nueva
+    document.getElementById('f-municipio').value = currentBrigadistaMunicipio || ''; 
 
-    // 3. FIRMAS ELECTRÓNICAS DE CONTROL: Indican al Excel que es una fila nueva
+    // 3. Firmas electrónicas de control para indicar fila nueva en el Excel
     document.getElementById('f-id').value = 'NUEVO';
     document.getElementById('f-situacion').value = 'SIN_REGISTRO';
 
-    // 4. Reseteamos los estados del semáforo a valores limpios por defecto
+    // 4. Reseteamos los estados del semáforo
     currentEstatusVisita = "LOCALIZADO";
     motivoNoLocalizadoValue = "";
     actualizarEstilosBotonesFormulario();
 
-    // 5. Encendemos la antena de satélite GPS para georreferenciar el nuevo domicilio
+    // 5. Encendemos la antena de satélite GPS
     document.getElementById('f-lat').value = "Buscando satélite...";
     document.getElementById('f-lon').value = "Buscando satélite...";
 
@@ -534,7 +524,18 @@ function abrirFormularioVacioAltaNueva() {
         );
     }
 
-    // 6. Saltamos de forma fluida hacia la Pantalla 4 del formulario
+    // =========================================================================
+    // DETECTOR EN CALIENTE: Súper validación al terminar de escribir la CURP
+    // =========================================================================
+    const curpInputEl = document.getElementById('f-curp');
+    
+    // Removemos cualquier escuchador viejo para no duplicar alertas
+    curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal);
+    
+    // Encendemos el monitor en tiempo real
+    curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
+
+    // 6. Saltamos a la Pantalla 4 del formulario
     changeScreen('screen-form');
 }
 
