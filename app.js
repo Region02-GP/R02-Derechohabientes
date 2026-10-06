@@ -416,3 +416,91 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));
     });
 }
+// =========================================================================
+// MÓDULO ADICIONAL: ALTA DE NUEVOS DERECHOHABIENTES EN CAMPO
+// =========================================================================
+function abrirFormularioVacioAltaNueva() {
+    // 1. Quita el candado de bloqueo de lectura a los campos clave para permitir escribir en ellos
+    const camposWrapper = document.getElementById('form-fields-wrapper');
+    if (camposWrapper) {
+        // Removemos la clase visual gris de inhabilitado
+        const gridBloqueado = camposWrapper.querySelector('.form-grid.text-disabled');
+        if (gridBloqueado) gridBloqueado.classList.remove('text-disabled');
+        
+        // Convertimos en editables los inputs que antes eran de solo lectura
+        document.getElementById('f-curp').removeAttribute('readonly');
+        document.getElementById('f-nombre').removeAttribute('readonly');
+        document.getElementById('f-paterno').removeAttribute('readonly');
+        document.getElementById('f-materno').removeAttribute('readonly');
+    }
+
+    // 2. Vaciamos las 23 cajas de texto para una captura limpia desde cero
+    document.getElementById('f-curp').value = '';
+    document.getElementById('f-nombre').value = '';
+    document.getElementById('f-paterno').value = '';
+    document.getElementById('f-materno').value = '';
+    document.getElementById('f-telfijo').value = '';
+    document.getElementById('f-telcel').value = '';
+    document.getElementById('f-municipio').value = currentBrigadistaMunicipio || ''; // Auto-rellena su municipio activo
+    document.getElementById('f-localidad').value = '';
+    document.getElementById('f-seccion').value = '';
+    document.getElementById('f-colonia').value = '';
+    document.getElementById('f-cp').value = '';
+    document.getElementById('f-calle').value = '';
+    document.getElementById('f-numext').value = '';
+    document.getElementById('f-referencia').value = '';
+    document.getElementById('f-causal').value = '';
+
+    // 3. FIRMAS ELECTRÓNICAS DE CONTROL: Indican al Excel que es una fila nueva
+    document.getElementById('f-id').value = 'NUEVO';
+    document.getElementById('f-situacion').value = 'SIN_REGISTRO';
+
+    // 4. Reseteamos los estados del semáforo a valores limpios por defecto
+    currentEstatusVisita = "LOCALIZADO";
+    motivoNoLocalizadoValue = "";
+    actualizarEstilosBotonesFormulario();
+
+    // 5. Encendemos la antena de satélite GPS para georreferenciar el nuevo domicilio
+    document.getElementById('f-lat').value = "Buscando satélite...";
+    document.getElementById('f-lon').value = "Buscando satélite...";
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                document.getElementById('f-lat').value = String(position.coords.latitude.toFixed(6)).replace(",", ".");
+                document.getElementById('f-lon').value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
+            },
+            () => { 
+                document.getElementById('f-lat').value = "ERROR";
+                document.getElementById('f-lon').value = "ERROR";
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        );
+    }
+
+    // 6. Saltamos de forma fluida hacia la Pantalla 4 del formulario
+    changeScreen('screen-form');
+}
+
+// MODIFICACIÓN DE SEGURIDAD EN LA FUNCIÓN ORIGINAL OPENFORM:
+// Debes asegurarte de que cuando entres a un registro que SÍ EXISTE de la lista, los campos se vuelvan a bloquear.
+// Busca tu función openForm(item) original y agrégale estas 3 líneas al inicio:
+const originalOpenForm = openForm;
+openForm = function(item) {
+    if (!item) return;
+    // Volvemos a congelar las cajas para edición protegida
+    const camposWrapper = document.getElementById('form-fields-wrapper');
+    if (camposWrapper) {
+        const gridBloqueado = camposWrapper.querySelector('.form-grid');
+        if (gridBloqueado) gridBloqueado.classList.add('text-disabled');
+    }
+    document.getElementById('f-curp').setAttribute('readonly', 'true');
+    document.getElementById('f-id').setAttribute('readonly', 'true');
+    document.getElementById('f-nombre').setAttribute('readonly', 'true');
+    document.getElementById('f-paterno').setAttribute('readonly', 'true');
+    document.getElementById('f-materno').setAttribute('readonly', 'true');
+    document.getElementById('f-situacion').setAttribute('readonly', 'true');
+    document.getElementById('f-causal').setAttribute('readonly', 'true');
+    
+    originalOpenForm(item);
+};
