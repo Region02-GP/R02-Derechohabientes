@@ -563,3 +563,33 @@ openForm = function(item) {
     
     // REMOVIDA LA AUTO-ACTUALIZACIÓN: Se mantiene intacto el municipio que viene desde la base de datos
 };
+// AÑADE ESTA NUEVA FUNCIÓN AL FINAL DE TU ARCHIVO APP.JS:
+function verificarCurpDuplicadaEnTiempoReal(e) {
+    // Limpiamos espacios y caracteres raros mientras escribe
+    const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase();
+    e.target.value = valorLimpio; // Muestra el texto limpio en la caja
+
+    // Cuando llega exactamente a los 18 dígitos de la CURP obligatoria
+    if (valorLimpio.length === 18) {
+        // Buscamos en toda la base local precargada en el teléfono
+        const registroExistente = localMemoryDatabase.find(r => r.CURP === valorLimpio);
+        
+        if (registroExistente) {
+            const confirmarModificacion = confirm(
+                `📢 DETECTOR DE DUPLICADOS: El derechohabiente con la CURP [${valorLimpio}] ya existe en el sistema.\n` +
+                `Registrado en: ${registroExistente.MUNICIPIO || 'SIN ESPECIFICAR'}.\n\n` +
+                `¿Desea detener el alta nueva y cargar sus datos antiguos para actualizar la visita?`
+            );
+            
+            if (confirmarModificacion) {
+                alert("Cargando información histórica en el formulario...");
+                openForm(registroExistente); // Monta el registro viejo y respeta su municipio original
+            } else {
+                // Si decide no modificar, vaciamos la caja de la CURP para obligar a meter una válida
+                e.target.value = '';
+                e.target.focus();
+                alert("Por favor, ingrese una CURP diferente que no esté registrada.");
+            }
+        }
+    }
+}
