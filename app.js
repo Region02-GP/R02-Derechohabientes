@@ -1,28 +1,45 @@
-// URL del Web App de Google Apps Script 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzs2aj0YMBdYa1PcfIIKv390RykvhKGN72dRVE5f4ZjnjhBbTZn18Xsg9lL184we7fK/exec";
+// =========================================================================
+// R02-DERECHOHABIENTES: CONFIGURACIÓN GENERAL Y ESTADO DE LA APP
+// =========================================================================
 
-// CURPs Autorizadas en Código para la Pantalla de Acceso (Pantalla 1)
+// URL del Web App de Google Apps Script 
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqTsx1_NY7U-ynbVKDdgquBcwxyAo7AIU3oEJYbBVXjBaMb7OKdsSAeeDHVXRfmRWG/exec";
+
+// =========================================================================
+// MÓDULO 1: DICCIONARIO DE BRIGADISTAS CON ASIGNACIÓN DE MUNICIPIO
+// =========================================================================
 const AUTHORIZED_CURPS = {
-    "CURPVALIDA12345678": "Juan Pérez López",
-    "CURPVALIDA87654321": "María Gómez García"
+    "CURPVALIDA12345678": {
+        name: "Juan Pérez López",
+        municipio: "GOMEZ PALACIO" // Escribe el municipio tal cual viene en tu Sheets (Mayúsculas/Acentos)
+    },
+    "CURPVALIDA87654321": {
+        name: "María Gómez García",
+        municipio: "MAPIMI"
+    }
 };
 
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
+
+// Estados del usuario firmados localmente
 let currentUser = null;
+let currentBrigadistaMunicipio = ""; // Almacena el municipio del brigadista logueado
+
 let previousScreen = 'screen-welcome';
 
 // VARIABLES PARA LOS BOTONES DE LOCALIZADO / NO LOCALIZADO
 let currentEstatusVisita = "LOCALIZADO"; 
 let motivoNoLocalizadoValue = "";        
 
-// INITIALIZACIÓN DE INDEXEDDB
+// INITIALIZACIÓN DE INDEXEDDB (Base de Datos Local para soporte masivo)
 const DB_NAME = "R02_DB";
 const DB_VERSION = 1;
 const STORE_NAME = "derechohabientes";
 let db;
 
 const request = indexedDB.open(DB_NAME, DB_VERSION);
+
 request.onupgradeneeded = (e) => {
     db = e.target.result;
     if (!db.objectStoreNames.contains(STORE_NAME)) {
@@ -31,10 +48,12 @@ request.onupgradeneeded = (e) => {
         store.createIndex("by_calle", "CALLE", { unique: false });
     }
 };
+
 request.onsuccess = (e) => { 
     db = e.target.result; 
-    updateLocalCounter(); 
+    updateLocalCounter();
 };
+
 request.onerror = (e) => { console.error("Error IndexedDB:", e.target.error); };
 
 function updateLocalCounter() {
@@ -45,8 +64,7 @@ function updateLocalCounter() {
         if (countElement) countElement.innerText = countRequest.result;
     };
 }
-
-// CONTROL DE CAMBIO DE PANTALLAS CON CANDADO INLINE STYLE PARA LA BARRA INFERIOR
+// NAVEGACIÓN GENERAL ENTRE PANTALLAS
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
@@ -63,27 +81,26 @@ function changeScreen(screenId) {
     if (screenId === 'screen-login' || screenId === 'screen-form') {
         bottomNav.style.setProperty('display', 'none', 'important');
         bottomNav.classList.add('hidden');
-     } else {
+    } else {
         bottomNav.style.setProperty('display', 'flex', 'important');
         bottomNav.classList.remove('hidden');
         
-        // Quita el estado activo de todos los botones de la barra inferior
         document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => btn.classList.remove('active'));
-        
-        // AGREGA LA CLASE active AL BOTÓN CORRESPONDIENTE DE LA BARRA INFERIOR
         if (screenId === 'screen-welcome') document.getElementById('nav-welcome').classList.add('active');
         if (screenId === 'screen-search') document.getElementById('nav-search').classList.add('active');
         if (screenId === 'screen-history') document.getElementById('nav-history').classList.add('active');
     }
 }
 
-// =========================================================================
-// MÓDULO 2: PANTALLA 1 (LOGIN) Y PANTALLA 2 (DESCARGA)
-// =========================================================================
+// CORRECCIÓN DEL LOGIN: Captura el nombre y el municipio asignado de forma instantánea
 function login() {
     const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
-    if (AUTHORIZED_CURPS[curpInput]) {
-        currentUser = { curp: curpInput, name: AUTHORIZED_CURPS[curpInput] };
+    const brigadistaEncontrado = AUTHORIZED_CURPS[curpInput];
+    
+    if (brigadistaEncontrado) {
+        currentUser = { curp: curpInput, name: brigadistaEncontrado.name };
+        currentBrigadistaMunicipio = brigadistaEncontrado.municipio.toUpperCase().trim(); // Firma el territorio del usuario
+        
         document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
         changeScreen('screen-welcome');
     } else {
@@ -132,9 +149,7 @@ async function downloadAllDataMassive() {
         progressText.innerText = `¡Descarga completa! ${totalCargados} registros listos.`;
         updateLocalCounter(); 
         alert(`Éxito: Se guardaron ${totalCargados} registros.`);
-    } catch (error) {
-        alert(`Error: ${error.message}`);
-    } finally { btn.disabled = false; }
+    } catch (error) { alert(`Error: ${error.message}`); } finally { btn.disabled = false; }
 }
 let localMemoryDatabase = [];
 function preloadDatabaseToMemory() {
@@ -144,6 +159,7 @@ function preloadDatabaseToMemory() {
     };
 }
 
+// CORRECCIÓN DE BÚSQUEDA: Candado geográfico estricto por Municipio asignado
 function searchData() {
     const query = document.getElementById('search-input').value.toLowerCase().trim();
     const resultsContainer = document.getElementById('search-results');
@@ -156,6 +172,15 @@ function searchData() {
     for (let i = 0; i < localMemoryDatabase.length; i++) {
         const item = localMemoryDatabase[i];
         if (!item) continue;
+
+        // FILTRO GEOGRÁFICO: Extrae el municipio del derechohabiente actual
+        const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
+
+        // Si el municipio del registro NO COINCIDE con el del brigadista, se lo salta y no lo muestra
+        if (municipioDerechohabiente !== currentBrigadistaMunicipio) {
+            continue; 
+        }
+
         const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''}`.toLowerCase();
         if (searchTokens.every(t => combinedText.includes(t))) matchedRecords.push(item);
     }
@@ -208,17 +233,14 @@ function seleccionarEstatusVisita(estatus) {
             return; 
         }
         motivoNoLocalizadoValue = mot.trim();
-    } else { 
-        motivoNoLocalizadoValue = ""; 
-    }
+    } else { motivoNoLocalizadoValue = ""; }
     actualizarEstilosBotonesFormulario();
 }
 
-// CANDADO AGREGADO: Valida si los botones existen antes de pintarlos (Evita colapso en Pantalla 1)
 function actualizarEstilosBotonesFormulario() {
     const btnLoc = document.getElementById('btn-status-localizado');
     const btnNoLoc = document.getElementById('btn-status-nolocalizado');
-    if (!btnLoc || !btnNoLoc) return; // Si la pantalla 4 está oculta, aborta sin romper la app
+    if (!btnLoc || !btnNoLoc) return;
 
     if (currentEstatusVisita === "LOCALIZADO") {
         btnLoc.style.backgroundColor = "#E6F4EA";
@@ -226,7 +248,6 @@ function actualizarEstilosBotonesFormulario() {
         btnLoc.style.color = "#137333";
         btnLoc.style.boxShadow = "0 4px 12px rgba(19, 115, 51, 0.25), inset 0 2px 4px rgba(255,255,255,0.6)";
         btnLoc.style.transform = "scale(1.02)";
-        
         btnNoLoc.style.backgroundColor = "#F3F4F6";
         btnNoLoc.style.borderColor = "#CBD5E0";
         btnNoLoc.style.color = "#9CA3AF";
@@ -238,7 +259,6 @@ function actualizarEstilosBotonesFormulario() {
         btnNoLoc.style.color = "#C5221F";
         btnNoLoc.style.boxShadow = "0 4px 12px rgba(197, 34, 31, 0.25), inset 0 2px 4px rgba(255,255,255,0.6)";
         btnNoLoc.style.transform = "scale(1.02)";
-        
         btnLoc.style.backgroundColor = "#F3F4F6";
         btnLoc.style.borderColor = "#CBD5E0";
         btnLoc.style.color = "#9CA3AF";
@@ -268,8 +288,6 @@ function openForm(item) {
 
     currentEstatusVisita = item['ESTATUS_VISITA'] || "LOCALIZADO";
     motivoNoLocalizadoValue = item['MOTIVO_NO_LOCALIZADO'] || "";
-
-    // Pinta con alto contraste el botón correspondiente al cargar la Pantalla 4
     actualizarEstilosBotonesFormulario();
 
     document.getElementById('f-lat').value = "Buscando satélite...";
@@ -322,6 +340,7 @@ function saveData(event) {
     localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
     changeScreen('screen-search');
 }
+
 function openHistoryScreen() {
     changeScreen('screen-history');
     document.getElementById('pending-count').innerText = pendingSync.length;
