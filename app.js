@@ -2,17 +2,6 @@
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzz3Tm3UPhwyv1c8fJRjCrFw3QlvAZz03lz3gy1pigLXwEheDl3JHVTCYUHfaNvOC2E/exec";
 
 
-async function downloadAllDataMassive() {
-    const btn = document.getElementById('btn-massive-download');
-    const progressContainer = document.getElementById('progress-container');
-    const progressBar = document.getElementById('progress-bar');
-    const progressText = document.getElementById('progress-text');
-    if (!db) return alert("La base de datos local aún no está lista.");
-    
-    btn.disabled = true;
-    progressContainer.style.display = "block";
-    let offset = 0, limit = 10000, isDone = false, totalCargados = 0;
-
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
 let currentUser = null;
@@ -24,6 +13,7 @@ const DB_NAME = "R02_DB";
 const DB_VERSION = 1;
 const STORE_NAME = "derechohabientes";
 let db;
+
 const request = indexedDB.open(DB_NAME, DB_VERSION);
 request.onupgradeneeded = (e) => {
     db = e.target.result;
@@ -51,6 +41,7 @@ function updateLocalCounter() {
         document.getElementById('pending-count').innerText = pendingSync.length;
     }
 }
+
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
@@ -79,7 +70,7 @@ function changeScreen(screenId) {
 
 function login() {
     const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
-    const brigadistaEncontrado = AUTHORIZED_CURPS[curpInput]; // Lee desde brigadistas.js externo
+    const brigadistaEncontrado = AUTHORIZED_CURPS[curpInput]; // Lee desde brigadistas.js
     if (brigadistaEncontrado) {
         currentUser = { curp: curpInput, name: brigadistaEncontrado.name };
         document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
@@ -132,6 +123,7 @@ async function downloadAllDataMassive() {
         alert(`Éxito: Se guardaron ${totalCargados} registros.`);
     } catch (error) { alert(`Error: ${error.message}`); } finally { btn.disabled = false; }
 }
+
 let localMemoryDatabase = [];
 function preloadDatabaseToMemory() {
     if (!db) return;
