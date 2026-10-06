@@ -1,11 +1,7 @@
-// =========================================================================
-// R02-DERECHOHABIENTES: CONFIGURACIÓN GENERAL Y ESTADO DE LA APP
-// =========================================================================
-
 // URL del Web App de Google Apps Script 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzz3Tm3UPhwyv1c8fJRjCrFw3QlvAZz03lz3gy1pigLXwEheDl3JHVTCYUHfaNvOC2E/exec";
 
-// DICCIONARIO OFICIAL DE BRIGADISTAS CON MUNICIPIO DE OPERACIÓN (130 REGISTROS)
+// DICCIONARIO OFICIAL DE BRIGADISTAS CON MUNICIPIO DE OPERACIÓN
 const AUTHORIZED_CURPS = {
     "AACG640516MCLLRD01": { name: "ALVARADO CORDERO MARIA GUADALUPE", municipio: "GÓMEZ PALACIO" },
     "AAGS650227MDGNLN04": { name: "ANDRADE GALLEGOS SANDRA GABRIELA", municipio: "GÓMEZ PALACIO" },
@@ -16,9 +12,6 @@ const AUTHORIZED_CURPS = {
     "AEGC860822MDGRNR01": { name: "ARREDONDO GONZALEZ CARMEN ESPERANZA", municipio: "EL ORO" },
     "AEHS770422MCLRRN07": { name: "ARREOLA HERNANDEZ SANDRA LETICIA", municipio: "GÓMEZ PALACIO" },
     "AOGS731028MCLRNN06": { name: "ARZOLA GONZALEZ SONIA", municipio: "GÓMEZ PALACIO" },
-    "AAMR590803HDGVCB02": { name: "AVALOS MACHADO ROBERTO", municipio: "TLAHUALILO" },
-    "AAMR590803HDGMRR08": { name: "AVALOS MACHADO ROBERTO", municipio: "TLAHUALILO" },
-    "AAMR590803HDGVCB02": { name: "AVALOS MACHADO ROBERTO", municipio: "TLAHUALILO" },
     "AAMR590803HDGVCS01": { name: "AVALOS MACHADO ROBERTO", municipio: "TLAHUALILO" },
     "AAZS921017MDGYVL03": { name: "AYALA ZAVALA SELMA MARGARITA", municipio: "GUANACEVI" },
     "BAGH020602HDGRRCA0": { name: "BARBOZA GARCIA HECTOR JAIR", municipio: "GÓMEZ PALACIO" },
@@ -96,21 +89,21 @@ const AUTHORIZED_CURPS = {
     "MOCY871212MCHLSZ06": { name: "MOLINA CASTILLO YAZMIN", municipio: "OCAMPO" },
     "MODV821010MDGNZR05": { name: "MONARREZ DIAZ MARIA VERONICA", municipio: "EL ORO" },
     "MOAM711217MDGRNR10": { name: "MORENO ANDRADE MARTHA PATRICIA", municipio: "GÓMEZ PALACIO" },
-    "MOMM650530MDGRXR00": { name: "MORILLON MU|OZ MARTHA LETICIA", municipio: "GÓMEZ PALACIO" },
-    "MUQA511002HOCXRN08": { name: "MU|OZ QUIROZ ANGEL", municipio: "EL ORO" },
-    "MUSS970205HDGXSN06": { name: "MU|OZ SOSA JOSE SANTIAGO", municipio: "GÓMEZ PALACIO" },
+    "MOMM650530MDGRXR00": { name: "MORILLON MUÑOZ MARTHA LETICIA", municipio: "GÓMEZ PALACIO" },
+    "MUQA511002HOCXRN08": { name: "MUÑOZ QUIROZ ANGEL", municipio: "EL ORO" },
+    "MUSS970205HDGXSN06": { name: "MUÑOZ SOSA JOSE SANTIAGO", municipio: "GÓMEZ PALACIO" },
     "NAGY980110HCLJRM05": { name: "NAJERA GARCIA YAMIL", municipio: "GÓMEZ PALACIO" },
     "NAHK921126MDGJRR01": { name: "NAJERA HERNANDEZ KARLA JANETH", municipio: "GÓMEZ PALACIO" },
     "NAHM930114MDGVRG09": { name: "NAVARRETE HERRERA MAGALI", municipio: "SAN BERNARDO" },
-    "NAST690922MDGVXM09": { name: "NAVARRETE SIA|EZ TOMASA", municipio: "EL ORO" },
-    "NIEE680116MCLXSL08": { name: "NI|O ESTRELLA MARIA ELENA", municipio: "GÓMEZ PALACIO" },
+    "NAST690922MDGVXM09": { name: "NAVARRETE SIAÑEZ TOMASA", municipio: "EL ORO" },
+    "NIEE680116MCLXSL08": { name: "NIÑO ESTRELLA MARIA ELENA", municipio: "GÓMEZ PALACIO" },
     "OISE800627HCLLFN09": { name: "OLIVO SIFUENTES ENRIQUE", municipio: "GÓMEZ PALACIO" },
     "OIUM780129HDGRZN08": { name: "ORTIZ UZQUIANO JOSE MANUEL", municipio: "GÓMEZ PALACIO" },
     "PARJ560313HJCCBS09": { name: "PACHECO ROBLES JUSTINO ENRIQUE", municipio: "GÓMEZ PALACIO" },
     "PAGG700212MDGDRD09": { name: "PADILLA GARCIA MARIA GUADALUPE", municipio: "GÓMEZ PALACIO" },
     "PAGG941107MDGLTD05": { name: "PALMA GUTIERREZ MA GUADALUPE", municipio: "INDE" },
     "PACA730706HDGLRR08": { name: "PALOMO CORONADO ARISTEO", municipio: "GÓMEZ PALACIO" },
-    "PECL820309MDGXNC04": { name: "PE|A CANO MARIA LUCINA", municipio: "INDE" },
+    "PECL820309MDGXNC04": { name: "PEÑA CANO MARIA LUCINA", municipio: "INDE" },
     "PEAJ950611HDGRLN07": { name: "PEREZ ALANIS JONATHAN", municipio: "GÓMEZ PALACIO" },
     "PETM810125HDGRVR08": { name: "PEREZ TOVAR MARIO ALBERTO", municipio: "GÓMEZ PALACIO" },
     "PIDR730501MDGLRS00": { name: "PILLADO DURAN ROSA MARIA", municipio: "SAN BERNARDO" },
@@ -129,15 +122,15 @@ const AUTHORIZED_CURPS = {
     "ROCF950113MDGDRL02": { name: "RODRIGUEZ DE LA CRUZ FLOR IVET", municipio: "HIDALGO" },
     "ROEC820112MDGDSL03": { name: "RODRIGUEZ ESQUIVEL CELIA", municipio: "GÓMEZ PALACIO" },
     "ROFG661114MCLDRB04": { name: "RODRIGUEZ FERRER GABRIELA DEL PILAR", municipio: "GÓMEZ PALACIO" },
-    "RONA881008MDGDXL06": { name: "RODRIGUEZ NU|EZ ALMA ANGELICA", municipio: "EL ORO" },
-    "RONF800311MDGDXL07": { name: "RODRIGUEZ NU|EZ FLOR AIDE", municipio: "EL ORO" },
+    "RONA881008MDGDXL06": { name: "RODRIGUEZ NUÑEZ ALMA ANGELICA", municipio: "EL ORO" },
+    "RONF800311MDGDXL07": { name: "RODRIGUEZ NUÑEZ FLOR AIDE", municipio: "EL ORO" },
     "RORL740912HDGDYS06": { name: "RODRIGUEZ REYES LUIS", municipio: "GÓMEZ PALACIO" },
     "ROSN991026MDGDLD02": { name: "RODRIGUEZ SALAZAR NADIA", municipio: "GÓMEZ PALACIO" },
     "ROSJ940130HCLDNS03": { name: "RODRIGUEZ SANCHEZ JESUS GUADALUPE", municipio: "GÓMEZ PALACIO" },
     "ROSL761013MCLDNR18": { name: "RODRIGUEZ SANCHEZ LAURA CECILIA", municipio: "GÓMEZ PALACIO" },
     "ROMB941121MCHJZR09": { name: "ROJAS MAZUCA BRENDA PATRICIA", municipio: "GÓMEZ PALACIO" },
     "SASA960229MDGLMN02": { name: "SALAS SAMANIEGO ANA BEATRIZ", municipio: "GÓMEZ PALACIO" },
-    "SAAD830130MDGLRL08": { name: "SALAZAR ARO|A DULCE LILIANA", municipio: "GÓMEZ PALACIO" },
+    "SAAD830130MDGLRL08": { name: "SALAZAR AROÑA DULCE LILIANA", municipio: "GÓMEZ PALACIO" },
     "SARA010403MCHLCZA3": { name: "SALAZAR ROCHA AZUL MICHELLE", municipio: "GÓMEZ PALACIO" },
     "SASA730417MDGNRN01": { name: "SANTOYO SERRATO ANA LILIA", municipio: "GÓMEZ PALACIO" },
     "SAMA010201MCLCRLA1": { name: "SAUCEDO MARTINEZ ALEJANDRA VIRIDIANA", municipio: "GÓMEZ PALACIO" },
@@ -155,16 +148,13 @@ let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
 let currentUser = null;
 let currentBrigadistaMunicipio = ""; 
 let previousScreen = 'screen-welcome';
-
 let currentEstatusVisita = "LOCALIZADO"; 
 let motivoNoLocalizadoValue = "";        
-
 const DB_NAME = "R02_DB";
 const DB_VERSION = 1;
 const STORE_NAME = "derechohabientes";
 let db;
 
-// REEMPLAZA TU BLOQUE DE INICIALIZACIÓN DE INDEXEDDB POR ESTA VERSIÓN CON PRECARGA COMPILADA:
 const request = indexedDB.open(DB_NAME, DB_VERSION);
 request.onupgradeneeded = (e) => {
     db = e.target.result;
@@ -174,45 +164,14 @@ request.onupgradeneeded = (e) => {
         store.createIndex("by_calle", "CALLE", { unique: false });
     }
 };
-
-// Al abrir con éxito la base interna del teléfono, alimentamos la RAM en caliente
 request.onsuccess = (e) => { 
     db = e.target.result; 
     updateLocalCounter(); 
-    preloadDatabaseToMemory(); // ¡AQUÍ ESTÁ LA SOLUCIÓN! Sube los registros a la RAM al abrir la app
 };
 request.onerror = (e) => { console.error("Error IndexedDB:", e.target.error); };
 
 function updateLocalCounter() {
     if (!db) return;
-    const countRequest = db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).count();
-    countRequest.onsuccess = () => {
-        const countElement = document.getElementById('local-db-count');
-        if (countElement) countElement.innerText = countRequest.result;
-    };
-    
-    // Alimenta el Panel de Resumen Ejecutivo de la Pantalla 2
-    const totalVisitasHoy = pendingSync.length + (syncedHistory ? syncedHistory.length : 0);
-    const pendientesPorSubir = pendingSync.length;
-
-    const elTotalVisitas = document.getElementById('metric-total-visitas');
-    const elPendientesVisitas = document.getElementById('metric-pendientes-visitas');
-    
-    if (elTotalVisitas) elTotalVisitas.innerText = totalVisitasHoy;
-    if (elPendientesVisitas) elPendientesVisitas.innerText = pendientesPorSubir;
-
-    const elContadorHistorial = document.getElementById('pending-count');
-    if (elContadorHistorial) elContadorHistorial.innerText = pendientesPorSubir;
-}
-
-request.onsuccess = (e) => { 
-    db = e.target.result; 
-    updateLocalCounter();
-};
-request.onerror = (e) => { console.error("Error IndexedDB:", e.target.error); };
-function updateLocalCounter() {
-    if (!db) return;
-    
     const countRequest = db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).count();
     countRequest.onsuccess = () => {
         const countElement = document.getElementById('local-db-count');
@@ -231,13 +190,13 @@ function updateLocalCounter() {
     const elContadorHistorial = document.getElementById('pending-count');
     if (elContadorHistorial) elContadorHistorial.innerText = pendientesPorSubir;
 }
-
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
     if (screenId === 'screen-welcome') updateLocalCounter(); 
     
     document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
+    
     const targetScreen = document.getElementById(screenId);
     if (targetScreen) targetScreen.classList.remove('hidden');
 
@@ -258,18 +217,12 @@ function changeScreen(screenId) {
     }
 }
 
-// REEMPLAZA TU FUNCIÓN LOGIN POR ESTA VERSIÓN CON DISPARO GEOGRÁFICO:
 function login() {
     const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
     const brigadistaEncontrado = AUTHORIZED_CURPS[curpInput];
-    
     if (brigadistaEncontrado) {
         currentUser = { curp: curpInput, name: brigadistaEncontrado.name };
-        currentBrigadistaMunicipio = brigadistaEncontrado.municipio.toUpperCase().trim(); // Bloquea su territorio
-        
-        // Ejecuta la precarga asíncrona de seguridad en la RAM justo al entrar
-        preloadDatabaseToMemory(); 
-        
+        currentBrigadistaMunicipio = brigadistaEncontrado.municipio.toUpperCase().trim();
         document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
         changeScreen('screen-welcome');
     } else {
@@ -315,21 +268,13 @@ async function downloadAllDataMassive() {
             offset = data.nextOffset || (offset + limit);
             progressBar.style.width = `${Math.min(100, Math.round((offset / 25000) * 100))}%`;
         }
-        // BUSCA EL FINAL DE TU FUNCIÓN downloadAllDataMassive EN TU ARCHIVO Y ASEGÚRATE QUE TERMINE ASÍ:
         progressText.innerText = `¡Descarga completa! ${totalCargados} registros listos.`;
-        
-        // Obliga al teléfono a rellenar la RAM con los datos recién bajados de Google
-        preloadDatabaseToMemory(); 
         updateLocalCounter(); 
-        
         alert(`Éxito: Se guardaron ${totalCargados} registros.`);
-    } catch (error) { 
-        alert(`Error: ${error.message}`); 
-    } finally { 
-        btn.disabled = false; 
-    }
+    } catch (error) {
+        alert(`Error: ${error.message}`);
+    } finally { btn.disabled = false; }
 }
-
 let localMemoryDatabase = [];
 function preloadDatabaseToMemory() {
     if (!db) return;
@@ -351,6 +296,7 @@ function searchData() {
         const item = localMemoryDatabase[i];
         if (!item) continue;
 
+        // FILTRADO GEOGRÁFICO NATIVO RECUPERADO DE TU VERSIÓN ADJUNTA
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== currentBrigadistaMunicipio) {
             continue; 
@@ -526,6 +472,7 @@ function saveData(event) {
         changeScreen('screen-search');
     };
 }
+
 function abrirFormularioVacioAltaNueva() {
     const camposWrapper = document.getElementById('form-fields-wrapper');
     if (camposWrapper) {
@@ -557,7 +504,6 @@ function abrirFormularioVacioAltaNueva() {
     curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
     changeScreen('screen-form');
 }
-
 function verificarCurpDuplicadaEnTiempoReal(e) {
     const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase();
     e.target.value = valorLimpio; 
