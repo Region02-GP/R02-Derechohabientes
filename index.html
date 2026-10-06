@@ -2,81 +2,73 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   
     <title>R02-Derechohabientes</title>
     <link rel="stylesheet" href="styles.css">
-    <link class="manifest-link" rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
 
-    <!-- ENCABEZADO GLOBAL ANCLADO ARRIBA (PISO 1 DEL GRID LAYOUT) -->
-    <header class="main-header">
-        <div class="header-brand-wrapper">
-            <img src="https://postimg.cc" alt="Logotipo Institucional" class="header-logo">
-            <h1>R02-Derechohabientes</h1>
-        </div>
-    </header>
+  <!-- BUSCA TU <header class="main-header"> Y REEMPLÁZALO POR COMPLETO CON ESTO: -->
+<header class="main-header">
+    <div class="header-brand-wrapper">
+        <img src="https://pub.bienestar.gob.mx/static/media/padrones01.e4252fd6.jpg" alt="Logotipo Institucional" class="header-logo">
+        
+    </div>
+</header>
+
 
     <main class="app-container">
         
-        <!-- PANTALLA 1: ACCESO "CASA POR CASA" (MANTIENE TU LOGIC LOGIN) -->
-        <section id="screen-login" class="app-screen active">
-            <div class="screen-number-badge">Pantalla 1</div>
-            
-            <h1 style="font-size: 20px; text-align: center; margin-top: 5px; margin-bottom: 5px;">Sistema de actualización de datos</h1>
-            <div class="screen-toolbar" style="margin-bottom: 15px;">
-                <h2>R02-GOMEZ PALACIO</h2>
+        <!-- BUSCA TU <section id="screen-login"> Y REEMPLÁZALO POR COMPLETO CON ESTO: -->
+        
+<section id="screen-login" class="app-screen" style="position: relative;">
+        <h1>Sistema de actualizacion de datos</h1>
+    <div class="screen-toolbar">
+              <h2>R02-GOMEZ PALACIO</h2>
             </div>
-
-            <div class="banner-container">
-                <img class="banner-img" alt="Casa por casa" src="https://postimg.cc">
-            </div>
-
-            <h2>Acceso</h2>
-            <div class="subtitle">Validación de Brigadistas</div>
-            <div class="form-group" style="margin-top: 15px;">
-                <label for="login-curp">Ingrese su CURP Autorizada *</label>
-                <input type="text" id="login-curp" maxlength="18" placeholder="18 dígitos" style="text-transform:uppercase">
-            </div>
-            <button type="button" class="btn-guinda" onclick="login()">Ingresar</button>
+    <section id="screen-login" class="app-screen" style="position: relative;">
+    <h2>Acceso al Sistema</h2>
+    <div class="form-group">
+        <label for="login-curp">Ingrese su CURP Autorizada:</label>
+        <input type="text" id="login-curp" maxlength="18" placeholder="18 dígitos" style="text-transform:uppercase">
+    </div>
         </section>
+    <button type="button" onclick="login()">Ingresar</button>
+</section>
 
-        <!-- PANTALLA 2: BIENVENIDA Y CONTADOR OFFLINE -->
-        <section id="screen-welcome" class="app-screen">
-            <div class="screen-number-badge">Pantalla 2</div>
+
+        <!-- PANTALLA 2: BIENVENIDA Y CARGA TOTAL MASIVA INDEXADA -->
+        <section id="screen-welcome" class="app-screen hidden">
             <div class="screen-toolbar">
                 <h2 id="welcome-message">Bienvenido</h2>
             </div>
-            <div class="subtitle">Servidor de la Nación</div>
 
-            <div class="metrics-grid" style="margin-top: 10px;">
-                <div class="metric-card">
-                    <span class="metric-lbl">Registros cargados en el teléfono</span>
-                    <span id="local-db-count" class="metric-val">0</span>
-                </div>
-            </div>
-
-            <div class="card">
+            <div class="card" style="margin-top: 15px;">
                 <h3>Sincronización Inicial de Base de Datos</h3>
-                <p style="font-size:13px; color:#1a1a1a; margin-bottom:15px; font-weight: bold;">Descarga los registros al teléfono para trabajar totalmente sin internet en campo.</p>
+                
+                <p style="font-size:14px; font-weight:bold; color:var(--primary-color); margin-bottom:12px; background:#f7fafc; padding:8px; border-radius:6px; border-left:4px solid var(--primary-color);">
+                    📊 Registros cargados en el teléfono: <span id="local-db-count">0</span>
+                </p>
+
+                <p style="font-size:13px; color:#555; margin-bottom:15px;">Descarga los registros al teléfono para trabajar totalmente sin internet en campo.</p>
                 
                 <div id="progress-container" style="display:none; background:#eee; border-radius:4px; margin:10px 0; padding:2px;">
-                    <div id="progress-bar" style="background:#66001c; width:0%; height:15px; border-radius:2px; transition:width 0.2s;"></div>
+                    <div id="progress-bar" style="background:var(--primary-color); width:0%; height:15px; border-radius:4px; transition:width 0.2s;"></div>
                 </div>
-                <p id="progress-text" style="font-size:12px; font-weight:bold; color:#66001c; margin-bottom:15px;"></p>
+                <p id="progress-text" style="font-size:12px; font-weight:bold; color:var(--primary-color); margin-bottom:15px;"></p>
 
                 <button type="button" onclick="downloadAllDataMassive()" id="btn-massive-download" class="btn-secondary">📥 Descargar Base Completa</button>
             </div>
         </section>
         <!-- PANTALLA 3: BUSCADOR MULTI-CRITERIO EN MEMORIA RAM CACHÉ -->
-        <section id="screen-search" class="app-screen">
-            <div class="screen-number-badge">Pantalla 3</div>
+        <section id="screen-search" class="app-screen hidden">
             <div class="screen-toolbar">
                 <h2>Búsqueda</h2>
             </div>
-            <div class="subtitle">Buscador Flexible Offline</div>
 
-            <div class="form-group" style="margin-top: 10px;">
+            <div class="form-group" style="margin-top: 15px;">
                 <input type="text" id="search-input" oninput="searchData()" placeholder="Buscar por Calle, Nombre, CURP o Apellidos...">
             </div>
             
@@ -84,25 +76,29 @@
         </section>
 
         <!-- PANTALLA 4: FORMULARIO DE EDICIÓN, ESTATUS DE VISITA Y CAPTURA GPS -->
-        <section id="screen-form" class="app-screen">
-            <div class="screen-number-badge">Pantalla 4</div>
+        <section id="screen-form" class="app-screen hidden">
             <h2>Actualización de Domicilio</h2>
-            <div class="subtitle">Captura de Visita en Campo</div>
             
-            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button type="button" id="btn-status-localizado" onclick="seleccionarEstatusVisita('LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 4px; border: 1px solid #1a1a1a; cursor: pointer; transition: all 0.2s;">
-                    LOCALIZADO
-                </button>
-                <button type="button" id="btn-status-nolocalizado" onclick="seleccionarEstatusVisita('NO LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 4px; border: 1px solid #1a1a1a; cursor: pointer; transition: all 0.2s;">
-                    NO LOCALIZADO
-                </button>
-            </div>
+<!-- BUSCA TUS DOS BOTONES EN EL INDEX.HTML Y REEMPLÁZALOS EXACTAMENTE POR ESTOS: -->
+<div style="display: flex; gap: 10px; margin-bottom: 15px;">
+    <button type="button" id="btn-status-localizado" onclick="seleccionarEstatusVisita('LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s;">
+        LOCALIZADO
+    </button>
+    <button type="button" id="btn-status-nolocalizado" onclick="seleccionarEstatusVisita('NO LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s;">
+        NO LOCALIZADO
+    </button>
+</div>
+
+<!-- Campo oculto para almacenar el motivo de forma segura sin romper tu diseño -->
+<input type="hidden" id="f-motivo" value="">
+
+
+
 
             <input type="hidden" id="f-motivo" value="">
 
             <form id="edit-form" onsubmit="saveData(event)">
                 <div id="form-fields-wrapper">
-                    <h3>Datos del Derechohabiente (No Editables)</h3>
                     <div class="form-grid text-disabled">
                         <div><label>CURP:</label><input type="text" id="f-curp" readonly></div>
                         <div><label>ID:</label><input type="text" id="f-id" readonly></div>
@@ -112,8 +108,8 @@
                         <div><label>Situación:</label><input type="text" id="f-situacion" readonly></div>
                         <div><label>Causal:</label><input type="text" id="f-causal" readonly></div>
                     </div>
+                    <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
                     
-                    <h3>Domicilio y Contacto (Editables)</h3>
                     <div class="form-group">
                         <label>Teléfono Fijo (10 dígitos):</label>
                         <input type="tel" id="f-telfijo" pattern="[0-9]{10}" maxlength="10">
@@ -156,46 +152,51 @@
                     </div>
                 </div>
 
-                <h3>Georreferencia Satelital</h3>
+                <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+                
                 <div class="form-grid text-disabled">
                     <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
                     <div><label>Longitud GPS:</label><input type="text" id="f-lon" readonly></div>
                 </div>
 
-                <button type="submit" class="btn-guinda" style="margin-top: 20px;">Guardar Localmente</button>
+                <button type="submit" style="margin-top: 20px;">Guardar Localmente</button>
                 <button type="button" onclick="changeScreen('screen-search')" class="btn-back">Cancelar</button>
             </form>
         </section>
-        <!-- PANTALLA 5: HISTORIAL, CONTROL OFFLINE Y REPORTES -->
-        <section id="screen-history" class="app-screen">
-            <div class="screen-number-badge">Pantalla 5</div>
+        <!-- PANTALLA 5: HISTORIAL, CONTROL OFFLINE Y REPORTES EXCEL/CSV -->
+        <section id="screen-history" class="app-screen hidden">
             <h2>Historial y Sincronización</h2>
-            <div class="subtitle">Control de Bitácora Local</div>
+            <div class="metrics" style="background:#f7fafc; padding:15px; border-radius:4px; margin-bottom:15px; border-left:4px solid var(--primary-color);">
+                <p style="margin:0; font-size:15px;">Cambios pendientes por subir: <strong id="pending-count">0</strong></p>
+            </div>
             
-            <div class="status-box">📂 Visitas pendientes por sincronizar: <strong id="pending-count">0</strong></div>
-            
-            <button type="button" onclick="syncWithSheets()" class="btn-guinda">🔄 Sincronizar con Google Sheets</button>
-            <div class="button-row-grid">
-                <button type="button" onclick="downloadBackupCSV()" class="btn-excel-gold">📊 Descargar Avance</button>
-                <button type="button" onclick="clearLocalStorage()" class="btn-danger">🗑️ Borrar Datos</button>
+            <div class="action-buttons-stack">
+                <button type="button" onclick="syncWithSheets()" class="btn-primary-guinda">🔄 Sincronizar con Google Sheets</button>
+                <div class="button-row-grid">
+                    <button type="button" onclick="downloadBackupCSV()" class="btn-excel-gold" style="margin-top:0;">📊 Descargar Avance</button>
+                    <button type="button" onclick="clearLocalStorage()" class="btn-excel-gold" style="margin-top:0;">🗑️ Borrar Datos</button>
+                </div>
             </div>
 
+            <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
             <h3>Registro de Visitas del Día</h3>
             <div id="history-log" class="log-list"></div>
         </section>
 
-        <!-- TU MENÚ INFERIOR ORIGINAL FIJO EN EL PISO 3 DEL GRID -->
-        <nav id="app-bottom-nav" class="bottom-nav hidden">
-            <button type="button" id="nav-welcome" onclick="changeScreen('screen-welcome')" class="nav-item">
-                <span>📥</span>Inicio
-            </button>
-            <button type="button" id="nav-search" onclick="changeScreen('screen-search')" class="nav-item">
-                <span>🔍</span>Búsqueda
-            </button>
-            <button type="button" id="nav-history" onclick="openHistoryScreen()" class="nav-item">
-                <span>📋</span>Historial
-            </button>
-        </nav>
+        <!-- BARRA DE NAVEGACIÓN INFERIOR DINÁMICA DE TRES BOTONES -->
+       <!-- BUSCA LA ETIQUETA <nav id="app-bottom-nav"> Y DÉJALA ASÍ (CON LA CLASE hidden AGREGADA): -->
+<nav id="app-bottom-nav" class="bottom-nav hidden">
+    <button type="button" id="nav-welcome" onclick="changeScreen('screen-welcome')" class="nav-item">
+        <span>📥</span>Inicio
+    </button>
+    <button type="button" id="nav-search" onclick="changeScreen('screen-search')" class="nav-item">
+        <span>🔍</span>Búsqueda
+    </button>
+    <button type="button" id="nav-history" onclick="openHistoryScreen()" class="nav-item">
+        <span>📋</span>Historial
+    </button>
+</nav>
+
 
     </main>
 
