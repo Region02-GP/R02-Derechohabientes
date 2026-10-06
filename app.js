@@ -1,19 +1,16 @@
 // URL del Web App de Google Apps Script 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzz3Tm3UPhwyv1c8fJRjCrFw3QlvAZz03lz3gy1pigLXwEheDl3JHVTCYUHfaNvOC2E/exec";
-
-
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
 let currentUser = null;
-let currentBrigadistaMunicipio = ""; 
 let previousScreen = 'screen-welcome';
 let currentEstatusVisita = "LOCALIZADO"; 
 let motivoNoLocalizadoValue = "";        
+
 const DB_NAME = "R02_DB";
 const DB_VERSION = 1;
 const STORE_NAME = "derechohabientes";
 let db;
-
 const request = indexedDB.open(DB_NAME, DB_VERSION);
 request.onupgradeneeded = (e) => {
     db = e.target.result;
@@ -26,9 +23,10 @@ request.onupgradeneeded = (e) => {
 request.onsuccess = (e) => { 
     db = e.target.result; 
     updateLocalCounter(); 
-    preloadDatabaseToMemory(); 
+    preloadDatabaseToMemory();
 };
 request.onerror = (e) => { console.error("Error IndexedDB:", e.target.error); };
+
 function updateLocalCounter() {
     if (!db) return;
     const countRequest = db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).count();
@@ -36,13 +34,9 @@ function updateLocalCounter() {
         const countElement = document.getElementById('local-db-count');
         if (countElement) countElement.innerText = countRequest.result;
     };
-
-    const totalVisitasHoy = pendingSync.length + (syncedHistory ? syncedHistory.length : 0);
-    const pendientesPorSubir = pendingSync.length;
-
-    if (document.getElementById('metric-total-visitas')) document.getElementById('metric-total-visitas').innerText = totalVisitasHoy;
-    if (document.getElementById('metric-pendientes-visitas')) document.getElementById('metric-pendientes-visitas').innerText = pendientesPorSubir;
-    if (document.getElementById('pending-count')) document.getElementById('pending-count').innerText = pendientesPorSubir;
+    if (document.getElementById('pending-count')) {
+        document.getElementById('pending-count').innerText = pendingSync.length;
+    }
 }
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
@@ -69,13 +63,12 @@ function changeScreen(screenId) {
         if (screenId === 'screen-history') document.getElementById('nav-history').classList.add('active');
     }
 }
+
 function login() {
     const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
-    const brigadistaEncontrado = AUTHORIZED_CURPS[curpInput]; 
+    const brigadistaEncontrado = AUTHORIZED_CURPS[curpInput]; // Lee desde brigadistas.js externo
     if (brigadistaEncontrado) {
         currentUser = { curp: curpInput, name: brigadistaEncontrado.name };
-        currentBrigadistaMunicipio = brigadistaEncontrado.municipio.toUpperCase().trim();
-        preloadDatabaseToMemory(); 
         document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
         changeScreen('screen-welcome');
     } else {
@@ -134,7 +127,6 @@ function preloadDatabaseToMemory() {
     };
 }
 
-// NUEVA FUNCIÓN DE BÚSQUEDA BLINDADA: Evita el bloqueo si las columnas de Google Sheets vienen distintas
 function searchData() {
     const query = document.getElementById('search-input').value.toLowerCase().trim();
     const resultsContainer = document.getElementById('search-results');
@@ -147,17 +139,6 @@ function searchData() {
     for (let i = 0; i < localMemoryDatabase.length; i++) {
         const item = localMemoryDatabase[i];
         if (!item) continue;
-
-        // PARCHE DE SEGURIDAD OPERATIVA: Busca la columna 'MUNICIPIO' o 'municipio' tolerando variaciones
-        const rawMunicipio = item['MUNICIPIO'] || item['municipio'] || item['Municipio'] || "";
-        const municipioDerechohabiente = String(rawMunicipio).toUpperCase().trim();
-        
-        // CORRECCIÓN CORE: Si el registro tiene municipio y no coincide, lo descarta. 
-        // Pero si el registro NO tiene municipio en el Excel, lo muestra para no congelar la pantalla.
-        if (municipioDerechohabiente !== "" && municipioDerechohabiente !== currentBrigadistaMunicipio) {
-            continue; 
-        }
-
         const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''}`.toLowerCase();
         if (searchTokens.every(t => combinedText.includes(t))) matchedRecords.push(item);
     }
@@ -202,7 +183,7 @@ function seleccionarEstatusVisita(estatus) {
     if (currentEstatusVisita === "NO LOCALIZADO") {
         let mot = prompt("Escriba el motivo por el cual NO FUE LOCALIZADO:");
         if (!mot || mot.trim() === "") { 
-            alert("🛑 Operación cancelada: Debe ingresar un motivo válido.");
+            alert("🛑 Operación cancelada.");
             currentEstatusVisita = "LOCALIZADO"; 
             motivoNoLocalizadoValue = "";
             actualizarEstilosBotonesFormulario();
@@ -226,21 +207,9 @@ function actualizarEstilosBotonesFormulario() {
         btnLoc.style.backgroundColor = "#F3F4F6"; btnLoc.style.borderColor = "#CBD5E0"; btnLoc.style.color = "#9CA3AF";
     }
 }
+
 function openForm(item) {
     if (!item) return;
-    const camposWrapper = document.getElementById('form-fields-wrapper');
-    if (camposWrapper) {
-        const gridBloqueado = camposWrapper.querySelector('.form-grid');
-        if (gridBloqueado) gridBloqueado.classList.add('text-disabled');
-    }
-    document.getElementById('f-curp').setAttribute('readonly', 'true');
-    document.getElementById('f-id').setAttribute('readonly', 'true');
-    document.getElementById('f-nombre').setAttribute('readonly', 'true');
-    document.getElementById('f-paterno').setAttribute('readonly', 'true');
-    document.getElementById('f-materno').setAttribute('readonly', 'true');
-    document.getElementById('f-situacion').setAttribute('readonly', 'true');
-    document.getElementById('f-causal').setAttribute('readonly', 'true');
-
     document.getElementById('f-curp').value = item['CURP'] || '';
     document.getElementById('f-id').value = item['ID'] || '';
     document.getElementById('f-nombre').value = item['NOMBRE'] || '';
@@ -265,7 +234,6 @@ function openForm(item) {
 
     document.getElementById('f-lat').value = "Buscando satélite...";
     document.getElementById('f-lon').value = "Buscando satélite...";
-
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((position) => {
             document.getElementById('f-lat').value = String(position.coords.latitude.toFixed(6)).replace(",", ".");
@@ -281,20 +249,18 @@ function saveData(event) {
     const lonValue = document.getElementById('f-lon').value;
     if (latValue.includes("Buscando") || latValue === "" || latValue === "ERROR") return alert("No se puede guardar sin georreferencia.");
     
-    const targetCurp = document.getElementById('f-curp').value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase().trim();
-    if (!targetCurp || targetCurp.length !== 18) return alert("🛑 ERROR: La CURP es obligatoria y debe tener exactamente 18 caracteres.");
-
+    const targetCurp = document.getElementById('f-curp').value.trim().toUpperCase();
     const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp);
     const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
 
     const record = {
-        'CURP': targetCurp, 'ID': document.getElementById('f-id').value, 'NOMBRE': document.getElementById('f-nombre').value.toUpperCase().trim(),
-        'AP PATERNO': document.getElementById('f-paterno').value.toUpperCase().trim(), 'AP MATERNO': document.getElementById('f-materno').value.toUpperCase().trim(),
-        'TEL FIJO': document.getElementById('f-telfijo').value.trim(), 'TEL CEL': document.getElementById('f-telcel').value.trim(),
-        'MUNICIPIO': document.getElementById('f-municipio').value.toUpperCase().trim(), 'LOCALIDAD': document.getElementById('f-localidad').value.toUpperCase().trim(),
-        'SECCION': document.getElementById('f-seccion').value.trim(), 'COLONIA': document.getElementById('f-colonia').value.toUpperCase().trim(),
-        'CP': document.getElementById('f-cp').value.trim(), 'CALLE': document.getElementById('f-calle').value.toUpperCase().trim(),
-        'NUM EXT': document.getElementById('f-numext').value.toUpperCase().trim(), 'REFERENCIA': document.getElementById('f-referencia').value.toUpperCase().trim(),
+        'CURP': targetCurp, 'ID': document.getElementById('f-id').value, 'NOMBRE': document.getElementById('f-nombre').value,
+        'AP PATERNO': document.getElementById('f-paterno').value, 'AP MATERNO': document.getElementById('f-materno').value,
+        'TEL FIJO': document.getElementById('f-telfijo').value, 'TEL CEL': document.getElementById('f-telcel').value,
+        'MUNICIPIO': document.getElementById('f-municipio').value, 'LOCALIDAD': document.getElementById('f-localidad').value,
+        'SECCION': document.getElementById('f-seccion').value, 'COLONIA': document.getElementById('f-colonia').value,
+        'CP': document.getElementById('f-cp').value, 'CALLE': document.getElementById('f-calle').value,
+        'NUM EXT': document.getElementById('f-numext').value, 'REFERENCIA': document.getElementById('f-referencia').value,
         'SITUACION': document.getElementById('f-situacion').value, 'CAUSAL': document.getElementById('f-causal').value,
         'ESTATUS_VISITA': currentEstatusVisita, 'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue, 'Latitud': latValue, 'Longitud': lonValue,
         'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"), 'USUARIO_MODIFICA': currentUser.name, 'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || ""
@@ -306,51 +272,10 @@ function saveData(event) {
         if (memoryIndex !== -1) localMemoryDatabase[memoryIndex] = record; else localMemoryDatabase.push(record);
         pendingSync.push(record);
         localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
-        alert("✅ ÉXITO: Visita guardada localmente en el teléfono.");
+        alert("✅ ÉXITO: Visita guardada localmente.");
         document.getElementById('search-input').value = ""; document.getElementById('search-results').innerHTML = "";
         changeScreen('screen-search');
     };
-}
-function abrirFormularioVacioAltaNueva() {
-    const camposWrapper = document.getElementById('form-fields-wrapper');
-    if (camposWrapper) {
-        const gridBloqueado = camposWrapper.querySelector('.form-grid');
-        if (gridBloqueado) gridBloqueado.classList.remove('text-disabled');
-        document.getElementById('f-curp').removeAttribute('readonly');
-        document.getElementById('f-nombre').removeAttribute('readonly');
-        document.getElementById('f-paterno').removeAttribute('readonly');
-        document.getElementById('f-materno').removeAttribute('readonly');
-    }
-    const inputs = ['f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-telfijo', 'f-telcel', 'f-localidad', 'f-seccion', 'f-colonia', 'f-cp', 'f-calle', 'f-numext', 'f-referencia', 'f-causal'];
-    inputs.forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ''; });
-    
-    document.getElementById('f-municipio').value = currentBrigadistaMunicipio || ''; 
-    document.getElementById('f-id').value = 'NUEVO'; document.getElementById('f-situacion').value = 'SIN_REGISTRO';
-    currentEstatusVisita = "LOCALIZADO"; motivoNoLocalizadoValue = ""; actualizarEstilosBotonesFormulario();
-
-    document.getElementById('f-lat').value = "Buscando satélite..."; document.getElementById('f-lon').value = "Buscando satélite...";
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((position) => {
-            document.getElementById('f-lat').value = String(position.coords.latitude.toFixed(6)).replace(",", ".");
-            document.getElementById('f-lon').value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
-        }, () => { document.getElementById('f-lat').value = "ERROR"; document.getElementById('f-lon').value = "ERROR"; });
-    }
-    const curpInputEl = document.getElementById('f-curp');
-    curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal);
-    curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
-    changeScreen('screen-form');
-}
-
-function verificarCurpDuplicadaEnTiempoReal(e) {
-    const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase(); e.target.value = valorLimpio; 
-    if (valorLimpio.length === 18) {
-        const registroExistente = localMemoryDatabase.find(r => r.CURP === valorLimpio);
-        if (registroExistente) {
-            if (confirm(`📢 DETECTOR DE DUPLICADOS: La CURP [${valorLimpio}] ya existe (Municipio: ${registroExistente.MUNICIPIO || 'S/M'}).\n\n¿Desea cargar sus datos antiguos?`)) {
-                alert("Cargando información histórica..."); openForm(registroExistente);
-            } else { e.target.value = ''; e.target.focus(); alert("Ingrese una CURP que no esté registrada."); }
-        }
-    }
 }
 
 function openHistoryScreen() {
@@ -359,7 +284,7 @@ function openHistoryScreen() {
     const logList = document.getElementById('history-log'); logList.innerHTML = ""; 
     pendingSync.forEach((item) => {
         const div = document.createElement('div'); div.className = "result-item";
-        div.innerHTML = `<strong>⏳ ${item['NOMBRE'] || 'Derechohabiente'} (${item['CURP']})</strong><br><small>Pendiente de subir | Estatus: ${item['ESTATUS_VISITA']}</small>`;
+        div.innerHTML = `<strong>⏳ ${item['NOMBRE'] || 'Derechohabiente'} (${item['CURP']})</strong><br><small>Pendiente</small>`;
         logList.appendChild(div);
     });
 }
@@ -393,11 +318,11 @@ function downloadBackupCSV() {
 }
 
 function clearLocalStorage() {
-    if (confirm("🚨 ADVERTENCIA: ¿Estás seguro de vaciar por completo la memoria?")) {
+    if (confirm("🚨 ADVERTENCIA: ¿Vaciamos la memoria?")) {
         pendingSync = []; syncedHistory = []; localMemoryDatabase = []; localStorage.clear();
         if (db) {
             db.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).clear().onsuccess = () => {
-                document.getElementById('search-input').value = ""; document.getElementById('search-results').innerHTML = ""; alert("Memoria interna e IndexedDB limpiadas."); changeScreen('screen-welcome'); 
+                document.getElementById('search-input').value = ""; document.getElementById('search-results').innerHTML = ""; alert("Limpiado."); changeScreen('screen-welcome'); 
             };
         } else { changeScreen('screen-welcome'); }
     }
