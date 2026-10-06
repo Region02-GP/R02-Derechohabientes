@@ -155,6 +155,7 @@ const DB_VERSION = 1;
 const STORE_NAME = "derechohabientes";
 let db;
 
+// REEMPLAZA TU BLOQUE DE INICIALIZACIÓN DE INDEXEDDB POR ESTA VERSIÓN CON PRECARGA:
 const request = indexedDB.open(DB_NAME, DB_VERSION);
 request.onupgradeneeded = (e) => {
     db = e.target.result;
@@ -164,9 +165,12 @@ request.onupgradeneeded = (e) => {
         store.createIndex("by_calle", "CALLE", { unique: false });
     }
 };
+
+// Al abrir con éxito la base interna del teléfono, alimentamos la RAM en caliente
 request.onsuccess = (e) => { 
     db = e.target.result; 
     updateLocalCounter(); 
+    preloadDatabaseToMemory(); // ¡AQUÍ ESTÁ LA SOLUCIÓN! Llena la RAM antes de que llegues al buscador
 };
 request.onerror = (e) => { console.error("Error IndexedDB:", e.target.error); };
 
@@ -217,18 +221,24 @@ function changeScreen(screenId) {
     }
 }
 
+// REEMPLAZA TU FUNCIÓN LOGIN POR ESTA VERSIÓN CON DISPARO ASÍNCRONO:
 function login() {
     const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
     const brigadistaEncontrado = AUTHORIZED_CURPS[curpInput];
     if (brigadistaEncontrado) {
         currentUser = { curp: curpInput, name: brigadistaEncontrado.name };
         currentBrigadistaMunicipio = brigadistaEncontrado.municipio.toUpperCase().trim();
+        
+        // Ejecuta la precarga de seguridad asíncrona en la RAM justo al entrar
+        preloadDatabaseToMemory(); 
+        
         document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
         changeScreen('screen-welcome');
     } else {
         alert("CURP no autorizada o inválida.");
     }
 }
+
 
 async function downloadAllDataMassive() {
     const btn = document.getElementById('btn-massive-download');
@@ -268,20 +278,21 @@ async function downloadAllDataMassive() {
             offset = data.nextOffset || (offset + limit);
             progressBar.style.width = `${Math.min(100, Math.round((offset / 25000) * 100))}%`;
         }
+       // BUSCA EL FINAL DE TU FUNCIÓN downloadAllDataMassive EN TU ARCHIVO Y ASEGÚRATE QUE TERMINE ASÍ:
         progressText.innerText = `¡Descarga completa! ${totalCargados} registros listos.`;
+        
+        // Limpia la memoria interna y rellena la RAM con los datos recién bajados de Google
+        preloadDatabaseToMemory(); 
         updateLocalCounter(); 
+        
         alert(`Éxito: Se guardaron ${totalCargados} registros.`);
-    } catch (error) {
-        alert(`Error: ${error.message}`);
-    } finally { btn.disabled = false; }
+    } catch (error) { 
+        alert(`Error: ${error.message}`); 
+    } finally { 
+        btn.disabled = false; 
+    }
 }
-let localMemoryDatabase = [];
-function preloadDatabaseToMemory() {
-    if (!db) return;
-    db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).getAll().onsuccess = (e) => {
-        localMemoryDatabase = e.target.result || [];
-    };
-}
+
 
 function searchData() {
     const query = document.getElementById('search-input').value.toLowerCase().trim();
