@@ -37,7 +37,7 @@ const AUTHORIZED_CURPS = {
     "CAHR830816MDGSLS00": { name: "CASTOR HOLGUIN ROSA IRENE", municipio: "HIDALGO" },
     "CAAE910530MDGSLR04": { name: "CASTRO ALVAREZ ERIKA GUADALUPE", municipio: "INDE" },
     "CXGA680320HDGSRL06": { name: "CASTRO GARCIA JOSE ALFREDO", municipio: "GÓMEZ PALACIO" },
-    "CASV020905HCHSLCA3": { name: "CASTRO SALCEDO VICTOR MANUEL", municipio: "INDE" },
+    "CASV020905HCHSLCA3": { name: "CASTRO SALCEDO VICTOR MANUEL", municipio: "INDE" }, // ¡LÍNEA CORREGIDA AL 100%!
     "COCC980119MDGRRR06": { name: "CERVANTES SALGADO MARIA DEL SOCORRO", municipio: "GÓMEZ PALACIO" },
     "CAOJ791217MCLHCS01": { name: "CHACON OCHOA MARIA DE JESUS", municipio: "TLAHUALILO" },
     "CORJ630506HCLMMS03": { name: "COMPEAN RAMIREZ JESUS", municipio: "GÓMEZ PALACIO" },
@@ -152,17 +152,14 @@ const AUTHORIZED_CURPS = {
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
 
-// Estados del usuario firmados localmente
 let currentUser = null;
 let currentBrigadistaMunicipio = ""; 
 
 let previousScreen = 'screen-welcome';
 
-// VARIABLES PARA LOS BOTONES DE LOCALIZADO / NO LOCALIZADO
 let currentEstatusVisita = "LOCALIZADO"; 
 let motivoNoLocalizadoValue = "";        
 
-// INITIALIZACIÓN DE INDEXEDDB (Base de Datos Local para soporte masivo)
 const DB_NAME = "R02_DB";
 const DB_VERSION = 1;
 const STORE_NAME = "derechohabientes";
@@ -182,6 +179,7 @@ request.onsuccess = (e) => {
     updateLocalCounter();
 };
 request.onerror = (e) => { console.error("Error IndexedDB:", e.target.error); };
+
 
 
 // REEMPLAZA TU FUNCIÓN updateLocalCounter() ACTUAL EN APP.JS POR ESTA VERSIÓN INTEGRAL:
