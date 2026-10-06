@@ -40,28 +40,45 @@
 
 
         <!-- PANTALLA 2: BIENVENIDA Y CARGA TOTAL MASIVA INDEXADA -->
-        <section id="screen-welcome" class="app-screen hidden">
-            <div class="screen-toolbar">
-                <h2 id="welcome-message">Bienvenido</h2>
-            </div>
+        <!-- BUSCA TU <section id="screen-welcome"> EN EL INDEX.HTML Y REEMPLÁZALO POR COMPLETO CON ESTO: -->
+<section id="screen-welcome" class="app-screen hidden">
+    <div class="screen-number-badge">Pantalla 2</div>
+    
+    <div class="screen-toolbar">
+        <h2 id="welcome-message">Bienvenido</h2>
+    </div>
+    <div class="subtitle">Servidor de la Nación</div>
 
-            <div class="card" style="margin-top: 15px;">
-                <h3>Sincronización Inicial de Base de Datos</h3>
-                
-                <p style="font-size:14px; font-weight:bold; color:var(--primary-color); margin-bottom:12px; background:#f7fafc; padding:8px; border-radius:6px; border-left:4px solid var(--primary-color);">
-                    📊 Registros cargados en el teléfono: <span id="local-db-count">0</span>
-                </p>
+    <!-- NUEVO PANEL DE RESUMEN EJECUTIVO EN TIEMPO REAL -->
+    <div class="metrics-grid" style="margin-top: 15px; margin-bottom: 20px; display: flex; gap: 8px;">
+        <div class="metric-card" style="flex: 1; background: #ffffff; border: 1px solid #1fr; border-top: 4px solid var(--secondary-color); padding: 10px; border-radius: 4px; text-align: center; box-shadow: var(--shadow-soft);">
+            <span class="metric-lbl" style="display: block; font-size: 11px; text-transform: uppercase; font-weight: bold; color: var(--text-muted); letter-spacing: 0.5px;">Padrón Cargado</span>
+            <span id="local-db-count" class="metric-val" style="display: block; font-size: 22px; font-weight: bold; color: var(--primary-color); margin-top: 5px;">0</span>
+        </div>
+        <div class="metric-card" style="flex: 1; background: #ffffff; border: 1px solid #1fr; border-top: 4px solid #236947; padding: 10px; border-radius: 4px; text-align: center; box-shadow: var(--shadow-soft);">
+            <span class="metric-lbl" style="display: block; font-size: 11px; text-transform: uppercase; font-weight: bold; color: var(--text-muted); letter-spacing: 0.5px;">Visitas Hechas</span>
+            <span id="metric-total-visitas" class="metric-val" style="display: block; font-size: 22px; font-weight: bold; color: #236947; margin-top: 5px;">0</span>
+        </div>
+        <div class="metric-card" style="flex: 1; background: #ffffff; border: 1px solid #1fr; border-top: 4px solid #b91c1c; padding: 10px; border-radius: 4px; text-align: center; box-shadow: var(--shadow-soft);">
+            <span class="metric-lbl" style="display: block; font-size: 11px; text-transform: uppercase; font-weight: bold; color: var(--text-muted); letter-spacing: 0.5px;">Por Sincronizar</span>
+            <span id="metric-pendientes-visitas" class="metric-val" style="display: block; font-size: 22px; font-weight: bold; color: #b91c1c; margin-top: 5px;">0</span>
+        </div>
+    </div>
 
-                <p style="font-size:13px; color:#555; margin-bottom:15px;">Descarga los registros al teléfono para trabajar totalmente sin internet en campo.</p>
-                
-                <div id="progress-container" style="display:none; background:#eee; border-radius:4px; margin:10px 0; padding:2px;">
-                    <div id="progress-bar" style="background:var(--primary-color); width:0%; height:15px; border-radius:4px; transition:width 0.2s;"></div>
-                </div>
-                <p id="progress-text" style="font-size:12px; font-weight:bold; color:var(--primary-color); margin-bottom:15px;"></p>
+    <!-- TARJETA DE CONTROL DE DESCARGA ORIGINAL -->
+    <div class="card" style="margin-top: 10px;">
+        <h3>Sincronización Inicial de Base de Datos</h3>
+        <p style="font-size:13px; color:#1a1a1a; margin-bottom:15px; font-weight: bold;">Descarga los registros al teléfono para trabajar totalmente sin internet en campo.</p>
+        
+        <div id="progress-container" style="display:none; background:#eee; border-radius:4px; margin:10px 0; padding:2px;">
+            <div id="progress-bar" style="background:#66001c; width:0%; height:15px; border-radius:2px; transition:width 0.2s;"></div>
+        </div>
+        <p id="progress-text" style="font-size:12px; font-weight:bold; color:#66001c; margin-bottom:15px;"></p>
 
-                <button type="button" onclick="downloadAllDataMassive()" id="btn-massive-download" class="btn-secondary">📥 Descargar Base Completa</button>
-            </div>
-        </section>
+        <button type="button" onclick="downloadAllDataMassive()" id="btn-massive-download" class="btn-secondary">📥 Descargar Base Completa</button>
+    </div>
+</section>
+
        <!-- BUSCA TU <section id="screen-search"> EN EL INDEX.HTML Y REEMPLÁZALO POR COMPLETO CON ESTO: -->
 <section id="screen-search" class="app-screen hidden">
     <div class="screen-toolbar">
