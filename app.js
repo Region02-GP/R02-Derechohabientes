@@ -336,3 +336,66 @@ function clearLocalStorage() {
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)); });
 }
+// NUEVA FUNCIÓN: Abre el formulario en blanco, desbloquea las cajas de texto y autocompleta el municipio
+function abrirFormularioVacioAltaNueva() {
+    const camposWrapper = document.getElementById('form-fields-wrapper');
+    if (camposWrapper) {
+        const gridBloqueado = camposWrapper.querySelector('.form-grid');
+        if (gridBloqueado) gridBloqueado.classList.remove('text-disabled');
+    }
+    
+    // Desbloquea los candados de lectura para permitir la escritura manual en campo
+    document.getElementById('f-curp').removeAttribute('readonly');
+    document.getElementById('f-nombre').removeAttribute('removeAttribute');
+    document.getElementById('f-paterno').removeAttribute('readonly');
+    document.getElementById('f-materno').removeAttribute('readonly');
+    
+    // Vacía todos los inputs para iniciar una captura limpia de un derechohabiente nuevo
+    const inputs = ['f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-telfijo', 'f-telcel', 'f-localidad', 'f-seccion', 'f-colonia', 'f-cp', 'f-calle', 'f-numext', 'f-referencia', 'f-causal'];
+    inputs.forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ''; });
+    
+    // Autocompleta automáticamente el municipio del brigadista activo y setea los valores por defecto
+    const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp];
+    document.getElementById('f-municipio').value = brigadistaActivo ? brigadistaActivo.municipio : ''; 
+    document.getElementById('f-id').value = 'NUEVO';
+    document.getElementById('f-situacion').value = 'SIN_REGISTRO';
+    
+    currentEstatusVisita = "LOCALIZADO"; 
+    motivoNoLocalizadoValue = ""; 
+    actualizarEstilosBotonesFormulario();
+
+    // Enciende la antena de georreferenciación satelital en tiempo real para la alta nueva
+    document.getElementById('f-lat').value = "Buscando satélite...";
+    document.getElementById('f-lon').value = "Buscando satélite...";
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+            document.getElementById('f-lat').value = String(position.coords.latitude.toFixed(6)).replace(",", ".");
+            document.getElementById('f-lon').value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
+        }, () => { document.getElementById('f-lat').value = "ERROR"; document.getElementById('f-lon').value = "ERROR"; });
+    }
+    
+    // Enlaza el monitor en caliente para detectar duplicaciones al teclear el dígito 18
+    const curpInputEl = document.getElementById('f-curp');
+    curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal);
+    curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
+    changeScreen('screen-form');
+}
+// NUEVA FUNCIÓN: Escanea la RAM al vuelo al teclear el caracter 18 para evitar registros duplicados
+function verificarCurpDuplicadaEnTiempoReal(e) {
+    const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase();
+    e.target.value = valorLimpio; 
+    
+    if (valorLimpio.length === 18) {
+        const registroExistente = localMemoryDatabase.find(r => r.CURP === valorLimpio);
+        if (registroExistente) {
+            if (confirm(`📢 DETECTOR DE DUPLICADOS: La CURP [${valorLimpio}] ya existe en la base (Municipio: ${registroExistente.MUNICIPIO || 'SIN MUNICIPIO'}).\n\n¿Desea abortar el alta y cargar sus datos históricos anteriores?`)) {
+                alert("Cargando información histórica..."); 
+                openForm(registroExistente);
+            } else { 
+                e.target.value = ''; 
+                e.target.focus(); 
+                alert("Por favor, ingrese una CURP que no esté registrada en el sistema."); 
+            }
+        }
+    }
+}
