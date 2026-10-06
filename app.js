@@ -311,35 +311,91 @@ function openForm(item) {
 
 function saveData(event) {
     event.preventDefault();
+    
     const latValue = document.getElementById('f-lat').value;
     const lonValue = document.getElementById('f-lon').value;
-    if (latValue.includes("Buscando") || latValue === "" || latValue === "ERROR") return alert("No se puede guardar sin georreferencia.");
-    
-    const targetCurp = document.getElementById('f-curp').value;
+    if (latValue.includes("Buscando") || latValue === "" || latValue === "ERROR") {
+        return alert("No se puede guardar sin georreferencia.");
+    }
+
+    const targetCurp = document.getElementById('f-curp').value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase().trim();
+    const isAltaNueva = (document.getElementById('f-id').value === 'NUEVO');
+
+    // --- 1. OBLIGATORIEDAD Y LONGITUD ESTRICTA DE LA CURP ---
+    if (!targetCurp || targetCurp.length !== 18) {
+        return alert("🛑 ERROR: La CURP es obligatoria y debe tener exactamente 18 caracteres.");
+    }
+
+    // --- 2. DETECTOR DE DUPLICADOS EN TODA LA BASE LOCAL ---
+    if (isAltaNueva) {
+        // Busca en toda la base cargada en el teléfono sin importar el municipio
+        const registroExistente = localMemoryDatabase.find(r => r.CURP === targetCurp);
+        
+        if (registroExistente) {
+            const confirmarModificacion = confirm(
+                `📢 AVISO: El derechohabiente con la CURP [${targetCurp}] ya existe en el padrón (Municipio: ${registroExistente.MUNICIPIO || 'SIN ESPECIFICAR'}).\n\n` +
+                `¿Desea cargar sus datos antiguos para actualizar la información de su visita?`
+            );
+            
+            if (confirmarModificacion) {
+                alert("Cargando información antigua en el formulario...");
+                openForm(registroExistente); // Llama a abrir el formulario con el registro viejo
+                return; // Detiene el guardado del registro en blanco
+            } else {
+                return; // Detiene la operación si cancela
+            }
+        }
+    }
+
+    // --- 3. PROCESO DE GUARDADO TRADICIONAL SI NO HAY DUPLICADOS ---
     const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp);
     const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
 
     const record = {
-        'CURP': targetCurp, 'ID': document.getElementById('f-id').value, 'NOMBRE': document.getElementById('f-nombre').value,
-        'AP PATERNO': document.getElementById('f-paterno').value, 'AP MATERNO': document.getElementById('f-materno').value,
-        'TEL FIJO': document.getElementById('f-telfijo').value, 'TEL CEL': document.getElementById('f-telcel').value,
-        'MUNICIPIO': document.getElementById('f-municipio').value, 'LOCALIDAD': document.getElementById('f-localidad').value,
-        'SECCION': document.getElementById('f-seccion').value, 'COLONIA': document.getElementById('f-colonia').value,
-        'CP': document.getElementById('f-cp').value, 'CALLE': document.getElementById('f-calle').value,
-        'NUM EXT': document.getElementById('f-numext').value, 'REFERENCIA': document.getElementById('f-referencia').value,
-        'SITUACION': document.getElementById('f-situacion').value, 'CAUSAL': document.getElementById('f-causal').value,
-        'ESTATUS_VISITA': currentEstatusVisita, 'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue,
-        'Latitud': latValue, 'Longitud': lonValue,
-        'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"), 'USUARIO_MODIFICA': currentUser.name,
+        'CURP': targetCurp, 
+        'ID': document.getElementById('f-id').value, 
+        'NOMBRE': document.getElementById('f-nombre').value.toUpperCase().trim(), 
+        'AP PATERNO': document.getElementById('f-paterno').value.toUpperCase().trim(), 
+        'AP MATERNO': document.getElementById('f-materno').value.toUpperCase().trim(), 
+        'TEL FIJO': document.getElementById('f-telfijo').value.trim(), 
+        'TEL CEL': document.getElementById('f-telcel').value.trim(), 
+        'MUNICIPIO': document.getElementById('f-municipio').value.toUpperCase().trim(), 
+        'LOCALIDAD': document.getElementById('f-localidad').value.toUpperCase().trim(), 
+        'SECCION': document.getElementById('f-seccion').value.trim(), 
+        'COLONIA': document.getElementById('f-colonia').value.toUpperCase().trim(), 
+        'CP': document.getElementById('f-cp').value.trim(), 
+        'CALLE': document.getElementById('f-calle').value.toUpperCase().trim(), 
+        'NUM EXT': document.getElementById('f-numext').value.toUpperCase().trim(), 
+        'REFERENCIA': document.getElementById('f-referencia').value.toUpperCase().trim(), 
+        'SITUACION': document.getElementById('f-situacion').value, 
+        'CAUSAL': document.getElementById('f-causal').value,
+        'ESTATUS_VISITA': currentEstatusVisita, 
+        'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue,
+        'Latitud': latValue, 
+        'Longitud': lonValue,
+        'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"), 
+        'USUARIO_MODIFICA': currentUser.name,
         'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || ""
     };
 
     db.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).put(record);
-    if (memoryIndex !== -1) localMemoryDatabase[memoryIndex] = record; else localMemoryDatabase.push(record);
+    
+    if (memoryIndex !== -1) {
+        localMemoryDatabase[memoryIndex] = record;
+    } else {
+        localMemoryDatabase.push(record);
+    }
+    
     pendingSync.push(record);
     localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
+    
+    alert("✅ ÉXITO: Visita guardada localmente en el teléfono.");
+    
+    document.getElementById('search-input').value = "";
+    document.getElementById('search-results').innerHTML = "";
     changeScreen('screen-search');
 }
+
 
 function openHistoryScreen() {
     changeScreen('screen-history');
@@ -482,13 +538,12 @@ function abrirFormularioVacioAltaNueva() {
     changeScreen('screen-form');
 }
 
-// MODIFICACIÓN DE SEGURIDAD EN LA FUNCIÓN ORIGINAL OPENFORM:
-// Debes asegurarte de que cuando entres a un registro que SÍ EXISTE de la lista, los campos se vuelvan a bloquear.
-// Busca tu función openForm(item) original y agrégale estas 3 líneas al inicio:
+// REEMPLAZA TU MODIFICACIÓN FINAL DE OPENFORM POR ESTA:
 const originalOpenForm = openForm;
 openForm = function(item) {
     if (!item) return;
-    // Volvemos a congelar las cajas para edición protegida
+    
+    // Volvemos a congelar las cajas para edición protegida de datos institucionales
     const camposWrapper = document.getElementById('form-fields-wrapper');
     if (camposWrapper) {
         const gridBloqueado = camposWrapper.querySelector('.form-grid');
@@ -502,5 +557,8 @@ openForm = function(item) {
     document.getElementById('f-situacion').setAttribute('readonly', 'true');
     document.getElementById('f-causal').setAttribute('readonly', 'true');
     
+    // Ejecuta el mapeo original de cajas de texto
     originalOpenForm(item);
+    
+    // REMOVIDA LA AUTO-ACTUALIZACIÓN: Se mantiene intacto el municipio que viene desde la base de datos
 };
