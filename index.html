@@ -62,18 +62,24 @@
                 <button type="button" onclick="downloadAllDataMassive()" id="btn-massive-download" class="btn-secondary">📥 Descargar Base Completa</button>
             </div>
         </section>
-        <!-- PANTALLA 3: BUSCADOR MULTI-CRITERIO EN MEMORIA RAM CACHÉ -->
-        <section id="screen-search" class="app-screen hidden">
-            <div class="screen-toolbar">
-                <h2>Búsqueda</h2>
-            </div>
+       <!-- BUSCA TU <section id="screen-search"> EN EL INDEX.HTML Y REEMPLÁZALO POR COMPLETO CON ESTO: -->
+<section id="screen-search" class="app-screen hidden">
+    <div class="screen-toolbar">
+        <h2>Búsqueda</h2>
+    </div>
 
-            <div class="form-group" style="margin-top: 15px;">
-                <input type="text" id="search-input" oninput="searchData()" placeholder="Buscar por Calle, Nombre, CURP o Apellidos...">
-            </div>
-            
-            <div id="search-results" class="results-list"></div>
-        </section>
+    <div class="form-group" style="margin-top: 15px;">
+        <input type="text" id="search-input" oninput="searchData()" placeholder="Buscar por Calle, Nombre, CURP o Apellidos...">
+    </div>
+
+    <!-- NUEVO BOTÓN DE ALTA EN CAMPO INSTITUTIONAL -->
+    <button type="button" class="btn-primary-guinda" onclick="abrirFormularioVacioAltaNueva()" style="margin-bottom: 12px; background-color: var(--primary-color);">
+        ➕ Agregar Nuevo Derechohabiente
+    </button>
+    
+    <div id="search-results" class="results-list"></div>
+</section>
+
 
         <!-- PANTALLA 4: FORMULARIO DE EDICIÓN, ESTATUS DE VISITA Y CAPTURA GPS -->
         <section id="screen-form" class="app-screen hidden">
