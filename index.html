@@ -9,32 +9,39 @@
 </head>
 <body>
 
-     <!-- ENCABEZADO GLOBAL ADAPTADO DE LA APP DE EJEMPLO -->
+    <!-- ENCABEZADO GLOBAL ANCLADO ARRIBA (PISO 1 DEL GRID LAYOUT) -->
     <header class="main-header">
         <div class="header-brand-wrapper">
-            <img src="https://pub.bienestar.gob.mx/static/media/padrones01.e4252fd6.jpg" alt="Logotipo Institucional" class="header-logo">
+            <img src="https://postimg.cc" alt="Logotipo Institucional" class="header-logo">
             <h1>R02-Derechohabientes</h1>
         </div>
     </header>
 
     <main class="app-container">
         
-        <!-- PANTALLA 1: ACCESO INTEGRADO CON DISEÑO FORMAL DE EJEMPLO -->
+        <!-- PANTALLA 1: ACCESO "CASA POR CASA" (MANTIENE TU LOGIC LOGIN) -->
         <section id="screen-login" class="app-screen active">
+            <div class="screen-number-badge">Pantalla 1</div>
             
+            <h1 style="font-size: 20px; text-align: center; margin-top: 5px; margin-bottom: 5px;">Sistema de actualización de datos</h1>
+            <div class="screen-toolbar" style="margin-bottom: 15px;">
+                <h2>R02-GOMEZ PALACIO</h2>
+            </div>
+
             <div class="banner-container">
                 <img class="banner-img" alt="Casa por casa" src="https://postimg.cc">
             </div>
+
             <h2>Acceso</h2>
             <div class="subtitle">Validación de Brigadistas</div>
-            <div class="form-group" style="margin-top: 25px;">
+            <div class="form-group" style="margin-top: 15px;">
                 <label for="login-curp">Ingrese su CURP Autorizada *</label>
-                <input type="text" id="login-curp" maxlength="18" placeholder="18 caracteres" style="text-transform: uppercase;">
+                <input type="text" id="login-curp" maxlength="18" placeholder="18 dígitos" style="text-transform:uppercase">
             </div>
             <button type="button" class="btn-guinda" onclick="login()">Ingresar</button>
         </section>
 
-        <!-- PANTALLA 2: BIENVENIDA Y CARGA TOTAL MASIVA INDEXADA -->
+        <!-- PANTALLA 2: BIENVENIDA Y CONTADOR OFFLINE -->
         <section id="screen-welcome" class="app-screen">
             <div class="screen-number-badge">Pantalla 2</div>
             <div class="screen-toolbar">
@@ -42,9 +49,9 @@
             </div>
             <div class="subtitle">Servidor de la Nación</div>
 
-            <div class="metrics-grid" style="margin-top: 15px;">
+            <div class="metrics-grid" style="margin-top: 10px;">
                 <div class="metric-card">
-                    <span class="metric-lbl">Registros guardados offline</span>
+                    <span class="metric-lbl">Registros cargados en el teléfono</span>
                     <span id="local-db-count" class="metric-val">0</span>
                 </div>
             </div>
@@ -69,7 +76,7 @@
             </div>
             <div class="subtitle">Buscador Flexible Offline</div>
 
-            <div class="form-group" style="margin-top: 15px;">
+            <div class="form-group" style="margin-top: 10px;">
                 <input type="text" id="search-input" oninput="searchData()" placeholder="Buscar por Calle, Nombre, CURP o Apellidos...">
             </div>
             
@@ -149,7 +156,7 @@
                     </div>
                 </div>
 
-                <h3>Georreferencia de Visita</h3>
+                <h3>Georreferencia Satelital</h3>
                 <div class="form-grid text-disabled">
                     <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
                     <div><label>Longitud GPS:</label><input type="text" id="f-lon" readonly></div>
@@ -159,18 +166,17 @@
                 <button type="button" onclick="changeScreen('screen-search')" class="btn-back">Cancelar</button>
             </form>
         </section>
-        <!-- PANTALLA 5: HISTORIAL, CONTROL OFFLINE Y REPORTES EXCEL/CSV -->
+        <!-- PANTALLA 5: HISTORIAL, CONTROL OFFLINE Y REPORTES -->
         <section id="screen-history" class="app-screen">
             <div class="screen-number-badge">Pantalla 5</div>
             <h2>Historial y Sincronización</h2>
             <div class="subtitle">Control de Bitácora Local</div>
             
-            <div id="pending-count-box" class="status-box">📂 Visitas pendientes por sincronizar: <span id="pending-count">0</span></div>
+            <div class="status-box">📂 Visitas pendientes por sincronizar: <strong id="pending-count">0</strong></div>
             
             <button type="button" onclick="syncWithSheets()" class="btn-guinda">🔄 Sincronizar con Google Sheets</button>
-            
-            <div class="btn-row-grid">
-                <button type="button" onclick="downloadBackupCSV()" class="btn-excel-gold">📥 Descargar Avance</button>
+            <div class="button-row-grid">
+                <button type="button" onclick="downloadBackupCSV()" class="btn-excel-gold">📊 Descargar Avance</button>
                 <button type="button" onclick="clearLocalStorage()" class="btn-danger">🗑️ Borrar Datos</button>
             </div>
 
@@ -178,7 +184,7 @@
             <div id="history-log" class="log-list"></div>
         </section>
 
-        <!-- ÚNICA BARRA DE NAVEGACIÓN GLOBAL FIJA EN EL ÚLTIMO NIVEL DEL GRID Layout -->
+        <!-- TU MENÚ INFERIOR ORIGINAL FIJO EN EL PISO 3 DEL GRID -->
         <nav id="app-bottom-nav" class="bottom-nav hidden">
             <button type="button" id="nav-welcome" onclick="changeScreen('screen-welcome')" class="nav-item">
                 <span>📥</span>Inicio
