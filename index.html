@@ -50,6 +50,9 @@
         <!-- PANTALLA 3: BUSCADOR NATIVO HISTÓRICO -->
         <!-- BUSCA TU <section id="screen-search"> Y DÉJALO EXACTAMENTE ASÍ: -->
 <section id="screen-search" class="app-screen hidden">
+    <button type="button" onclick="abrirFormularioVacioAltaNueva()" style="width: 100%; padding: 12px; margin-bottom: 15px; font-weight: bold; background-color: #621132; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 15px;">
+        ➕ Agregar Nuevo Derechohabiente
+    </button>
     <div class="screen-toolbar">
         <h2>Búsqueda</h2>
     </div>
@@ -57,11 +60,7 @@
         <input type="text" id="search-input" oninput="searchData()" placeholder="Buscar por Calle, Nombre, CURP o Apellidos...">
     </div>
     
-    <!-- NUEVO: BOTÓN DE ALTA EN CAMPO CON ESTILO GUINDA INSTITUCIONAL -->
-    <button type="button" onclick="abrirFormularioVacioAltaNueva()" style="width: 100%; padding: 12px; margin-bottom: 15px; font-weight: bold; background-color: #621132; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 15px;">
-        ➕ Agregar Nuevo Derechohabiente
-    </button>
-    
+       
     <div id="search-results" class="results-list"></div>
 </section>
 
