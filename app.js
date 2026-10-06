@@ -56,14 +56,33 @@ request.onsuccess = (e) => {
 
 request.onerror = (e) => { console.error("Error IndexedDB:", e.target.error); };
 
+// REEMPLAZA TU FUNCIÓN updateLocalCounter() ACTUAL EN APP.JS POR ESTA VERSIÓN INTEGRAL:
 function updateLocalCounter() {
     if (!db) return;
+    
+    // 1. Contador del Padrón de Derechohabientes Cargado en IndexedDB
     const countRequest = db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).count();
     countRequest.onsuccess = () => {
         const countElement = document.getElementById('local-db-count');
         if (countElement) countElement.innerText = countRequest.result;
     };
+
+    // 2. Cálculo de Visitas Totales y Pendientes de la cola pendingSync
+    const totalVisitasHoy = pendingSync.length + (syncedHistory ? syncedHistory.length : 0);
+    const pendientesPorSubir = pendingSync.length;
+
+    // Actualiza las tarjetas en la Pantalla 2 (Bienvenida)
+    const elTotalVisitas = document.getElementById('metric-total-visitas');
+    const elPendientesVisitas = document.getElementById('metric-pendientes-visitas');
+    
+    if (elTotalVisitas) elTotalVisitas.innerText = totalVisitasHoy;
+    if (elPendientesVisitas) elPendientesVisitas.innerText = pendientesPorSubir;
+
+    // Sincroniza con el indicador secundario de la Pantalla 5 (Historial)
+    const elContadorHistorial = document.getElementById('pending-count');
+    if (elContadorHistorial) elContadorHistorial.innerText = pendientesPorSubir;
 }
+
 // NAVEGACIÓN GENERAL ENTRE PANTALLAS
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
