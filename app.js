@@ -134,6 +134,7 @@ function preloadDatabaseToMemory() {
     };
 }
 
+// NUEVA FUNCIÓN DE BÚSQUEDA BLINDADA: Evita el bloqueo si las columnas de Google Sheets vienen distintas
 function searchData() {
     const query = document.getElementById('search-input').value.toLowerCase().trim();
     const resultsContainer = document.getElementById('search-results');
@@ -147,8 +148,13 @@ function searchData() {
         const item = localMemoryDatabase[i];
         if (!item) continue;
 
-        const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
-        if (municipioDerechohabiente !== currentBrigadistaMunicipio) {
+        // PARCHE DE SEGURIDAD OPERATIVA: Busca la columna 'MUNICIPIO' o 'municipio' tolerando variaciones
+        const rawMunicipio = item['MUNICIPIO'] || item['municipio'] || item['Municipio'] || "";
+        const municipioDerechohabiente = String(rawMunicipio).toUpperCase().trim();
+        
+        // CORRECCIÓN CORE: Si el registro tiene municipio y no coincide, lo descarta. 
+        // Pero si el registro NO tiene municipio en el Excel, lo muestra para no congelar la pantalla.
+        if (municipioDerechohabiente !== "" && municipioDerechohabiente !== currentBrigadistaMunicipio) {
             continue; 
         }
 
