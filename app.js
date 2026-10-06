@@ -336,7 +336,7 @@ function clearLocalStorage() {
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)); });
 }
-// NUEVA FUNCIÓN: Abre el formulario en blanco, desbloquea las cajas de texto y autocompleta el municipio
+// FUNCIÓN CORREGIDA: Remueve el candado de lectura y habilita la escritura manual de nombres
 function abrirFormularioVacioAltaNueva() {
     const camposWrapper = document.getElementById('form-fields-wrapper');
     if (camposWrapper) {
@@ -344,17 +344,16 @@ function abrirFormularioVacioAltaNueva() {
         if (gridBloqueado) gridBloqueado.classList.remove('text-disabled');
     }
     
-    // Desbloquea los candados de lectura para permitir la escritura manual en campo
+    // CORRECCIÓN CORE: Remueve físicamente el atributo 'readonly' de todos los campos de identidad
     document.getElementById('f-curp').removeAttribute('readonly');
-    document.getElementById('f-nombre').removeAttribute('removeAttribute');
+    document.getElementById('f-nombre').removeAttribute('readonly');
     document.getElementById('f-paterno').removeAttribute('readonly');
     document.getElementById('f-materno').removeAttribute('readonly');
     
-    // Vacía todos los inputs para iniciar una captura limpia de un derechohabiente nuevo
+    // Limpia y vacía las cajas para recibir una captura limpia del beneficiario nuevo
     const inputs = ['f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-telfijo', 'f-telcel', 'f-localidad', 'f-seccion', 'f-colonia', 'f-cp', 'f-calle', 'f-numext', 'f-referencia', 'f-causal'];
     inputs.forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ''; });
-    
-    // Autocompleta automáticamente el municipio del brigadista activo y setea los valores por defecto
+    // Autocompleta de manera automática el municipio limpio sin acentos del brigadista activo
     const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp];
     document.getElementById('f-municipio').value = brigadistaActivo ? brigadistaActivo.municipio : ''; 
     document.getElementById('f-id').value = 'NUEVO';
@@ -364,7 +363,7 @@ function abrirFormularioVacioAltaNueva() {
     motivoNoLocalizadoValue = ""; 
     actualizarEstilosBotonesFormulario();
 
-    // Enciende la antena de georreferenciación satelital en tiempo real para la alta nueva
+    // Arranca la georreferenciación satelital en tiempo real para asignársela a la alta nueva
     document.getElementById('f-lat').value = "Buscando satélite...";
     document.getElementById('f-lon').value = "Buscando satélite...";
     if (navigator.geolocation) {
@@ -374,12 +373,13 @@ function abrirFormularioVacioAltaNueva() {
         }, () => { document.getElementById('f-lat').value = "ERROR"; document.getElementById('f-lon').value = "ERROR"; });
     }
     
-    // Enlaza el monitor en caliente para detectar duplicaciones al teclear el dígito 18
+    // Activa el monitor antiduplicados en caliente al llegar al dígito 18 de la CURP
     const curpInputEl = document.getElementById('f-curp');
     curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal);
     curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
     changeScreen('screen-form');
 }
+
 // NUEVA FUNCIÓN: Escanea la RAM al vuelo al teclear el caracter 18 para evitar registros duplicados
 function verificarCurpDuplicadaEnTiempoReal(e) {
     const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase();
