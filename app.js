@@ -466,7 +466,7 @@ function abrirFormularioVacioAltaNueva() {
     // 1. Quitamos el candado de bloqueo de lectura a los campos clave
     const camposWrapper = document.getElementById('form-fields-wrapper');
     if (camposWrapper) {
-        const gridBloqueado = camposWrapper.querySelector('.form-grid.text-disabled');
+        const gridBloqueado = camposWrapper.querySelector('.form-grid');
         if (gridBloqueado) gridBloqueado.classList.remove('text-disabled');
         
         document.getElementById('f-curp').removeAttribute('readonly');
@@ -483,7 +483,7 @@ function abrirFormularioVacioAltaNueva() {
         if (el) el.value = '';
     });
     
-    // Auto-rellenamos el municipio con el del brigadista activo por defecto para el alta nueva
+    // Dejamos el municipio original asignado al brigadista activo por defecto
     document.getElementById('f-municipio').value = currentBrigadistaMunicipio || ''; 
 
     // 3. Firmas electrónicas de control para indicar fila nueva en el Excel
@@ -513,18 +513,12 @@ function abrirFormularioVacioAltaNueva() {
         );
     }
 
-    // =========================================================================
-    // DETECTOR EN CALIENTE: Súper validación al terminar de escribir la CURP
-    // =========================================================================
+    // 6. Encendemos el monitor en caliente para la caja de la CURP
     const curpInputEl = document.getElementById('f-curp');
-    
-    // Removemos cualquier escuchador viejo para no duplicar alertas
     curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal);
-    
-    // Encendemos el monitor en tiempo real
     curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
 
-    // 6. Saltamos a la Pantalla 4 del formulario
+    // 7. Saltamos a la Pantalla 4 del formulario
     changeScreen('screen-form');
 }
 
@@ -552,29 +546,27 @@ openForm = function(item) {
     
     // REMOVIDA LA AUTO-ACTUALIZACIÓN: Se mantiene intacto el municipio que viene desde la base de datos
 };
-// AÑADE ESTA NUEVA FUNCIÓN AL FINAL DE TU ARCHIVO APP.JS:
+// REEMPLAZA O AÑADE ESTA FUNCIÓN AL FINAL DE TU ARCHIVO APP.JS:
 function verificarCurpDuplicadaEnTiempoReal(e) {
-    // Limpiamos espacios y caracteres raros mientras escribe
     const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase();
-    e.target.value = valorLimpio; // Muestra el texto limpio en la caja
+    e.target.value = valorLimpio; 
 
-    // Cuando llega exactamente a los 18 dígitos de la CURP obligatoria
+    // En cuanto el brigadista escribe el carácter número 18
     if (valorLimpio.length === 18) {
-        // Buscamos en toda la base local precargada en el teléfono
         const registroExistente = localMemoryDatabase.find(r => r.CURP === valorLimpio);
         
         if (registroExistente) {
             const confirmarModificacion = confirm(
-                `📢 DETECTOR DE DUPLICADOS: El derechohabiente con la CURP [${valorLimpio}] ya existe en el sistema.\n` +
-                `Registrado en: ${registroExistente.MUNICIPIO || 'SIN ESPECIFICAR'}.\n\n` +
+                `📢 DETECTOR DE DUPLICADOS: El derechohabiente con la CURP [${valorLimpio}] ya existe en el padrón.\n` +
+                `Registrado originalmente en: ${registroExistente.MUNICIPIO || 'SIN ESPECIFICAR'}.\n\n` +
                 `¿Desea detener el alta nueva y cargar sus datos antiguos para actualizar la visita?`
             );
             
             if (confirmarModificacion) {
                 alert("Cargando información histórica en el formulario...");
-                openForm(registroExistente); // Monta el registro viejo y respeta su municipio original
+                openForm(registroExistente); // Abre el registro antiguo respetando su municipio original
             } else {
-                // Si decide no modificar, vaciamos la caja de la CURP para obligar a meter una válida
+                // Si rechaza, limpiamos la caja para obligar a meter una CURP correcta
                 e.target.value = '';
                 e.target.focus();
                 alert("Por favor, ingrese una CURP diferente que no esté registrada.");
