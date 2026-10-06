@@ -309,7 +309,6 @@ function openForm(item) {
     changeScreen('screen-form');
 }
 
-// REEMPLAZA TU FUNCIÓN SAVEDATA(EVENT) ACTUAL POR ESTA VERSIÓN REPARADA:
 function saveData(event) {
     event.preventDefault();
     
@@ -326,7 +325,7 @@ function saveData(event) {
         return alert("🛑 ERROR: La CURP es obligatoria y debe tener exactamente 18 caracteres.");
     }
 
-    // --- 2. PROCESO DE GUARDADO INDEXEDDB Y LOCALSTORAGE ---
+    // --- 2. PROCESO DE GUARDADO INDEXEDDB CORREGIDO ---
     const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp);
     const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
 
@@ -357,11 +356,19 @@ function saveData(event) {
         'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || ""
     };
 
-    // Abre la transacción y guarda en la memoria interna del teléfono
+    if (!db) {
+        return alert("🛑 Error de base de datos: Espera un segundo a que el teléfono inicialice la memoria interna.");
+    }
+
+    // Abrimos la transacción en modo escritura de forma limpia
     const tx = db.transaction(STORE_NAME, "readwrite");
-    tx.objectStore(STORE_NAME).put(record);
+    const store = tx.objectStore(STORE_NAME);
     
-    tx.onsuccess = () => {
+    // Ejecutamos la petición de inserción
+    store.put(record);
+    
+    // CORRECCIÓN TÉCNICA CLAVE: Se usa oncomplete sobre la transacción para asegurar el éxito del flujo
+    tx.oncomplete = function() {
         if (memoryIndex !== -1) {
             localMemoryDatabase[memoryIndex] = record;
         } else {
@@ -371,19 +378,21 @@ function saveData(event) {
         pendingSync.push(record);
         localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
         
-        // --- MENSAJE DE CONFIRMACIÓN EXIGIDO ---
+        // Mensaje de éxito en pantalla
         alert("✅ ÉXITO: Visita guardada localmente en el teléfono. Recuerda sincronizar al terminar tu jornada.");
         
+        // Limpieza y redirección
         document.getElementById('search-input').value = "";
         document.getElementById('search-results').innerHTML = "";
         changeScreen('screen-search');
     };
 
-    tx.onerror = (e) => {
+    tx.onerror = function(e) {
         console.error("Error al guardar en IndexedDB:", e.target.error);
-        alert("🛑 Error interno: No se pudieron guardar los datos en el teléfono.");
+        alert("🛑 Error interno: No se pudieron escribir los datos en el almacenamiento local.");
     };
 }
+
 
 
 function openHistoryScreen() {
@@ -461,9 +470,7 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));
     });
 }
-// REEMPLAZA TU FUNCIÓN abrirFormularioVacioAltaNueva POR ESTA:
 function abrirFormularioVacioAltaNueva() {
-    // 1. Quitamos el candado de bloqueo de lectura a los campos clave
     const camposWrapper = document.getElementById('form-fields-wrapper');
     if (camposWrapper) {
         const gridBloqueado = camposWrapper.querySelector('.form-grid');
@@ -475,7 +482,6 @@ function abrirFormularioVacioAltaNueva() {
         document.getElementById('f-materno').removeAttribute('readonly');
     }
 
-    // 2. Vaciamos las cajas para una captura limpia
     const inputs = ['f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-telfijo', 'f-telcel', 
                     'f-localidad', 'f-seccion', 'f-colonia', 'f-cp', 'f-calle', 'f-numext', 'f-referencia', 'f-causal'];
     inputs.forEach(id => {
@@ -483,19 +489,14 @@ function abrirFormularioVacioAltaNueva() {
         if (el) el.value = '';
     });
     
-    // Dejamos el municipio original asignado al brigadista activo por defecto
     document.getElementById('f-municipio').value = currentBrigadistaMunicipio || ''; 
-
-    // 3. Firmas electrónicas de control para indicar fila nueva en el Excel
     document.getElementById('f-id').value = 'NUEVO';
     document.getElementById('f-situacion').value = 'SIN_REGISTRO';
 
-    // 4. Reseteamos los estados del semáforo
     currentEstatusVisita = "LOCALIZADO";
     motivoNoLocalizadoValue = "";
     actualizarEstilosBotonesFormulario();
 
-    // 5. Encendemos la antena de satélite GPS
     document.getElementById('f-lat').value = "Buscando satélite...";
     document.getElementById('f-lon').value = "Buscando satélite...";
 
@@ -513,12 +514,10 @@ function abrirFormularioVacioAltaNueva() {
         );
     }
 
-    // 6. Encendemos el monitor en caliente para la caja de la CURP
     const curpInputEl = document.getElementById('f-curp');
     curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal);
     curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
 
-    // 7. Saltamos a la Pantalla 4 del formulario
     changeScreen('screen-form');
 }
 
@@ -546,12 +545,10 @@ openForm = function(item) {
     
     // REMOVIDA LA AUTO-ACTUALIZACIÓN: Se mantiene intacto el municipio que viene desde la base de datos
 };
-// REEMPLAZA O AÑADE ESTA FUNCIÓN AL FINAL DE TU ARCHIVO APP.JS:
 function verificarCurpDuplicadaEnTiempoReal(e) {
     const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase();
     e.target.value = valorLimpio; 
 
-    // En cuanto el brigadista escribe el carácter número 18
     if (valorLimpio.length === 18) {
         const registroExistente = localMemoryDatabase.find(r => r.CURP === valorLimpio);
         
@@ -564,9 +561,8 @@ function verificarCurpDuplicadaEnTiempoReal(e) {
             
             if (confirmarModificacion) {
                 alert("Cargando información histórica en el formulario...");
-                openForm(registroExistente); // Abre el registro antiguo respetando su municipio original
+                openForm(registroExistente); 
             } else {
-                // Si rechaza, limpiamos la caja para obligar a meter una CURP correcta
                 e.target.value = '';
                 e.target.focus();
                 alert("Por favor, ingrese una CURP diferente que no esté registrada.");
