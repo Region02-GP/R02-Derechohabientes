@@ -77,7 +77,7 @@
             <form id="edit-form" onsubmit="saveData(event)">
                 <div id="form-fields-wrapper">
                     <div class="form-grid text-disabled">
-                        <div><label>CURP:</label><input type="text" id="f-curp" readonly></div>
+                        <div><label>CURP:</label><input type="text" id="f-curp" maxlength="18" minlength="18" required style="text-transform:uppercase">
                         <div><label>ID:</label><input type="text" id="f-id" readonly></div>
                         <div><label>Nombre:</label><input type="text" id="f-nombre" readonly></div>
                         <div><label>Ap. Paterno:</label><input type="text" id="f-paterno" readonly></div>
