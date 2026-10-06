@@ -43,7 +43,22 @@ const AUTHORIZED_CURPS = {
     "SASL920713MDGNCY02": { name: "DE SANTIAGO SAUCEDO LAEYDY KARINA", municipio: "GÓMEZ PALACIO" },
     "DINE820731MDGZVS00": { name: "DIAZ NAVARRETE ESPERANZA", municipio: "EL ORO" },
     "DITR851118HOCZRM07": { name: "DIAZ TRUJILLO RAMON DE JESUS", municipio: "GÓMEZ PALACIO" },
-    "DOCS600411HDGMRR08": { name: "DOMINGUEZ CORCHADO SERGIO ALBERTO", municipio: "GÓMEZ PALACIO" },
+    "DOCS600411HDGMRR08": { name: "DOMINGUEZ CORCHADO SERGIO ALBERTO", municipio: "GÓMEZ PALACIO" }
+};
+
+let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
+let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
+let currentUser = null;
+let currentBrigadistaMunicipio = ""; 
+let previousScreen = 'screen-welcome';
+let currentEstatusVisita = "LOCALIZADO"; 
+let motivoNoLocalizadoValue = "";        
+
+const DB_NAME = "R02_DB";
+const DB_VERSION = 1;
+const STORE_NAME = "derechohabientes";
+let db;
+const RESTO_AUTHORIZED_CURPS = {
     "EIRI840701MCLLYV07": { name: "ELIZALDE REYES IVETTE SARAI", municipio: "GÓMEZ PALACIO" },
     "EILA680224HDGSZL05": { name: "ESPINOZA LOZANO ALFONSO", municipio: "GÓMEZ PALACIO" },
     "EUMN780514MDGSSN08": { name: "ESQUIVEL MASCORRO NANCY ACELA", municipio: "GÓMEZ PALACIO" },
@@ -143,17 +158,7 @@ const AUTHORIZED_CURPS = {
     "VAMA870830MDGZLL01": { name: "VAZQUEZ MELENDEZ ALMA ROSA ", municipio: "GÓMEZ PALACIO" }
 };
 
-let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
-let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
-let currentUser = null;
-let currentBrigadistaMunicipio = ""; 
-let previousScreen = 'screen-welcome';
-let currentEstatusVisita = "LOCALIZADO"; 
-let motivoNoLocalizadoValue = "";        
-const DB_NAME = "R02_DB";
-const DB_VERSION = 1;
-const STORE_NAME = "derechohabientes";
-let db;
+Object.assign(AUTHORIZED_CURPS, RESTO_AUTHORIZED_CURPS);
 
 const request = indexedDB.open(DB_NAME, DB_VERSION);
 request.onupgradeneeded = (e) => {
@@ -164,12 +169,10 @@ request.onupgradeneeded = (e) => {
         store.createIndex("by_calle", "CALLE", { unique: false });
     }
 };
-
-// PRECARGA BLINDADA: Al conectar la base, alimenta la RAM en caliente al instante
 request.onsuccess = (e) => { 
     db = e.target.result; 
     updateLocalCounter(); 
-    preloadDatabaseToMemory(); // Evita que el buscador comience asíncronamente vacío
+    preloadDatabaseToMemory();
 };
 request.onerror = (e) => { console.error("Error IndexedDB:", e.target.error); };
 function updateLocalCounter() {
@@ -192,12 +195,14 @@ function updateLocalCounter() {
     const elContadorHistorial = document.getElementById('pending-count');
     if (elContadorHistorial) elContadorHistorial.innerText = pendientesPorSubir;
 }
+
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
     if (screenId === 'screen-welcome') updateLocalCounter(); 
     
     document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
+    
     const targetScreen = document.getElementById(screenId);
     if (targetScreen) targetScreen.classList.remove('hidden');
 
@@ -224,13 +229,14 @@ function login() {
     if (brigadistaEncontrado) {
         currentUser = { curp: curpInput, name: brigadistaEncontrado.name };
         currentBrigadistaMunicipio = brigadistaEncontrado.municipio.toUpperCase().trim();
-        preloadDatabaseToMemory(); // Precarga síncrona obligatoria al autenticar
+        preloadDatabaseToMemory();
         document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
         changeScreen('screen-welcome');
     } else {
         alert("CURP no autorizada o inválida.");
     }
 }
+
 async function downloadAllDataMassive() {
     const btn = document.getElementById('btn-massive-download');
     const progressContainer = document.getElementById('progress-container');
@@ -270,7 +276,7 @@ async function downloadAllDataMassive() {
             progressBar.style.width = `${Math.min(100, Math.round((offset / 25000) * 100))}%`;
         }
         progressText.innerText = `¡Descarga completa! ${totalCargados} registros listos.`;
-        preloadDatabaseToMemory(); // Refresca la memoria RAM al completar la descarga
+        preloadDatabaseToMemory();
         updateLocalCounter(); 
         alert(`Éxito: Se guardaron ${totalCargados} registros.`);
     } catch (error) {
@@ -285,6 +291,7 @@ function preloadDatabaseToMemory() {
     };
 }
 
+// TU BUSCADOR HISTÓRICO ORIGINAL COPIA FIEL: Filtra en RAM cruzando el territorio del brigadista activo
 function searchData() {
     const query = document.getElementById('search-input').value.toLowerCase().trim();
     const resultsContainer = document.getElementById('search-results');
@@ -298,7 +305,6 @@ function searchData() {
         const item = localMemoryDatabase[i];
         if (!item) continue;
 
-        // CANDADO GEOGRÁFICO NATIVO RECUPERADO DE TU VERSIÓN ADJUNTA COMPLETA
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== currentBrigadistaMunicipio) {
             continue; 
