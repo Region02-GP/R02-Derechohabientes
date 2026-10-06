@@ -309,7 +309,7 @@ function openForm(item) {
     changeScreen('screen-form');
 }
 
-// BUSCA TU SAVEDATA(EVENT) Y DEJA LA PARTE DE LA VALIDACIÓN ASÍ DE CORTA:
+// REEMPLAZA TU FUNCIÓN SAVEDATA(EVENT) ACTUAL POR ESTA VERSIÓN REPARADA:
 function saveData(event) {
     event.preventDefault();
     
@@ -321,34 +321,12 @@ function saveData(event) {
 
     const targetCurp = document.getElementById('f-curp').value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase().trim();
 
-    // --- OBLIGATORIEDAD DE LA CURP AL GUARDAR ---
+    // --- 1. OBLIGATORIEDAD Y LONGITUD ESTRICTA DE LA CURP ---
     if (!targetCurp || targetCurp.length !== 18) {
         return alert("🛑 ERROR: La CURP es obligatoria y debe tener exactamente 18 caracteres.");
     }
 
-    // ... (El resto de tu código de guardado tradicional y pendingSync de la función se queda exactamente igual)
-    // --- 2. DETECTOR DE DUPLICADOS EN TODA LA BASE LOCAL ---
-    if (isAltaNueva) {
-        // Busca en toda la base cargada en el teléfono sin importar el municipio
-        const registroExistente = localMemoryDatabase.find(r => r.CURP === targetCurp);
-        
-        if (registroExistente) {
-            const confirmarModificacion = confirm(
-                `📢 AVISO: El derechohabiente con la CURP [${targetCurp}] ya existe en el padrón (Municipio: ${registroExistente.MUNICIPIO || 'SIN ESPECIFICAR'}).\n\n` +
-                `¿Desea cargar sus datos antiguos para actualizar la información de su visita?`
-            );
-            
-            if (confirmarModificacion) {
-                alert("Cargando información antigua en el formulario...");
-                openForm(registroExistente); // Llama a abrir el formulario con el registro viejo
-                return; // Detiene el guardado del registro en blanco
-            } else {
-                return; // Detiene la operación si cancela
-            }
-        }
-    }
-
-    // --- 3. PROCESO DE GUARDADO TRADICIONAL SI NO HAY DUPLICADOS ---
+    // --- 2. PROCESO DE GUARDADO INDEXEDDB Y LOCALSTORAGE ---
     const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp);
     const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
 
@@ -379,22 +357,32 @@ function saveData(event) {
         'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || ""
     };
 
-    db.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).put(record);
+    // Abre la transacción y guarda en la memoria interna del teléfono
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    tx.objectStore(STORE_NAME).put(record);
     
-    if (memoryIndex !== -1) {
-        localMemoryDatabase[memoryIndex] = record;
-    } else {
-        localMemoryDatabase.push(record);
-    }
-    
-    pendingSync.push(record);
-    localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
-    
-    alert("✅ ÉXITO: Visita guardada localmente en el teléfono.");
-    
-    document.getElementById('search-input').value = "";
-    document.getElementById('search-results').innerHTML = "";
-    changeScreen('screen-search');
+    tx.onsuccess = () => {
+        if (memoryIndex !== -1) {
+            localMemoryDatabase[memoryIndex] = record;
+        } else {
+            localMemoryDatabase.push(record);
+        }
+        
+        pendingSync.push(record);
+        localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
+        
+        // --- MENSAJE DE CONFIRMACIÓN EXIGIDO ---
+        alert("✅ ÉXITO: Visita guardada localmente en el teléfono. Recuerda sincronizar al terminar tu jornada.");
+        
+        document.getElementById('search-input').value = "";
+        document.getElementById('search-results').innerHTML = "";
+        changeScreen('screen-search');
+    };
+
+    tx.onerror = (e) => {
+        console.error("Error al guardar en IndexedDB:", e.target.error);
+        alert("🛑 Error interno: No se pudieron guardar los datos en el teléfono.");
+    };
 }
 
 
