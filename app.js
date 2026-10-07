@@ -293,6 +293,7 @@ function saveData(event) {
     const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp);
     const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
 
+       // BUSCA EL OBJETO RECORD DENTRO DE SAVEDATA Y MODIFICA ÚNICAMENTE ESTA LÍNEA CORE:
     const record = {
         'CURP': targetCurp, 'ID': document.getElementById('f-id').value, 'NOMBRE': document.getElementById('f-nombre').value,
         'AP PATERNO': document.getElementById('f-paterno').value, 'AP MATERNO': document.getElementById('f-materno').value,
@@ -303,10 +304,14 @@ function saveData(event) {
         'NUM EXT': document.getElementById('f-numext').value, 'REFERENCIA': document.getElementById('f-referencia').value,
         'SITUACION': document.getElementById('f-situacion').value, 'CAUSAL': document.getElementById('f-causal').value,
         'ESTATUS_VISITA': currentEstatusVisita, 'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue,
-        'EVALUACION_TRATO': typeof currentTratoValue !== 'undefined' ? currentTratoValue : "",
+        
+        // CORRECCIÓN HISTÓRICA: Lee forzadamente la variable compartida de la ventana global
+        'EVALUACION_TRATO': window.currentTratoValue || "", 
+        
         'Latitud': latValue, 'Longitud': lonValue,
         'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"), 'USUARIO_MODIFICA': currentUser.name, 'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || ""
     };
+
 
     const tx = db.transaction(STORE_NAME, "readwrite");
     tx.objectStore(STORE_NAME).put(record);
