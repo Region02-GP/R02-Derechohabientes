@@ -1,8 +1,8 @@
-// Variable global para registrar la evaluación del trato en campo
-let currentTratoValue = ""; 
+// REEMPLAZA LA PRIMERA LÍNEA DE TU ACCIONES.JS POR ESTA DECLARACIÓN GLOBAL BLINDADA:
+window.currentTratoValue = ""; 
 
 function seleccionarTrato(opcion) {
-    currentTratoValue = opcion.toUpperCase();
+    window.currentTratoValue = opcion.toUpperCase();
     actualizarEstilosBotonesTrato();
 }
 
@@ -18,15 +18,15 @@ function actualizarEstilosBotonesTrato() {
         btn.style.backgroundColor = "#F3F4F6"; btn.style.borderColor = "#CBD5E0"; btn.style.color = "#4B5563";
     });
 
-    if (currentTratoValue === "EXCELENTE") {
+    if (window.currentTratoValue === "EXCELENTE") {
         btnExcelente.style.backgroundColor = "#D1E7DD"; btnExcelente.style.borderColor = "#0F5132"; btnExcelente.style.color = "#0F5132";
-    } else if (currentTratoValue === "AMABLE") {
+    } else if (window.currentTratoValue === "AMABLE") {
         btnAmable.style.backgroundColor = "#E6F4EA"; btnAmable.style.borderColor = "#236947"; btnAmable.style.color = "#236947";
-    } else if (currentTratoValue === "NEUTRAL") {
+    } else if (window.currentTratoValue === "NEUTRAL") {
         btnNeutral.style.backgroundColor = "#EDF4F9"; btnNeutral.style.borderColor = "#BC955C"; btnNeutral.style.color = "#1F2937";
-    } else if (currentTratoValue === "INCOMODO") {
+    } else if (window.currentTratoValue === "INCOMODO") {
         btnIncomodo.style.backgroundColor = "#FFF3CD"; btnIncomodo.style.borderColor = "#664D03"; btnIncomodo.style.color = "#664D03";
-    } else if (currentTratoValue === "HOSTIL") {
+    } else if (window.currentTratoValue === "HOSTIL") {
         btnHostil.style.backgroundColor = "#FCE8E6"; btnHostil.style.borderColor = "#b91c1c"; btnHostil.style.color = "#b91c1c";
     }
 }
