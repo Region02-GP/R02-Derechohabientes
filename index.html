@@ -67,7 +67,7 @@
                 <div id="progress-container" style="display:none; background:#eee; border-radius:4px; margin:10px 0; padding:2px;">
                     <div id="progress-bar" style="background:var(--primary-color); width:0%; height:15px; border-radius:4px; transition:width 0.2s;"></div>
                 </div>
-                <p id="progress-text" style="font-size:12px; font-weight:bold; color:var(--primary-color); margin-bottom:15px Papel;"></p>
+                <p id="progress-text" style="font-size:12px; font-weight:bold; color:var(--primary-color); margin-bottom:15px;"></p>
                 <button type="button" onclick="downloadAllDataMassive()" id="btn-massive-download" class="btn-secondary">📥 Descargar Base Completa</button>
             </div>
         </section>
@@ -77,7 +77,7 @@
                 <h2>Búsqueda</h2>
             </div>
 
-            <!-- ENCABEZADO DE IDENTIDAD FIJO EN EL ÁRBOL HTML DE LA PANTALLA 3 -->
+            <!-- ENCABEZADO DE IDENTIDAD FIJO -->
             <div style="background: #F3F4F6; border: 1px solid #CBD5E0; border-radius: 8px; padding: 10px; margin-bottom: 15px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);">
                 <p style="margin: 0; font-size: 13px; font-weight: 700; color: #1F2937; line-height: 1.3;">
                     👤 Brigadista: <span id="search-brigadista-name">Cargando...</span>
@@ -87,7 +87,7 @@
                 </p>
             </div>
 
-            <!-- BOTÓN DE ALTA INSTITUTIONAL DENTRO DEL FLUJO CORRECTO -->
+            <!-- BOTÓN DE ALTA INSTITUTIONAL -->
             <button type="button" onclick="abrirFormularioVacioAltaNueva()" style="width: 100%; padding: 12px; margin-bottom: 15px; font-weight: bold; background-color: #621132; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; box-shadow: 0 4px 10px rgba(98, 17, 50, 0.2);">
                 ➕ Agregar Nuevo Derechohabiente
             </button>
@@ -99,7 +99,7 @@
             <div id="search-results" class="results-list"></div>
         </section>
 
-                <!-- PANTALLA 4: FORMULARIO ACTUALIZADO CON CURP A ANCHO COMPLETO -->
+        <!-- PANTALLA 4: FORMULARIO -->
         <section id="screen-form" class="app-screen hidden">
             <h2>Actualización de Domicilio</h2>
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
@@ -110,13 +110,13 @@
             <form id="edit-form" onsubmit="saveData(event)">
                 <div id="form-fields-wrapper">
                     
-                    <!-- NUEVO: CONTENEDOR INDEPENDIENTE PARA QUE LA CURP ABARQUE TODO EL ANCHO -->
+                    <!-- CURP INDEPENDIENTE ABARCANDO EL ANCHO COMPLETO -->
                     <div class="form-group" style="margin-bottom: 16px;">
                         <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: var(--text-muted);">CURP *:</label>
                         <input type="text" id="f-curp" maxlength="18" minlength="18" required style="width: 100%; padding: 11px 14px; box-sizing: border-box; font-size: 16px; text-transform:uppercase;">
                     </div>
 
-                    <!-- LA CUADRÍCULA SE MANTIENE PARA EL RESTO DE LOS CAMPOS BLOQUEADOS -->
+                    <!-- CUADRÍCULA CERRADA CORRECTAMENTE -->
                     <div class="form-grid text-disabled">
                         <div><label>ID:</label><input type="text" id="f-id" readonly></div>
                         <div><label>Nombre:</label><input type="text" id="f-nombre" readonly></div>
@@ -129,7 +129,24 @@
                     <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
                     <div class="form-group"><label>Teléfono Fijo:</label><input type="tel" id="f-telfijo" pattern="[0-9]{10}" maxlength="10"></div>
                     <div class="form-group"><label>Teléfono Celular:</label><input type="tel" id="f-telcel" pattern="[0-9]{10}" maxlength="10"></div>
-
+                    <div class="form-group"><label>Municipio:</label><input type="text" id="f-municipio"></div>
+                    <div class="form-group"><label>Localidad *:</label><input type="text" id="f-localidad" required></div>
+                    <div class="form-group"><label>Sección *:</label><input type="number" id="f-seccion" max="9999" required></div>
+                    <div class="form-group"><label>Colonia:</label><input type="text" id="f-colonia"></div>
+                    <div class="form-group"><label>Código Postal:</label><input type="text" id="f-cp" pattern="[0-9]{5}" maxlength="5"></div>
+                    <div class="form-group"><label>Calle:</label><input type="text" id="f-calle"></div>
+                    <div class="form-group"><label>Num Ext:</label><input type="text" id="f-numext"></div>
+                    <div class="form-group"><label>Referencia:</label><textarea id="f-referencia" rows="3"></textarea></div>
+                </div>
+                <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+                <div class="form-grid text-disabled">
+                    <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
+                    <div><label>Longitud GPS:</label><input type="text" id="f-lon" readonly></div>
+                </div>
+                <button type="submit" style="margin-top: 20px;">Guardar Localmente</button>
+                <button type="button" onclick="changeScreen('screen-search')" class="btn-back">Cancelar</button>
+            </form>
+        </section>
         <!-- PANTALLA 5: HISTORIAL -->
         <section id="screen-history" class="app-screen hidden">
             <h2>Historial y Sincronización</h2>
@@ -148,7 +165,7 @@
             <div id="history-log" class="log-list"></div>
         </section>
 
-        <!-- MENÚ INFERIOR NATIVO -->
+        <!-- BARRA DE NAVEGACIÓN INFERIOR LIBERADA Y SÍNCRONA -->
         <nav id="app-bottom-nav" class="bottom-nav hidden">
             <button type="button" id="nav-welcome" onclick="changeScreen('screen-welcome')" class="nav-item"><span>📥</span>Inicio</button>
             <button type="button" id="nav-search" class="nav-item" onclick="changeScreen('screen-search')"><span>🔍</span>Búsqueda</button>
