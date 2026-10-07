@@ -99,7 +99,7 @@
             <div id="search-results" class="results-list"></div>
         </section>
 
-        <!-- PANTALLA 4: FORMULARIO -->
+                <!-- PANTALLA 4: FORMULARIO ACTUALIZADO CON CURP A ANCHO COMPLETO -->
         <section id="screen-form" class="app-screen hidden">
             <h2>Actualización de Domicilio</h2>
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
@@ -109,8 +109,15 @@
             <input type="hidden" id="f-motivo" value="">
             <form id="edit-form" onsubmit="saveData(event)">
                 <div id="form-fields-wrapper">
+                    
+                    <!-- NUEVO: CONTENEDOR INDEPENDIENTE PARA QUE LA CURP ABARQUE TODO EL ANCHO -->
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: var(--text-muted);">CURP *:</label>
+                        <input type="text" id="f-curp" maxlength="18" minlength="18" required style="width: 100%; padding: 11px 14px; box-sizing: border-box; font-size: 16px; text-transform:uppercase;">
+                    </div>
+
+                    <!-- LA CUADRÍCULA SE MANTIENE PARA EL RESTO DE LOS CAMPOS BLOQUEADOS -->
                     <div class="form-grid text-disabled">
-                        <div><label>CURP *:</label><input type="text" id="f-curp" maxlength="18" minlength="18" required style="text-transform:uppercase"></div>
                         <div><label>ID:</label><input type="text" id="f-id" readonly></div>
                         <div><label>Nombre:</label><input type="text" id="f-nombre" readonly></div>
                         <div><label>Ap. Paterno:</label><input type="text" id="f-paterno" readonly></div>
@@ -118,27 +125,11 @@
                         <div><label>Situación:</label><input type="text" id="f-situacion" readonly></div>
                         <div><label>Causal:</label><input type="text" id="f-causal" readonly></div>
                     </div>
+                    
                     <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
                     <div class="form-group"><label>Teléfono Fijo:</label><input type="tel" id="f-telfijo" pattern="[0-9]{10}" maxlength="10"></div>
                     <div class="form-group"><label>Teléfono Celular:</label><input type="tel" id="f-telcel" pattern="[0-9]{10}" maxlength="10"></div>
-                    <div class="form-group"><label>Municipio:</label><input type="text" id="f-municipio"></div>
-                    <div class="form-group"><label>Localidad *:</label><input type="text" id="f-localidad" required></div>
-                    <div class="form-group"><label>Sección *:</label><input type="number" id="f-seccion" max="9999" required></div>
-                    <div class="form-group"><label>Colonia:</label><input type="text" id="f-colonia"></div>
-                    <div class="form-group"><label>Código Postal:</label><input type="text" id="f-cp" pattern="[0-9]{5}" maxlength="5"></div>
-                    <div class="form-group"><label>Calle:</label><input type="text" id="f-calle"></div>
-                    <div class="form-group"><label>Num Ext:</label><input type="text" id="f-numext"></div>
-                    <div class="form-group"><label>Referencia:</label><textarea id="f-referencia" rows="3"></textarea></div>
-                </div>
-                <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-                <div class="form-grid text-disabled">
-                    <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
-                    <div><label>Longitud GPS:</label><input type="text" id="f-lon" readonly></div>
-                </div>
-                <button type="submit" style="margin-top: 20px;">Guardar Localmente</button>
-                <button type="button" onclick="changeScreen('screen-search')" class="btn-back">Cancelar</button>
-            </form>
-        </section>
+
         <!-- PANTALLA 5: HISTORIAL -->
         <section id="screen-history" class="app-screen hidden">
             <h2>Historial y Sincronización</h2>
