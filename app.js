@@ -51,10 +51,24 @@ function updateLocalCounter() {
     }
 }
 
+// FUNCIÓN DE CONTROL DE CAMBIO DE PANTALLAS BLINDADA CON REINYECCIÓN DE IDENTIDAD
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
     if (screenId === 'screen-welcome') updateLocalCounter(); 
+    
+    // REINYECCIÓN EN CALIENTE: Cada vez que se pinte la Pantalla 3, forzamos la lectura segura
+    if (screenId === 'screen-search' && currentUser) {
+        const datosBrigadistaActivo = AUTHORIZED_CURPS[currentUser.curp];
+        if (datosBrigadistaActivo) {
+            if (document.getElementById('search-brigadista-name')) {
+                document.getElementById('search-brigadista-name').innerText = datosBrigadistaActivo.name;
+            }
+            if (document.getElementById('search-brigadista-municipio')) {
+                document.getElementById('search-brigadista-municipio').innerText = datosBrigadistaActivo.municipio.toUpperCase().trim();
+            }
+        }
+    }
     
     document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
     const targetScreen = document.getElementById(screenId);
