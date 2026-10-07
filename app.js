@@ -232,19 +232,39 @@ function seleccionarEstatusVisita(estatus) {
     actualizarEstilosBotonesFormulario();
 }
 
-function actualizarEstilosBotonesFormulario() {
-    const btnLoc = document.getElementById('btn-status-localizado');
-    const btnNoLoc = document.getElementById('btn-status-nolocalizado');
-    if (!btnLoc || !btnNoLoc) return;
+// REEMPLAZA LA FUNCIÓN DE ESTILOS POR ESTA VERSIÓN DE 5 BOTONES AL FINAL DE TU APP.JS:
+function seleccionarTrato(opcion) {
+    currentTratoValue = opcion.toUpperCase();
+    actualizarEstilosBotonesTrato();
+}
 
-    if (currentEstatusVisita === "LOCALIZADO") {
-        btnLoc.style.backgroundColor = "#E6F4EA"; btnLoc.style.borderColor = "#137333"; btnLoc.style.color = "#137333";
-        btnNoLoc.style.backgroundColor = "#F3F4F6"; btnNoLoc.style.borderColor = "#CBD5E0"; btnNoLoc.style.color = "#9CA3AF";
-    } else if (currentEstatusVisita === "NO LOCALIZADO") {
-        btnNoLoc.style.backgroundColor = "#FCE8E6"; btnNoLoc.style.borderColor = "#C5221F"; btnNoLoc.style.color = "#C5221F";
-        btnLoc.style.backgroundColor = "#F3F4F6"; btnLoc.style.borderColor = "#CBD5E0"; btnLoc.style.color = "#9CA3AF";
+function actualizarEstilosBotonesTrato() {
+    const btnExcelente = document.getElementById('btn-trato-excelente');
+    const btnAmable = document.getElementById('btn-trato-amable');
+    const btnNeutral = document.getElementById('btn-trato-neutral');
+    const btnIncomodo = document.getElementById('btn-trato-incomodo');
+    const btnHostil = document.getElementById('btn-trato-hostil');
+    if (!btnExcelente || !btnAmable || !btnNeutral || !btnIncomodo || !btnHostil) return;
+
+    // Resetea los estilos base de los 5 botones táctiles
+    [btnExcelente, btnAmable, btnNeutral, btnIncomodo, btnHostil].forEach(btn => {
+        btn.style.backgroundColor = "#F3F4F6"; btn.style.borderColor = "#CBD5E0"; btn.style.color = "#4B5563";
+    });
+
+    // Enciende exclusivamente el botón seleccionado con su color correspondiente
+    if (currentTratoValue === "EXCELENTE") {
+        btnExcelente.style.backgroundColor = "#D1E7DD"; btnExcelente.style.borderColor = "#0F5132"; btnExcelente.style.color = "#0F5132";
+    } else if (currentTratoValue === "AMABLE") {
+        btnAmable.style.backgroundColor = "#E6F4EA"; btnAmable.style.borderColor = "#236947"; btnAmable.style.color = "#236947";
+    } else if (currentTratoValue === "NEUTRAL") {
+        btnNeutral.style.backgroundColor = "#EDF4F9"; btnNeutral.style.borderColor = "#BC955C"; btnNeutral.style.color = "#1F2937";
+    } else if (currentTratoValue === "INCOMODO") {
+        btnIncomodo.style.backgroundColor = "#FFF3CD"; btnIncomodo.style.borderColor = "#664D03"; btnIncomodo.style.color = "#664D03";
+    } else if (currentTratoValue === "HOSTIL") {
+        btnHostil.style.backgroundColor = "#FCE8E6"; btnHostil.style.borderColor = "#b91c1c"; btnHostil.style.color = "#b91c1c";
     }
 }
+
 function openForm(item) {
     if (!item) return;
     document.getElementById('f-curp').value = item['CURP'] || '';
