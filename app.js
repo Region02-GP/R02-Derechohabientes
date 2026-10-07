@@ -1,7 +1,6 @@
 // URL del Web App de Google Apps Script 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzz3Tm3UPhwyv1c8fJRjCrFw3QlvAZz03lz3gy1pigLXwEheDl3JHVTCYUHfaNvOC2E/exec";
 
-
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
 let currentUser = null;
@@ -50,14 +49,11 @@ function updateLocalCounter() {
         document.getElementById('pending-count').innerText = pendientesPorSubir;
     }
 }
-
-// FUNCIÓN DE CONTROL DE CAMBIO DE PANTALLAS BLINDADA CON REINYECCIÓN DE IDENTIDAD
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
     if (screenId === 'screen-welcome') updateLocalCounter(); 
     
-    // REINYECCIÓN EN CALIENTE: Cada vez que se pinte la Pantalla 3, forzamos la lectura segura
     if (screenId === 'screen-search' && currentUser) {
         const datosBrigadistaActivo = AUTHORIZED_CURPS[currentUser.curp];
         if (datosBrigadistaActivo) {
@@ -109,7 +105,6 @@ function login() {
         alert("CURP no autorizada o inválida.");
     }
 }
-
 async function downloadAllDataMassive() {
     const btn = document.getElementById('btn-massive-download');
     const progressContainer = document.getElementById('progress-container');
@@ -232,36 +227,17 @@ function seleccionarEstatusVisita(estatus) {
     actualizarEstilosBotonesFormulario();
 }
 
-// REEMPLAZA LA FUNCIÓN DE ESTILOS POR ESTA VERSIÓN DE 5 BOTONES AL FINAL DE TU APP.JS:
-function seleccionarTrato(opcion) {
-    currentTratoValue = opcion.toUpperCase();
-    actualizarEstilosBotonesTrato();
-}
+function actualizarEstilosBotonesFormulario() {
+    const btnLoc = document.getElementById('btn-status-localizado');
+    const btnNoLoc = document.getElementById('btn-status-nolocalizado');
+    if (!btnLoc || !btnNoLoc) return;
 
-function actualizarEstilosBotonesTrato() {
-    const btnExcelente = document.getElementById('btn-trato-excelente');
-    const btnAmable = document.getElementById('btn-trato-amable');
-    const btnNeutral = document.getElementById('btn-trato-neutral');
-    const btnIncomodo = document.getElementById('btn-trato-incomodo');
-    const btnHostil = document.getElementById('btn-trato-hostil');
-    if (!btnExcelente || !btnAmable || !btnNeutral || !btnIncomodo || !btnHostil) return;
-
-    // Resetea los estilos base de los 5 botones táctiles
-    [btnExcelente, btnAmable, btnNeutral, btnIncomodo, btnHostil].forEach(btn => {
-        btn.style.backgroundColor = "#F3F4F6"; btn.style.borderColor = "#CBD5E0"; btn.style.color = "#4B5563";
-    });
-
-    // Enciende exclusivamente el botón seleccionado con su color correspondiente
-    if (currentTratoValue === "EXCELENTE") {
-        btnExcelente.style.backgroundColor = "#D1E7DD"; btnExcelente.style.borderColor = "#0F5132"; btnExcelente.style.color = "#0F5132";
-    } else if (currentTratoValue === "AMABLE") {
-        btnAmable.style.backgroundColor = "#E6F4EA"; btnAmable.style.borderColor = "#236947"; btnAmable.style.color = "#236947";
-    } else if (currentTratoValue === "NEUTRAL") {
-        btnNeutral.style.backgroundColor = "#EDF4F9"; btnNeutral.style.borderColor = "#BC955C"; btnNeutral.style.color = "#1F2937";
-    } else if (currentTratoValue === "INCOMODO") {
-        btnIncomodo.style.backgroundColor = "#FFF3CD"; btnIncomodo.style.borderColor = "#664D03"; btnIncomodo.style.color = "#664D03";
-    } else if (currentTratoValue === "HOSTIL") {
-        btnHostil.style.backgroundColor = "#FCE8E6"; btnHostil.style.borderColor = "#b91c1c"; btnHostil.style.color = "#b91c1c";
+    if (currentEstatusVisita === "LOCALIZADO") {
+        btnLoc.style.backgroundColor = "#E6F4EA"; btnLoc.style.borderColor = "#137333"; btnLoc.style.color = "#137333";
+        btnNoLoc.style.backgroundColor = "#F3F4F6"; btnNoLoc.style.borderColor = "#CBD5E0"; btnNoLoc.style.color = "#9CA3AF";
+    } else if (currentEstatusVisita === "NO LOCALIZADO") {
+        btnNoLoc.style.backgroundColor = "#FCE8E6"; btnNoLoc.style.borderColor = "#C5221F"; btnNoLoc.style.color = "#C5221F";
+        btnLoc.style.backgroundColor = "#F3F4F6"; btnLoc.style.borderColor = "#CBD5E0"; btnLoc.style.color = "#9CA3AF";
     }
 }
 
@@ -289,6 +265,9 @@ function openForm(item) {
     motivoNoLocalizadoValue = item['MOTIVO_NO_LOCALIZADO'] || "";
     actualizarEstilosBotonesFormulario();
 
+    currentTratoValue = item['EVALUACION_TRATO'] || ""; 
+    if (typeof actualizarEstilosBotonesTrato === 'function') actualizarEstilosBotonesTrato();
+
     document.getElementById('f-lat').value = "Buscando satélite...";
     document.getElementById('f-lon').value = "Buscando satélite...";
     if (navigator.geolocation) {
@@ -306,7 +285,11 @@ function saveData(event) {
     const lonValue = document.getElementById('f-lon').value;
     if (latValue.includes("Buscando") || latValue === "" || latValue === "ERROR") return alert("No se puede guardar sin georreferencia.");
     
-    const targetCurp = document.getElementById('f-curp').value.trim().toUpperCase();
+    const targetCurp = document.getElementById('f-curp').value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase().trim();
+    if (!targetCurp || targetCurp.length !== 18) {
+        return alert("🛑 ERROR EN CAMPO: La CURP es obligatoria y debe tener exactamente 18 caracteres.");
+    }
+
     const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp);
     const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
 
@@ -319,7 +302,9 @@ function saveData(event) {
         'CP': document.getElementById('f-cp').value, 'CALLE': document.getElementById('f-calle').value,
         'NUM EXT': document.getElementById('f-numext').value, 'REFERENCIA': document.getElementById('f-referencia').value,
         'SITUACION': document.getElementById('f-situacion').value, 'CAUSAL': document.getElementById('f-causal').value,
-        'ESTATUS_VISITA': currentEstatusVisita, 'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue, 'Latitud': latValue, 'Longitud': lonValue,
+        'ESTATUS_VISITA': currentEstatusVisita, 'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue,
+        'EVALUACION_TRATO': typeof currentTratoValue !== 'undefined' ? currentTratoValue : "",
+        'Latitud': latValue, 'Longitud': lonValue,
         'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"), 'USUARIO_MODIFICA': currentUser.name, 'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || ""
     };
 
@@ -334,6 +319,7 @@ function saveData(event) {
         changeScreen('screen-search');
     };
 }
+
 function openHistoryScreen() {
     changeScreen('screen-history');
     document.getElementById('pending-count').innerText = pendingSync.length;
@@ -381,66 +367,5 @@ function clearLocalStorage() {
                 document.getElementById('search-input').value = ""; document.getElementById('search-results').innerHTML = ""; alert("Limpiado."); changeScreen('screen-welcome'); 
             };
         } else { changeScreen('screen-welcome'); }
-    }
-}
-
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)); });
-}
-
-function abrirFormularioVacioAltaNueva() {
-    const camposWrapper = document.getElementById('form-fields-wrapper');
-    if (camposWrapper) {
-        const gridBloqueado = camposWrapper.querySelector('.form-grid');
-        if (gridBloqueado) gridBloqueado.classList.remove('text-disabled');
-    }
-    document.getElementById('f-curp').removeAttribute('readonly');
-    document.getElementById('f-nombre').removeAttribute('readonly');
-    document.getElementById('f-paterno').removeAttribute('readonly');
-    document.getElementById('f-materno').removeAttribute('readonly');
-    
-    const inputs = ['f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-telfijo', 'f-telcel', 'f-localidad', 'f-seccion', 'f-colonia', 'f-cp', 'f-calle', 'f-numext', 'f-referencia', 'f-causal'];
-    inputs.forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ''; });
-
-    const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp];
-    document.getElementById('f-municipio').value = brigadistaActivo ? brigadistaActivo.municipio : ''; 
-    document.getElementById('f-id').value = 'NUEVO';
-    document.getElementById('f-situacion').value = 'SIN_REGISTRO';
-    
-    currentEstatusVisita = "LOCALIZADO"; 
-    motivoNoLocalizadoValue = ""; 
-    actualizarEstilosBotonesFormulario();
-
-    document.getElementById('f-lat').value = "Buscando satélite...";
-    document.getElementById('f-lon').value = "Buscando satélite...";
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((position) => {
-            document.getElementById('f-lat').value = String(position.coords.latitude.toFixed(6)).replace(",", ".");
-            document.getElementById('f-lon').value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
-        }, () => { document.getElementById('f-lat').value = "ERROR"; document.getElementById('f-lon').value = "ERROR"; });
-    }
-    
-    const curpInputEl = document.getElementById('f-curp');
-    curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal);
-    curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
-    changeScreen('screen-form');
-}
-
-function verificarCurpDuplicadaEnTiempoReal(e) {
-    const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase();
-    e.target.value = valorLimpio; 
-    
-    if (valorLimpio.length === 18) {
-        const registroExistente = localMemoryDatabase.find(r => r.CURP === valorLimpio);
-        if (registroExistente) {
-            if (confirm(`📢 DETECTOR DE DUPLICADOS: La CURP [${valorLimpio}] ya existe en la base (Municipio: ${registroExistente.MUNICIPIO || 'SIN MUNICIPIO'}).\n\n¿Desea abortar el alta y cargar sus datos históricos anteriores?`)) {
-                alert("Cargando información histórica..."); 
-                openForm(registroExistente);
-            } else { 
-                e.target.value = ''; 
-                e.target.focus(); 
-                alert("Por favor, ingrese una CURP que no esté registrada en el sistema."); 
-            }
-        }
     }
 }
