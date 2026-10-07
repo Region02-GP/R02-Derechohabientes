@@ -1,6 +1,7 @@
 // URL del Web App de Google Apps Script 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzz3Tm3UPhwyv1c8fJRjCrFw3QlvAZz03lz3gy1pigLXwEheDl3JHVTCYUHfaNvOC2E/exec";
 
+// CONFIGURACIÓN DE RED Y ESTADOS GLOBALES DE LA APLICACIÓN
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
 let currentUser = null;
@@ -8,10 +9,16 @@ let previousScreen = 'screen-welcome';
 let currentEstatusVisita = "LOCALIZADO"; 
 let motivoNoLocalizadoValue = "";        
 
+// CONFIGURACIÓN DE ALMACENAMIENTO INTERNO MOTOR INDEXEDDB
 const DB_NAME = "R02_DB";
 const DB_VERSION = 1;
 const STORE_NAME = "derechohabientes";
 let db;
+
+// DECLARACIÓN DE SEGURIDAD: Inicializa la variable global que leerá tu archivo brigadistas.js
+if (typeof AUTHORIZED_CURPS === 'undefined') {
+    var AUTHORIZED_CURPS = {}; 
+}
 
 const request = indexedDB.open(DB_NAME, DB_VERSION);
 request.onupgradeneeded = (e) => {
@@ -36,11 +43,9 @@ function updateLocalCounter() {
         if (countElement) countElement.innerText = countRequest.result;
     };
 
-    // Cálculos matemáticos en tiempo real para las 3 tarjetas del Panel de Bienvenida
     const totalVisitasHoy = pendingSync.length + syncedHistory.length;
     const pendientesPorSubir = pendingSync.length;
 
-    // Inyección robusta validando la existencia de los contenedores en el index.html
     if (document.getElementById('metric-total-visitas')) {
         document.getElementById('metric-total-visitas').innerText = totalVisitasHoy;
     }
@@ -78,9 +83,17 @@ function changeScreen(screenId) {
 }
 function login() {
     const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
-    const brigadistaEncontrado = AUTHORIZED_CURPS[curpInput]; // Lee desde brigadistas.js
+    const brigadistaEncontrado = AUTHORIZED_CURPS[curpInput];
     if (brigadistaEncontrado) {
         currentUser = { curp: curpInput, name: brigadistaEncontrado.name };
+        
+        if (document.getElementById('search-brigadista-name')) {
+            document.getElementById('search-brigadista-name').innerText = brigadistaEncontrado.name;
+        }
+        if (document.getElementById('search-brigadista-municipio')) {
+            document.getElementById('search-brigadista-municipio').innerText = brigadistaEncontrado.municipio.toUpperCase().trim();
+        }
+
         document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
         changeScreen('screen-welcome');
     } else {
@@ -127,7 +140,10 @@ async function downloadAllDataMassive() {
         progressText.innerText = `¡Descarga completa! ${totalCargados} registros listos.`;
         preloadDatabaseToMemory();
         updateLocalCounter(); 
+        
         alert(`Éxito: Se guardaron ${totalCargados} registros.`);
+        changeScreen('screen-search');
+        
     } catch (error) { alert(`Error: ${error.message}`); } finally { btn.disabled = false; }
 }
 let localMemoryDatabase = [];
@@ -218,6 +234,7 @@ function actualizarEstilosBotonesFormulario() {
         btnLoc.style.backgroundColor = "#F3F4F6"; btnLoc.style.borderColor = "#CBD5E0"; btnLoc.style.color = "#9CA3AF";
     }
 }
+
 function openForm(item) {
     if (!item) return;
     document.getElementById('f-curp').value = item['CURP'] || '';
@@ -286,6 +303,7 @@ function saveData(event) {
         changeScreen('screen-search');
     };
 }
+
 function abrirFormularioVacioAltaNueva() {
     const camposWrapper = document.getElementById('form-fields-wrapper');
     if (camposWrapper) {
@@ -352,6 +370,7 @@ function openHistoryScreen() {
         logList.appendChild(div);
     });
 }
+
 async function syncWithSheets() {
     if (pendingSync.length === 0) return alert("No tienes registros pendientes.");
     try {
