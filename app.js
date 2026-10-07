@@ -1,7 +1,6 @@
 // URL del Web App de Google Apps Script 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzz3Tm3UPhwyv1c8fJRjCrFw3QlvAZz03lz3gy1pigLXwEheDl3JHVTCYUHfaNvOC2E/exec";
 
-
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
 let currentUser = null;
@@ -29,7 +28,6 @@ request.onsuccess = (e) => {
     preloadDatabaseToMemory();
 };
 request.onerror = (e) => { console.error("Error IndexedDB:", e.target.error); };
-
 function updateLocalCounter() {
     if (!db) return;
     const countRequest = db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).count();
@@ -37,11 +35,22 @@ function updateLocalCounter() {
         const countElement = document.getElementById('local-db-count');
         if (countElement) countElement.innerText = countRequest.result;
     };
+
+    // Cálculos matemáticos en tiempo real para las 3 tarjetas del Panel de Bienvenida
+    const totalVisitasHoy = pendingSync.length + syncedHistory.length;
+    const pendientesPorSubir = pendingSync.length;
+
+    // Inyección robusta validando la existencia de los contenedores en el index.html
+    if (document.getElementById('metric-total-visitas')) {
+        document.getElementById('metric-total-visitas').innerText = totalVisitasHoy;
+    }
+    if (document.getElementById('metric-pendientes-visitas')) {
+        document.getElementById('metric-pendientes-visitas').innerText = pendientesPorSubir;
+    }
     if (document.getElementById('pending-count')) {
-        document.getElementById('pending-count').innerText = pendingSync.length;
+        document.getElementById('pending-count').innerText = pendientesPorSubir;
     }
 }
-
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
@@ -67,7 +76,6 @@ function changeScreen(screenId) {
         if (screenId === 'screen-history') document.getElementById('nav-history').classList.add('active');
     }
 }
-
 function login() {
     const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
     const brigadistaEncontrado = AUTHORIZED_CURPS[curpInput]; // Lee desde brigadistas.js
@@ -92,7 +100,6 @@ async function downloadAllDataMassive() {
     
     const txClear = db.transaction(STORE_NAME, "readwrite");
     txClear.objectStore(STORE_NAME).clear();
-    
     try {
         while (!isDone) {
             progressText.innerText = `Descargando registros: ${totalCargados} acumulados...`;
@@ -123,7 +130,6 @@ async function downloadAllDataMassive() {
         alert(`Éxito: Se guardaron ${totalCargados} registros.`);
     } catch (error) { alert(`Error: ${error.message}`); } finally { btn.disabled = false; }
 }
-
 let localMemoryDatabase = [];
 function preloadDatabaseToMemory() {
     if (!db) return;
@@ -212,7 +218,6 @@ function actualizarEstilosBotonesFormulario() {
         btnLoc.style.backgroundColor = "#F3F4F6"; btnLoc.style.borderColor = "#CBD5E0"; btnLoc.style.color = "#9CA3AF";
     }
 }
-
 function openForm(item) {
     if (!item) return;
     document.getElementById('f-curp').value = item['CURP'] || '';
@@ -247,7 +252,6 @@ function openForm(item) {
     }
     changeScreen('screen-form');
 }
-
 function saveData(event) {
     event.preventDefault();
     const latValue = document.getElementById('f-lat').value;
@@ -282,6 +286,61 @@ function saveData(event) {
         changeScreen('screen-search');
     };
 }
+function abrirFormularioVacioAltaNueva() {
+    const camposWrapper = document.getElementById('form-fields-wrapper');
+    if (camposWrapper) {
+        const gridBloqueado = camposWrapper.querySelector('.form-grid');
+        if (gridBloqueado) gridBloqueado.classList.remove('text-disabled');
+    }
+    document.getElementById('f-curp').removeAttribute('readonly');
+    document.getElementById('f-nombre').removeAttribute('readonly');
+    document.getElementById('f-paterno').removeAttribute('readonly');
+    document.getElementById('f-materno').removeAttribute('readonly');
+    
+    const inputs = ['f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-telfijo', 'f-telcel', 'f-localidad', 'f-seccion', 'f-colonia', 'f-cp', 'f-calle', 'f-numext', 'f-referencia', 'f-causal'];
+    inputs.forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ''; });
+
+    const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp];
+    document.getElementById('f-municipio').value = brigadistaActivo ? brigadistaActivo.municipio : ''; 
+    document.getElementById('f-id').value = 'NUEVO';
+    document.getElementById('f-situacion').value = 'SIN_REGISTRO';
+    
+    currentEstatusVisita = "LOCALIZADO"; 
+    motivoNoLocalizadoValue = ""; 
+    actualizarEstilosBotonesFormulario();
+
+    document.getElementById('f-lat').value = "Buscando satélite...";
+    document.getElementById('f-lon').value = "Buscando satélite...";
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+            document.getElementById('f-lat').value = String(position.coords.latitude.toFixed(6)).replace(",", ".");
+            document.getElementById('f-lon').value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
+        }, () => { document.getElementById('f-lat').value = "ERROR"; document.getElementById('f-lon').value = "ERROR"; });
+    }
+    
+    const curpInputEl = document.getElementById('f-curp');
+    curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal);
+    curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
+    changeScreen('screen-form');
+}
+function verificarCurpDuplicadaEnTiempoReal(e) {
+    const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase();
+    e.target.value = valorLimpio; 
+    
+    if (valorLimpio.length === 18) {
+        const registroExistente = localMemoryDatabase.find(r => r.CURP === valorLimpio);
+        if (registroExistente) {
+            if (confirm(`📢 DETECTOR DE DUPLICADOS: La CURP [${valorLimpio}] ya existe en la base (Municipio: ${registroExistente.MUNICIPIO || 'SIN MUNICIPIO'}).\n\n¿Desea abortar el alta y cargar sus datos históricos anteriores?`)) {
+                alert("Cargando información histórica..."); 
+                openForm(registroExistente);
+            } else { 
+                e.target.value = ''; 
+                e.target.focus(); 
+                alert("Por favor, ingrese una CURP que no esté registrada en el sistema."); 
+            }
+        }
+    }
+}
 
 function openHistoryScreen() {
     changeScreen('screen-history');
@@ -293,7 +352,6 @@ function openHistoryScreen() {
         logList.appendChild(div);
     });
 }
-
 async function syncWithSheets() {
     if (pendingSync.length === 0) return alert("No tienes registros pendientes.");
     try {
@@ -335,67 +393,4 @@ function clearLocalStorage() {
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)); });
-}
-// FUNCIÓN CORREGIDA: Remueve el candado de lectura y habilita la escritura manual de nombres
-function abrirFormularioVacioAltaNueva() {
-    const camposWrapper = document.getElementById('form-fields-wrapper');
-    if (camposWrapper) {
-        const gridBloqueado = camposWrapper.querySelector('.form-grid');
-        if (gridBloqueado) gridBloqueado.classList.remove('text-disabled');
-    }
-    
-    // CORRECCIÓN CORE: Remueve físicamente el atributo 'readonly' de todos los campos de identidad
-    document.getElementById('f-curp').removeAttribute('readonly');
-    document.getElementById('f-nombre').removeAttribute('readonly');
-    document.getElementById('f-paterno').removeAttribute('readonly');
-    document.getElementById('f-materno').removeAttribute('readonly');
-    
-    // Limpia y vacía las cajas para recibir una captura limpia del beneficiario nuevo
-    const inputs = ['f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-telfijo', 'f-telcel', 'f-localidad', 'f-seccion', 'f-colonia', 'f-cp', 'f-calle', 'f-numext', 'f-referencia', 'f-causal'];
-    inputs.forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ''; });
-    // Autocompleta de manera automática el municipio limpio sin acentos del brigadista activo
-    const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp];
-    document.getElementById('f-municipio').value = brigadistaActivo ? brigadistaActivo.municipio : ''; 
-    document.getElementById('f-id').value = 'NUEVO';
-    document.getElementById('f-situacion').value = 'SIN_REGISTRO';
-    
-    currentEstatusVisita = "LOCALIZADO"; 
-    motivoNoLocalizadoValue = ""; 
-    actualizarEstilosBotonesFormulario();
-
-    // Arranca la georreferenciación satelital en tiempo real para asignársela a la alta nueva
-    document.getElementById('f-lat').value = "Buscando satélite...";
-    document.getElementById('f-lon').value = "Buscando satélite...";
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((position) => {
-            document.getElementById('f-lat').value = String(position.coords.latitude.toFixed(6)).replace(",", ".");
-            document.getElementById('f-lon').value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
-        }, () => { document.getElementById('f-lat').value = "ERROR"; document.getElementById('f-lon').value = "ERROR"; });
-    }
-    
-    // Activa el monitor antiduplicados en caliente al llegar al dígito 18 de la CURP
-    const curpInputEl = document.getElementById('f-curp');
-    curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal);
-    curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
-    changeScreen('screen-form');
-}
-
-// NUEVA FUNCIÓN: Escanea la RAM al vuelo al teclear el caracter 18 para evitar registros duplicados
-function verificarCurpDuplicadaEnTiempoReal(e) {
-    const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase();
-    e.target.value = valorLimpio; 
-    
-    if (valorLimpio.length === 18) {
-        const registroExistente = localMemoryDatabase.find(r => r.CURP === valorLimpio);
-        if (registroExistente) {
-            if (confirm(`📢 DETECTOR DE DUPLICADOS: La CURP [${valorLimpio}] ya existe en la base (Municipio: ${registroExistente.MUNICIPIO || 'SIN MUNICIPIO'}).\n\n¿Desea abortar el alta y cargar sus datos históricos anteriores?`)) {
-                alert("Cargando información histórica..."); 
-                openForm(registroExistente);
-            } else { 
-                e.target.value = ''; 
-                e.target.focus(); 
-                alert("Por favor, ingrese una CURP que no esté registrada en el sistema."); 
-            }
-        }
-    }
 }
