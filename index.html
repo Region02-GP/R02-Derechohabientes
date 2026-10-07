@@ -138,6 +138,34 @@
                     <div class="form-group"><label>Num Ext:</label><input type="text" id="f-numext"></div>
                     <div class="form-group"><label>Referencia:</label><textarea id="f-referencia" rows="3"></textarea></div>
                 </div>
+                <!-- BUSCA EL CONTENEDOR DE EVALUACIÓN DE TRATO EN TU INDEX.HTML Y REEMPLÁZALO CON ESTO: -->
+<div style="margin-bottom: 16px;">
+    <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: var(--text-muted);">Evaluación de la Recepción Recibida *:</label>
+    
+    <!-- Fila Superior: 3 Botones -->
+    <div style="display: flex; gap: 6px; width: 100%; box-sizing: border-box; margin-bottom: 6px;">
+        <button type="button" id="btn-trato-excelente" onclick="seleccionarTrato('EXCELENTE')" style="flex: 1; padding: 10px 4px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s; font-size: 12px; margin-top: 0;">
+            😊 EXCELENTE
+        </button>
+        <button type="button" id="btn-trato-amable" onclick="seleccionarTrato('AMABLE')" style="flex: 1; padding: 10px 4px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s; font-size: 12px; margin-top: 0;">
+            🙂 AMABLE
+        </button>
+        <button type="button" id="btn-trato-neutral" onclick="seleccionarTrato('NEUTRAL')" style="flex: 1; padding: 10px 4px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s; font-size: 12px; margin-top: 0;">
+            😐 NEUTRAL
+        </button>
+    </div>
+
+    <!-- Fila Inferior: 2 Botones -->
+    <div style="display: flex; gap: 6px; width: 100%; box-sizing: border-box;">
+        <button type="button" id="btn-trato-incomodo" onclick="seleccionarTrato('INCOMODO')" style="flex: 1; padding: 10px 4px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s; font-size: 12px; margin-top: 0;">
+            😟 INCOMODO
+        </button>
+        <button type="button" id="btn-trato-hostil" onclick="seleccionarTrato('HOSTIL')" style="flex: 1; padding: 10px 4px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s; font-size: 12px; margin-top: 0;">
+            😡 HOSTIL
+        </button>
+    </div>
+</div>
+
                 <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
                 <div class="form-grid text-disabled">
                     <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
