@@ -1,6 +1,7 @@
 // URL del Web App de Google Apps Script 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_rQKWnnixfxxhRqa66SG-FUO33_bHDH08ivvkno8T4zpRL4UaWT0DyDIsQVagdxYV/exec";
 
+
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
 let currentUser = null;
@@ -125,6 +126,7 @@ async function downloadAllDataMassive() {
         changeScreen('screen-search');
     } catch (error) { alert(`Error: ${error.message}`); } finally { btn.disabled = false; }
 }
+
 let localMemoryDatabase = [];
 function preloadDatabaseToMemory() {
     if (!db) return;
@@ -202,7 +204,6 @@ function openForm(item) {
     document.getElementById('f-telfijo').value = item['TEL FIJO'] || '';
     document.getElementById('f-telcel').value = item['TEL CEL'] || '';
     document.getElementById('f-municipio').value = item['MUNICIPIO'] || '';
-    document.getElementById('f-localidad').value = item['LOCALIDAD'] || '';
     document.getElementById('f-seccion').value = item['SECCION'] || '';
     document.getElementById('f-colonia').value = item['COLONIA'] || '';
     document.getElementById('f-cp').value = item['CP'] || '';
@@ -228,15 +229,17 @@ function openForm(item) {
     
     changeScreen('screen-form');
     
-    // AMARRE DEFINITIVO EN CALIENTE: Obliga a Android a renderizar la lista al dar click en la caja
-    const inputLocalidad = document.getElementById('f-localidad');
-    if (inputLocalidad) {
-        inputLocalidad.onfocus = function() {
-            const dl = document.getElementById('lista-localidades');
-            if (dl && typeof CATALOGO_LOCALIDADES !== 'undefined') {
-                dl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}"></option>`).join('');
-            }
-        };
+    // INYECCIÓN SELECT NATIVA REPARADA: Construye y preselecciona el valor histórico traído desde Google Sheets
+    const selectLocalidad = document.getElementById('f-localidad');
+    if (selectLocalidad && typeof CATALOGO_LOCALIDADES !== 'undefined') {
+        selectLocalidad.innerHTML = '<option value="" disabled>-- SELECCIONE UNA LOCALIDAD --</option>' + 
+            CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}">${loc}</option>`).join('');
+        
+        if (item['LOCALIDAD']) {
+            selectLocalidad.value = String(item['LOCALIDAD']).toUpperCase().trim();
+        } else {
+            selectLocalidad.value = "";
+        }
     }
 }
 function saveData(event) {
@@ -332,15 +335,11 @@ function abrirFormularioVacioAltaNueva() {
     
     changeScreen('screen-form');
     
-    // ENLACE EN CALIENTE PARA ALTAS NUEVAS: Puebla las opciones al dar click en la caja
-    const inputLocalidad = document.getElementById('f-localidad');
-    if (inputLocalidad) {
-        inputLocalidad.onfocus = function() {
-            const dl = document.getElementById('lista-localidades');
-            if (dl && typeof CATALOGO_LOCALIDADES !== 'undefined') {
-                dl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}"></option>`).join('');
-            }
-        };
+    // INYECCIÓN SELECT EN ALTAS NUEVAS SÍNCRONA COMPLETA
+    const selectLocalidad = document.getElementById('f-localidad');
+    if (selectLocalidad && typeof CATALOGO_LOCALIDADES !== 'undefined') {
+        selectLocalidad.innerHTML = '<option value="" disabled selected>-- SELECCIONE UNA LOCALIDAD --</option>' + 
+            CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}">${loc}</option>`).join('');
     }
 }
 
