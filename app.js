@@ -255,16 +255,17 @@ function actualizarEstilosBotonesFormulario() {
 }
 
 function openForm(item) {
-    // BUSCA TAMBIÉN AL INICIO DE TU FUNCIÓN openForm(item) (que vive en tu app.js o acciones.js) E INYECTA ESTA MISMA REGLA:
-// De esta manera, si el registro viene de Google Sheets, se renderizan las opciones y se respeta el valor previo
-const datalistEl = document.getElementById('lista-localidades');
-if (datalistEl && typeof CATALOGO_LOCALIDADES !== 'undefined') {
-    datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}"></option>`).join('');
-}
-
     if (!item) return;
+
+    // INYECCIÓN DINÁMICA ASEGURADA: Rellena el catálogo de localidades al abrir un derechohabiente
+    const datalistEl = document.getElementById('lista-localidades');
+    if (datalistEl && typeof CATALOGO_LOCALIDADES !== 'undefined') {
+        datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}">`).join('');
+    }
+
     document.getElementById('f-curp').value = item['CURP'] || '';
     document.getElementById('f-id').value = item['ID'] || '';
+
     document.getElementById('f-nombre').value = item['NOMBRE'] || '';
     document.getElementById('f-paterno').value = item['AP PATERNO'] || '';
     document.getElementById('f-materno').value = item['AP MATERNO'] || '';
