@@ -4,10 +4,12 @@ const ASSETS = [
     './index.html',
     './styles.css',
     './brigadistas.js',
+    './localidades.js', // <-- AGREGADO PARA QUE FUNCIONE SIN INTERNET EN CAMPO
     './acciones.js',
     './app.js',
     './manifest.json'
 ];
+
 
 // Instalación e inyección limpia de archivos obligatorios
 self.addEventListener('install', (e) => {
