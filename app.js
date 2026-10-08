@@ -290,6 +290,7 @@ function openForm(item) {
     currentTratoValue = item['EVALUACION_TRATO'] || ""; 
     if (typeof actualizarEstilosBotonesTrato === 'function') actualizarEstilosBotonesTrato();
 
+    // REEMPLAZA EL TRAMO FINAL DE TU FUNCIÓN openForm(item) PARA QUE QUEDE ASÍ:
     document.getElementById('f-lat').value = "Buscando satélite...";
     document.getElementById('f-lon').value = "Buscando satélite...";
     if (navigator.geolocation) {
@@ -298,7 +299,15 @@ function openForm(item) {
             document.getElementById('f-lon').value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
         }, () => { document.getElementById('f-lat').value = "ERROR"; document.getElementById('f-lon').value = "ERROR"; });
     }
+    
+    // PRIMERO: Muestra la pantalla físicamente en el celular
     changeScreen('screen-form');
+
+    // SEGUNDO: Inyecta el catálogo cuando el input ya es visible (Candado definitivo para Chrome Android)
+    const datalistEl = document.getElementById('lista-localidades');
+    if (datalistEl && typeof CATALOGO_LOCALIDADES !== 'undefined') {
+        datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}"></option>`).join('');
+    }
 }
 
 // REEMPLAZA TU FUNCIÓN saveData(event) DENTRO DE APP.JS CON ESTA VERSIÓN CON CANDADO DE OBLIGATORIEDAD:
