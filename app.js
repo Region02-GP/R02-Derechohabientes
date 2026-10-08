@@ -292,6 +292,7 @@ function openForm(item) {
     changeScreen('screen-form');
 }
 
+// REEMPLAZA TU FUNCIÓN saveData(event) DENTRO DE APP.JS CON ESTA VERSIÓN CON CANDADO DE OBLIGATORIEDAD:
 function saveData(event) {
     event.preventDefault();
     const latValue = document.getElementById('f-lat').value;
@@ -303,12 +304,25 @@ function saveData(event) {
         return alert("🛑 ERROR EN CAMPO: La CURP es obligatoria y debe tener exactamente 18 caracteres.");
     }
 
+    // CANDADO DE OBLIGATORIEDAD: Bloquea si es LOCALIZADO o ALTA NUEVA (ID: NUEVO) y no han seleccionado trato
+    const idValue = document.getElementById('f-id').value;
+    const evaluacionTratoActual = window.currentTratoValue || "";
+    
+    if (currentEstatusVisita === "LOCALIZADO" || idValue === "NUEVO") {
+        if (evaluacionTratoActual === "" || evaluacionTratoActual === "SIN_EVALUACION") {
+            alert("🛑 REGLA OBLIGATORIA: Debe evaluar la recepción recibida por parte del derechohabiente (seleccione uno de los 5 botones de emojis) antes de poder guardar el formulario.");
+            // Desplaza la pantalla suavemente hacia la matriz de emojis para llamar la atención del usuario
+            const btnExcelente = document.getElementById('btn-trato-excelente');
+            if (btnExcelente) btnExcelente.scrollIntoView({ behavior: 'smooth' });
+            return; // Aborta por completo el guardado local
+        }
+    }
+
     const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp);
     const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
 
-       // BUSCA EL OBJETO RECORD DENTRO DE SAVEDATA Y MODIFICA ÚNICAMENTE ESTA LÍNEA CORE:
     const record = {
-        'CURP': targetCurp, 'ID': document.getElementById('f-id').value, 'NOMBRE': document.getElementById('f-nombre').value,
+        'CURP': targetCurp, 'ID': idValue, 'NOMBRE': document.getElementById('f-nombre').value,
         'AP PATERNO': document.getElementById('f-paterno').value, 'AP MATERNO': document.getElementById('f-materno').value,
         'TEL FIJO': document.getElementById('f-telfijo').value, 'TEL CEL': document.getElementById('f-telcel').value,
         'MUNICIPIO': document.getElementById('f-municipio').value, 'LOCALIDAD': document.getElementById('f-localidad').value,
@@ -317,14 +331,10 @@ function saveData(event) {
         'NUM EXT': document.getElementById('f-numext').value, 'REFERENCIA': document.getElementById('f-referencia').value,
         'SITUACION': document.getElementById('f-situacion').value, 'CAUSAL': document.getElementById('f-causal').value,
         'ESTATUS_VISITA': currentEstatusVisita, 'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue,
-        
-        // CORRECCIÓN HISTÓRICA: Lee forzadamente la variable compartida de la ventana global
-        'EVALUACION_TRATO': window.currentTratoValue || "", 
-        
+        'EVALUACION_TRATO': currentEstatusVisita === "NO LOCALIZADO" ? "" : evaluacionTratoActual, 
         'Latitud': latValue, 'Longitud': lonValue,
         'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"), 'USUARIO_MODIFICA': currentUser.name, 'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || ""
     };
-
 
     const tx = db.transaction(STORE_NAME, "readwrite");
     tx.objectStore(STORE_NAME).put(record);
@@ -337,6 +347,7 @@ function saveData(event) {
         changeScreen('screen-search');
     };
 }
+
 
 function openHistoryScreen() {
     changeScreen('screen-history');
