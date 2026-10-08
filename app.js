@@ -227,10 +227,16 @@ function openForm(item) {
     }
     
     changeScreen('screen-form');
-    // POBLADO TÁCTIL SEGURO: Inyecta las localidades del datalist cuando la pantalla ya es visible en Chrome Android
-    const datalistEl = document.getElementById('lista-localidades');
-    if (datalistEl && typeof CATALOGO_LOCALIDADES !== 'undefined') {
-        datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}"></option>`).join('');
+    
+    // AMARRE DEFINITIVO EN CALIENTE: Obliga a Android a renderizar la lista al dar click en la caja
+    const inputLocalidad = document.getElementById('f-localidad');
+    if (inputLocalidad) {
+        inputLocalidad.onfocus = function() {
+            const dl = document.getElementById('lista-localidades');
+            if (dl && typeof CATALOGO_LOCALIDADES !== 'undefined') {
+                dl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}"></option>`).join('');
+            }
+        };
     }
 }
 function saveData(event) {
@@ -323,9 +329,19 @@ function abrirFormularioVacioAltaNueva() {
         }, () => { document.getElementById('f-lat').value = "ERROR"; document.getElementById('f-lon').value = "ERROR"; });
     }
     const curpInputEl = document.getElementById('f-curp'); curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal); curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
+    
     changeScreen('screen-form');
-    // FORZADO DE TECLADO ANDROID: Asegura la inyección del catálogo cuando el input ya está físicamente dibujado en pantalla
-    const datalistEl = document.getElementById('lista-localidades'); if (datalistEl && typeof CATALOGO_LOCALIDADES !== 'undefined') { datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}"></option>`).join(''); }
+    
+    // ENLACE EN CALIENTE PARA ALTAS NUEVAS: Puebla las opciones al dar click en la caja
+    const inputLocalidad = document.getElementById('f-localidad');
+    if (inputLocalidad) {
+        inputLocalidad.onfocus = function() {
+            const dl = document.getElementById('lista-localidades');
+            if (dl && typeof CATALOGO_LOCALIDADES !== 'undefined') {
+                dl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}"></option>`).join('');
+            }
+        };
+    }
 }
 
 function verificarCurpDuplicadaEnTiempoReal(e) {
