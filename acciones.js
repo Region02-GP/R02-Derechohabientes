@@ -1,4 +1,4 @@
-// REEMPLAZA LA PRIMERA LÍNEA DE TU ACCIONES.JS POR ESTA DECLARACIÓN GLOBAL BLINDADA:
+// DECLARACIÓN DE VARIABLE GLOBAL COMPARTIDA
 window.currentTratoValue = ""; 
 
 function seleccionarTrato(opcion) {
@@ -30,18 +30,20 @@ function actualizarEstilosBotonesTrato() {
         btnHostil.style.backgroundColor = "#FCE8E6"; btnHostil.style.borderColor = "#b91c1c"; btnHostil.style.color = "#b91c1c";
     }
 }
-
 function abrirFormularioVacioAltaNueva() {
-    // REGLA CORE REPARADA: Renderiza las opciones con el formato nativo compatible con teclados Android
+    // REGLA CORE CORREGIDA DE RENDIMIENTO: Renderiza las opciones usando la etiqueta de cierre estándar válida para Chrome
     const datalistEl = document.getElementById('lista-localidades');
     if (datalistEl && typeof CATALOGO_LOCALIDADES !== 'undefined') {
-        datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}">`).join('');
+        datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}"></option>`).join('');
     }
 
     const camposWrapper = document.getElementById('form-fields-wrapper');
+    if (camposWrapper) {
+        const gridBloqueado = camposWrapper.querySelector('.form-grid');
+        if (gridBloqueado) gridBloqueado.classList.remove('text-disabled');
+    }
 
-
-    // CORRECCIÓN SIN ERRORES: Libera las cajas de texto de nombres para captura manual
+    // Libera las cajas de texto de identidad para captura manual en campo
     document.getElementById('f-curp').removeAttribute('readonly');
     document.getElementById('f-nombre').removeAttribute('readonly');
     document.getElementById('f-paterno').removeAttribute('readonly');
@@ -57,10 +59,9 @@ function abrirFormularioVacioAltaNueva() {
     
     currentEstatusVisita = "LOCALIZADO"; 
     motivoNoLocalizadoValue = ""; 
-    currentTratoValue = "";
+    window.currentTratoValue = "";
     actualizarEstilosBotonesFormulario();
     actualizarEstilosBotonesTrato();
-
     document.getElementById('f-lat').value = "Buscando satélite...";
     document.getElementById('f-lon').value = "Buscando satélite...";
     if (navigator.geolocation) {
@@ -76,18 +77,16 @@ function abrirFormularioVacioAltaNueva() {
     changeScreen('screen-form');
 }
 
-// REVISE QUE SU FUNCIÓN DE DETECTOR DE DUPLICADOS EN ACCONES.JS ESTÉ EXACTAMENTE ASÍ:
 function verificarCurpDuplicadaEnTiempoReal(e) {
     const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase();
     e.target.value = valorLimpio; 
     
     if (valorLimpio.length === 18) {
-        // BÚSQUEDA GLOBAL DE SEGURIDAD: Escanea toda la RAM sin importar las fronteras del municipio
         const registroExistente = localMemoryDatabase.find(r => r.CURP === valorLimpio);
         if (registroExistente) {
-            if (confirm(`📢 DETECTOR DE DUPLICADOS: La CURP [${valorLimpio}] ya existe en el sistema (Pertenece al Municipio de: ${registroExistente.MUNICIPIO || 'SIN TERRITORIO'}).\n\n¿Desea abortar esta alta nueva y cargar su registro histórico anterior de forma automática?`)) {
+            if (confirm(`📢 DETECTOR DE DUPLICADOS: La CURP [${valorLimpio}] ya existe en la base (Municipio: ${registroExistente.MUNICIPIO || 'SIN MUNICIPIO'}).\n\n¿Desea abortar esta alta nueva y cargar su registro histórico anterior de forma automática?`)) {
                 alert("Cargando información del derechohabiente..."); 
-                openForm(registroExistente); // Abre la Pantalla 4 cruzando el filtro
+                openForm(registroExistente);
             } else { 
                 e.target.value = ''; 
                 e.target.focus(); 
@@ -96,4 +95,3 @@ function verificarCurpDuplicadaEnTiempoReal(e) {
         }
     }
 }
-
