@@ -2,33 +2,6 @@
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_rQKWnnixfxxhRqa66SG-FUO33_bHDH08ivvkno8T4zpRL4UaWT0DyDIsQVagdxYV/exec";
 
 
-// CATÁLOGO OFICIAL INTEGRADO EMULANDO FILE_W0IDCX PARA EVITAR ERRORES DE CARGA ASÍNCRONA
-const CATALOGO_LOCALIDADES = [
-    "GOMEZ PALACIO", "GONZALEZ COATITAS", "AQUILES SERDAN", "ARTURO MARTINEZ ADAME",
-    "BRITTINGHAM", "BUENAVISTA", "CALLEJON DE CALABAZAS", "CHACONEA", "CHAUHUIZQUE",
-    "COMPAÑIA", "EL COMPAS", "EL CONSUELEÑO", "EL MANANTIAL", "EL MEZQUITAL",
-    "EL QUEMADO", "EL RECUPERO", "EL SENSE", "EL SEVEN", "EL VERGEL", "ESTACION NOE",
-    "EUREKA", "EX-HACIENDA CHURUBUSCO", "FELIPE ANGELES", "FRANCISCO JAVIER MINA",
-    "FRANCISCO VILLA", "GREGORIO GARCIA", "GUADALUPE", "HUITRON", 
-    "INGENIERIO INOCENCIO GALINDO", "JESUS NAZARENO", "LA CHULA", "LA DAMAS",
-    "LA ENRAMADA", "LA ESMERALDA", "LA FLOR", "LA ISLA", "LA LUZ", "LA MARCHA",
-    "LA POPA", "LA PYME", "LA REFORMA", "LA REJAS", "LA SIERRA", "LA UNION",
-    "LAS AGUAS", "LAS CRUCES", "LAS FLORES", "LAS HUERTAS", "LAS ISLAS", "LAS LAMIAS",
-    "LAS MARIAS", "LAS NIEVES", "LAS PALMAS", "LAS ROSAS", "LEON GUZMAN", "LOS ALAMOS",
-    "LOS ANGELES", "LOS ARBOLITOS", "LOS CERRITOS", "LOS MEZQUITES", "LOS OLIVOS",
-    "LOS PINOS", "LOS PLACERES", "MARGARITAS", "MARIA ELENA", "MERAZ", "MILAGROS",
-    "NUEVA ESPERANZA", "NUEVA REFORMA", "NUEVO GOMEZ", "PASTOR ROUAIX", "POANAS",
-    "PROGRESO", "PROVIDENCIA", "PUENTE DE PIEDRA", "REFORMA", "RINCON DE RAMOS",
-    "SAENZ", "SAN AGUSTIN", "SAN ALBERTO", "SAN ANTONIO", "SAN CARLOS", "SAN FELIPE",
-    "SAN IGNACIO", "SAN JACINTO", "SAN JOSE", "SAN JUAN", "SAN LUIS", "SAN MARCOS",
-    "SAN MARTIN", "SAN MIGUEL", "SAN PEDRO", "SAN RAFAEL", "SAN RAMON", "SAN ROQUE",
-    "SAN VALENTIN", "SANTA ANITA", "SANTA CLARA", "SANTA ELENA", "SANTA LUCIA",
-    "SANTA MARIA", "SANTA ROSA", "SANTA TERESA", "SANTIAGO", "SIERRA HERMOSA",
-    "SILVERIO", "SOLARES", "TECOLOTES", "TIERRA BLANCA", "VALLE DE SANTA ROSA",
-    "VALLE VERDE", "VENECIA", "VICENTE GUERRERO", "VILLA HERMOSA", "VILLA JARDIN",
-    "VILLA JUAREZ", "VILLA MONTE REY", "VILLA NAZARENO"
-];
-
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
 let currentUser = null;
@@ -41,6 +14,7 @@ const DB_NAME = "R02_DB";
 const DB_VERSION = 1;
 const STORE_NAME = "derechohabientes";
 let db;
+
 const request = indexedDB.open(DB_NAME, DB_VERSION);
 request.onupgradeneeded = (e) => {
     db = e.target.result;
@@ -56,7 +30,6 @@ request.onsuccess = (e) => {
     preloadDatabaseToMemory();
 };
 request.onerror = (e) => { console.error("Error IndexedDB:", e.target.error); };
-
 function updateLocalCounter() {
     if (!db) return;
     const countRequest = db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).count();
@@ -71,6 +44,7 @@ function updateLocalCounter() {
     if (document.getElementById('metric-pendientes-visitas')) document.getElementById('metric-pendientes-visitas').innerText = pendientesPorSubir;
     if (document.getElementById('pending-count')) document.getElementById('pending-count').innerText = pendientesPorSubir;
 }
+
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
@@ -103,7 +77,6 @@ function changeScreen(screenId) {
         if (screenId === 'screen-history') document.getElementById('nav-history').classList.add('active');
     }
 }
-
 function login() {
     const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
     if (typeof AUTHORIZED_CURPS !== 'undefined' && AUTHORIZED_CURPS[curpInput]) {
@@ -219,29 +192,8 @@ function actualizarEstilosBotonesFormulario() {
         btnLoc.style.backgroundColor = "#F3F4F6"; btnLoc.style.borderColor = "#CBD5E0"; btnLoc.style.color = "#9CA3AF";
     }
 }
-// NUEVA FUNCIÓN: Filtra las opciones del menú select en tiempo real mientras el brigadista escribe
-function filtrarLocalidadesAlVuelo() {
-    const textoBuscar = document.getElementById('f-localidad-buscar').value.toLowerCase().trim();
-    const selectLocalidad = document.getElementById('f-localidad');
-    if (!selectLocalidad || typeof CATALOGO_LOCALIDADES === 'undefined') return;
-
-    // Filtramos el arreglo global basándonos en lo tecleado
-    const localidadesFiltradas = CATALOGO_LOCALIDADES.filter(loc => loc.toLowerCase().includes(textoBuscar));
-
-    // Reconstruimos las opciones del select en caliente
-    let opcionesHTML = '<option value="" disabled selected>-- SELECCIONE UNA LOCALIDAD --</option>';
-    for (var i = 0; i < localidadesFiltradas.length; i++) {
-        opcionesHTML += '<option value="' + localidadesFiltradas[i] + '">' + localidadesFiltradas[i] + '</option>';
-    }
-    selectLocalidad.innerHTML = opcionesHTML;
-}
 
 function openForm(item) {
-    // INYECTA ESTA LÍNEA AL INICIO DE openForm() Y DE abrirFormularioVacioAltaNueva() para vaciar el buscador previo:
-if (document.getElementById('f-localidad-buscar')) {
-    document.getElementById('f-localidad-buscar').value = "";
-}
-
     if (!item) return;
     document.getElementById('f-curp').value = item['CURP'] || '';
     document.getElementById('f-id').value = item['ID'] || '';
@@ -274,34 +226,17 @@ if (document.getElementById('f-localidad-buscar')) {
         }, () => { document.getElementById('f-lat').value = "ERROR"; document.getElementById('f-lon').value = "ERROR"; });
     }
     
-   // BUSCA EL TRAMO FINAL DE TU FUNCIÓN openForm(item) Y REEMPLÁZALO EXACTAMENTE POR ESTO:
     changeScreen('screen-form');
     
-    // INYECCIÓN PREDICTIVA NATIIVA: Rellena el datalist justo cuando la pantalla ya está dibujada
+    // RELLENADO PREDICTIVO SEGURO AL CAMBIAR DE PANTALLA
     const datalistEl = document.getElementById('lista-localidades');
     if (datalistEl && typeof CATALOGO_LOCALIDADES !== 'undefined') {
         datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}">`).join('');
     }
-    
-    // Formatea el valor previo de Google Sheets de manera segura en mayúsculas sin romper el teclado
     if (item['LOCALIDAD']) {
         document.getElementById('f-localidad').value = String(item['LOCALIDAD']).toUpperCase().trim();
     } else {
         document.getElementById('f-localidad').value = "";
-    }
-}
-
-    
-    // RELLENADO INDUSTRIAL GARANTIZADO: Lee el arreglo directo de la RAM local del mismo archivo
-    const selectLocalidad = document.getElementById('f-localidad');
-    if (selectLocalidad) {
-        var opcionesHTML = '<option value="" disabled>-- SELECCIONE UNA LOCALIDAD --</option>';
-        for (var k = 0; k < CATALOGO_LOCALIDADES.length; k++) {
-            opcionesHTML += '<option value="' + CATALOGO_LOCALIDADES[k] + '">' + CATALOGO_LOCALIDADES[k] + '</option>';
-        }
-        selectLocalidad.innerHTML = opcionesHTML;
-        if (item['LOCALIDAD']) selectLocalidad.value = String(item['LOCALIDAD']).toUpperCase().trim();
-        else selectLocalidad.value = "";
     }
 }
 function saveData(event) {
@@ -382,11 +317,6 @@ function actualizarEstilosBotonesTrato() {
 }
 
 function abrirFormularioVacioAltaNueva() {
-    // INYECTA ESTA LÍNEA AL INICIO DE openForm() Y DE abrirFormularioVacioAltaNueva() para vaciar el buscador previo:
-if (document.getElementById('f-localidad-buscar')) {
-    document.getElementById('f-localidad-buscar').value = "";
-}
-
     document.getElementById('f-curp').removeAttribute('readonly'); document.getElementById('f-nombre').removeAttribute('readonly'); document.getElementById('f-paterno').removeAttribute('readonly'); document.getElementById('f-materno').removeAttribute('readonly');
     const inputs = ['f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-telfijo', 'f-telcel', 'f-localidad', 'f-seccion', 'f-colonia', 'f-cp', 'f-calle', 'f-numext', 'f-referencia', 'f-causal'];
     inputs.forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ''; });
@@ -400,18 +330,14 @@ if (document.getElementById('f-localidad-buscar')) {
     }
     const curpInputEl = document.getElementById('f-curp'); curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal); curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
     
-   // BUSCA EL TRAMO FINAL DE TU FUNCIÓN abrirFormularioVacioAltaNueva() Y REEMPLÁZALO POR ESTO:
-    const curpInputEl = document.getElementById('f-curp'); curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal); curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
-    
     changeScreen('screen-form');
     
-    // INYECCIÓN PREDICTIVA EN ALTAS: Deja el padrón listo para el autocompletado en el registro nuevo
+    // INYECCIÓN PREDICTIVA EN ALTAS NUEVAS: Carga el listado autorregulado en la memoria táctil al renderizar
     const datalistEl = document.getElementById('lista-localidades');
     if (datalistEl && typeof CATALOGO_LOCALIDADES !== 'undefined') {
         datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}">`).join('');
     }
 }
-
 
 function verificarCurpDuplicadaEnTiempoReal(e) {
     const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase(); e.target.value = valorLimpio; 
