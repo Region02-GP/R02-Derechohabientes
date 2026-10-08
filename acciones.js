@@ -71,11 +71,21 @@ function abrirFormularioVacioAltaNueva() {
         }, () => { document.getElementById('f-lat').value = "ERROR"; document.getElementById('f-lon').value = "ERROR"; });
     }
     
+ // REEMPLAZA EL TRAMO FINAL DE abrirFormularioVacioAltaNueva() PARA QUE QUEDE ASÍ:
     const curpInputEl = document.getElementById('f-curp');
     curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal);
     curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
+    
+    // PRIMERO: Cambia a la Pantalla 4
     changeScreen('screen-form');
+
+    // SEGUNDO: Puebla el datalist al final cuando el teclado de Android ya puede interactuar con él
+    const datalistEl = document.getElementById('lista-localidades');
+    if (datalistEl && typeof CATALOGO_LOCALIDADES !== 'undefined') {
+        datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}"></option>`).join('');
+    }
 }
+
 
 function verificarCurpDuplicadaEnTiempoReal(e) {
     const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase();
