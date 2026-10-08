@@ -36,7 +36,6 @@ function updateLocalCounter() {
         const countElement = document.getElementById('local-db-count');
         if (countElement) countElement.innerText = countRequest.result;
     };
-
     const totalVisitasHoy = pendingSync.length + syncedHistory.length;
     const pendientesPorSubir = pendingSync.length;
 
@@ -94,10 +93,9 @@ async function downloadAllDataMassive() {
     const progressText = document.getElementById('progress-text');
     if (!db) return alert("La base de datos local aún no está lista.");
     
-    btn.disabled = true;
-    progressContainer.style.display = "block";
+    btn.disabled = true; progressContainer.style.display = "block";
     let offset = 0, limit = 10000, isDone = false, totalCargados = 0;
-    const txClear = db.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).clear();
+    db.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).clear();
     
     try {
         while (!isDone) {
@@ -112,8 +110,7 @@ async function downloadAllDataMassive() {
                 data.records.forEach(record => {
                     if (record && record.CURP) {
                         record.CURP = String(record.CURP).replace(/ /g, "").toUpperCase().trim();
-                        store.put(record); 
-                        totalCargados++;
+                        store.put(record); totalCargados++;
                     }
                 });
                 await new Promise((resolve) => { tx.oncomplete = resolve; });
@@ -184,8 +181,7 @@ function seleccionarEstatusVisita(estatus) {
 }
 
 function actualizarEstilosBotonesFormulario() {
-    const btnLoc = document.getElementById('btn-status-localizado');
-    const btnNoLoc = document.getElementById('btn-status-nolocalizado');
+    const btnLoc = document.getElementById('btn-status-localizado'); const btnNoLoc = document.getElementById('btn-status-nolocalizado');
     if (!btnLoc || !btnNoLoc) return;
     if (currentEstatusVisita === "LOCALIZADO") {
         btnLoc.style.backgroundColor = "#E6F4EA"; btnLoc.style.borderColor = "#137333"; btnLoc.style.color = "#137333";
@@ -219,8 +215,7 @@ function openForm(item) {
     currentEstatusVisita = item['ESTATUS_VISITA'] || "LOCALIZADO";
     motivoNoLocalizadoValue = item['MOTIVO_NO_LOCALIZADO'] || "";
     actualizarEstilosBotonesFormulario();
-    window.currentTratoValue = item['EVALUACION_TRATO'] || ""; 
-    actualizarEstilosBotonesTrato();
+    window.currentTratoValue = item['EVALUACION_TRATO'] || ""; actualizarEstilosBotonesTrato();
 
     document.getElementById('f-lat').value = "Buscando satélite...";
     document.getElementById('f-lon').value = "Buscando satélite...";
@@ -232,7 +227,7 @@ function openForm(item) {
     }
     
     changeScreen('screen-form');
-    // CANADO ANDROID DEFINITIVO: Puebla el catálogo con el input ya visible en Chrome
+    // POBLADO TÁCTIL SEGURO: Inyecta las localidades del datalist cuando la pantalla ya es visible en Chrome Android
     const datalistEl = document.getElementById('lista-localidades');
     if (datalistEl && typeof CATALOGO_LOCALIDADES !== 'undefined') {
         datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}"></option>`).join('');
@@ -329,6 +324,7 @@ function abrirFormularioVacioAltaNueva() {
     }
     const curpInputEl = document.getElementById('f-curp'); curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal); curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
     changeScreen('screen-form');
+    // FORZADO DE TECLADO ANDROID: Asegura la inyección del catálogo cuando el input ya está físicamente dibujado en pantalla
     const datalistEl = document.getElementById('lista-localidades'); if (datalistEl && typeof CATALOGO_LOCALIDADES !== 'undefined') { datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}"></option>`).join(''); }
 }
 
