@@ -2,6 +2,33 @@
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_rQKWnnixfxxhRqa66SG-FUO33_bHDH08ivvkno8T4zpRL4UaWT0DyDIsQVagdxYV/exec";
 
 
+// CATÁLOGO OFICIAL INTEGRADO EMULANDO FILE_W0IDCX PARA EVITAR ERRORES DE CARGA ASÍNCRONA
+const CATALOGO_LOCALIDADES = [
+    "GOMEZ PALACIO", "GONZALEZ COATITAS", "AQUILES SERDAN", "ARTURO MARTINEZ ADAME",
+    "BRITTINGHAM", "BUENAVISTA", "CALLEJON DE CALABAZAS", "CHACONEA", "CHAUHUIZQUE",
+    "COMPAÑIA", "EL COMPAS", "EL CONSUELEÑO", "EL MANANTIAL", "EL MEZQUITAL",
+    "EL QUEMADO", "EL RECUPERO", "EL SENSE", "EL SEVEN", "EL VERGEL", "ESTACION NOE",
+    "EUREKA", "EX-HACIENDA CHURUBUSCO", "FELIPE ANGELES", "FRANCISCO JAVIER MINA",
+    "FRANCISCO VILLA", "GREGORIO GARCIA", "GUADALUPE", "HUITRON", 
+    "INGENIERIO INOCENCIO GALINDO", "JESUS NAZARENO", "LA CHULA", "LA DAMAS",
+    "LA ENRAMADA", "LA ESMERALDA", "LA FLOR", "LA ISLA", "LA LUZ", "LA MARCHA",
+    "LA POPA", "LA PYME", "LA REFORMA", "LA REJAS", "LA SIERRA", "LA UNION",
+    "LAS AGUAS", "LAS CRUCES", "LAS FLORES", "LAS HUERTAS", "LAS ISLAS", "LAS LAMIAS",
+    "LAS MARIAS", "LAS NIEVES", "LAS PALMAS", "LAS ROSAS", "LEON GUZMAN", "LOS ALAMOS",
+    "LOS ANGELES", "LOS ARBOLITOS", "LOS CERRITOS", "LOS MEZQUITES", "LOS OLIVOS",
+    "LOS PINOS", "LOS PLACERES", "MARGARITAS", "MARIA ELENA", "MERAZ", "MILAGROS",
+    "NUEVA ESPERANZA", "NUEVA REFORMA", "NUEVO GOMEZ", "PASTOR ROUAIX", "POANAS",
+    "PROGRESO", "PROVIDENCIA", "PUENTE DE PIEDRA", "REFORMA", "RINCON DE RAMOS",
+    "SAENZ", "SAN AGUSTIN", "SAN ALBERTO", "SAN ANTONIO", "SAN CARLOS", "SAN FELIPE",
+    "SAN IGNACIO", "SAN JACINTO", "SAN JOSE", "SAN JUAN", "SAN LUIS", "SAN MARCOS",
+    "SAN MARTIN", "SAN MIGUEL", "SAN PEDRO", "SAN RAFAEL", "SAN RAMON", "SAN ROQUE",
+    "SAN VALENTIN", "SANTA ANITA", "SANTA CLARA", "SANTA ELENA", "SANTA LUCIA",
+    "SANTA MARIA", "SANTA ROSA", "SANTA TERESA", "SANTIAGO", "SIERRA HERMOSA",
+    "SILVERIO", "SOLARES", "TECOLOTES", "TIERRA BLANCA", "VALLE DE SANTA ROSA",
+    "VALLE VERDE", "VENECIA", "VICENTE GUERRERO", "VILLA HERMOSA", "VILLA JARDIN",
+    "VILLA JUAREZ", "VILLA MONTE REY", "VILLA NAZARENO"
+];
+
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
 let currentUser = null;
@@ -14,7 +41,6 @@ const DB_NAME = "R02_DB";
 const DB_VERSION = 1;
 const STORE_NAME = "derechohabientes";
 let db;
-
 const request = indexedDB.open(DB_NAME, DB_VERSION);
 request.onupgradeneeded = (e) => {
     db = e.target.result;
@@ -30,6 +56,7 @@ request.onsuccess = (e) => {
     preloadDatabaseToMemory();
 };
 request.onerror = (e) => { console.error("Error IndexedDB:", e.target.error); };
+
 function updateLocalCounter() {
     if (!db) return;
     const countRequest = db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).count();
@@ -44,7 +71,6 @@ function updateLocalCounter() {
     if (document.getElementById('metric-pendientes-visitas')) document.getElementById('metric-pendientes-visitas').innerText = pendientesPorSubir;
     if (document.getElementById('pending-count')) document.getElementById('pending-count').innerText = pendientesPorSubir;
 }
-
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
@@ -77,6 +103,7 @@ function changeScreen(screenId) {
         if (screenId === 'screen-history') document.getElementById('nav-history').classList.add('active');
     }
 }
+
 function login() {
     const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
     if (typeof AUTHORIZED_CURPS !== 'undefined' && AUTHORIZED_CURPS[curpInput]) {
@@ -126,7 +153,6 @@ async function downloadAllDataMassive() {
         changeScreen('screen-search');
     } catch (error) { alert(`Error: ${error.message}`); } finally { btn.disabled = false; }
 }
-
 let localMemoryDatabase = [];
 function preloadDatabaseToMemory() {
     if (!db) return;
@@ -229,17 +255,16 @@ function openForm(item) {
     
     changeScreen('screen-form');
     
-    // INYECCIÓN SELECT NATIVA REPARADA: Construye y preselecciona el valor histórico traído desde Google Sheets
+    // RELLENADO INDUSTRIAL GARANTIZADO: Lee el arreglo directo de la RAM local del mismo archivo
     const selectLocalidad = document.getElementById('f-localidad');
-    if (selectLocalidad && typeof CATALOGO_LOCALIDADES !== 'undefined') {
-        selectLocalidad.innerHTML = '<option value="" disabled>-- SELECCIONE UNA LOCALIDAD --</option>' + 
-            CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}">${loc}</option>`).join('');
-        
-        if (item['LOCALIDAD']) {
-            selectLocalidad.value = String(item['LOCALIDAD']).toUpperCase().trim();
-        } else {
-            selectLocalidad.value = "";
+    if (selectLocalidad) {
+        var opcionesHTML = '<option value="" disabled>-- SELECCIONE UNA LOCALIDAD --</option>';
+        for (var k = 0; k < CATALOGO_LOCALIDADES.length; k++) {
+            opcionesHTML += '<option value="' + CATALOGO_LOCALIDADES[k] + '">' + CATALOGO_LOCALIDADES[k] + '</option>';
         }
+        selectLocalidad.innerHTML = opcionesHTML;
+        if (item['LOCALIDAD']) selectLocalidad.value = String(item['LOCALIDAD']).toUpperCase().trim();
+        else selectLocalidad.value = "";
     }
 }
 function saveData(event) {
@@ -335,11 +360,13 @@ function abrirFormularioVacioAltaNueva() {
     
     changeScreen('screen-form');
     
-    // INYECCIÓN SELECT EN ALTAS NUEVAS SÍNCRONA COMPLETA
     const selectLocalidad = document.getElementById('f-localidad');
-    if (selectLocalidad && typeof CATALOGO_LOCALIDADES !== 'undefined') {
-        selectLocalidad.innerHTML = '<option value="" disabled selected>-- SELECCIONE UNA LOCALIDAD --</option>' + 
-            CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}">${loc}</option>`).join('');
+    if (selectLocalidad) {
+        var opcionesHTML = '<option value="" disabled selected>-- SELECCIONE UNA LOCALIDAD --</option>';
+        for (var k = 0; k < CATALOGO_LOCALIDADES.length; k++) {
+            opcionesHTML += '<option value="' + CATALOGO_LOCALIDADES[k] + '">' + CATALOGO_LOCALIDADES[k] + '</option>';
+        }
+        selectLocalidad.innerHTML = opcionesHTML;
     }
 }
 
