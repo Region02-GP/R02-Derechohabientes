@@ -10,12 +10,12 @@
 <body>
     <header class="main-header">
         <div class="header-brand-wrapper">
-            <img src="https://pub.bienestar.gob.mx/static/media/padrones01.e4252fd6.jpg" alt="Logotipo Institucional" class="header-logo">
+            <img src="https://bienestar.gob.mx" alt="Logotipo Institucional" class="header-logo">
         </div>
     </header>
 
     <main class="app-container">
-        <!-- PANTALLA 1: LOGIN (CORREGIDA Y SIN DUPLICACIONES DE ETIQUETAS) -->
+        <!-- PANTALLA 1: LOGIN -->
         <section id="screen-login" class="app-screen">
             <h1>Sistema de actualización de datos</h1>
             <div class="screen-toolbar">
@@ -34,24 +34,17 @@
                 <h2 id="welcome-message">Bienvenido</h2>
             </div>
 
-            <!-- PANEL DE RESUMEN ALINEADO EN UNA SOLA FILA HORIZONTAL -->
             <div style="margin-top: 15px; margin-bottom: 5px;">
                 <h3 style="font-size: 14px; font-weight: 700; color: #1F2937; margin-bottom: 12px; letter-spacing: 0.3px;">Resumen de la Actividad del Día</h3>
-                
                 <div style="display: flex; flex-direction: row; gap: 8px; width: 100%; box-sizing: border-box;">
-                    <!-- Tarjeta 1: Cargados -->
                     <div style="flex: 1; background: #E6F4EA; border-top: 4px solid #236947; padding: 10px 6px; border-radius: 6px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
                         <p style="margin: 0; font-size: 11px; font-weight: 700; color: #236947; line-height: 1.2;">📂 Cargados</p>
                         <p style="margin: 4px 0 0 0; font-size: 20px; font-weight: 800; color: #1F2937;" id="local-db-count">0</p>
                     </div>
-
-                    <!-- Tarjeta 2: Guardados -->
                     <div style="flex: 1; background: #EDF4F9; border-top: 4px solid #BC955C; padding: 10px 6px; border-radius: 6px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
                         <p style="margin: 0; font-size: 11px; font-weight: 700; color: #4B5563; line-height: 1.2;">📝 Guardados</p>
                         <p style="margin: 4px 0 0 0; font-size: 20px; font-weight: 800; color: #1F2937;" id="metric-total-visitas">0</p>
                     </div>
-
-                    <!-- Tarjeta 3: Pendientes -->
                     <div style="flex: 1; background: #FCE8E6; border-top: 4px solid #b91c1c; padding: 10px 6px; border-radius: 6px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
                         <p style="margin: 0; font-size: 11px; font-weight: 700; color: #b91c1c; line-height: 1.2;">⏳ Pendientes</p>
                         <p style="margin: 4px 0 0 0; font-size: 20px; font-weight: 800; color: #1F2937;" id="metric-pendientes-visitas">0</p>
@@ -74,8 +67,6 @@
             <div class="screen-toolbar" style="margin-bottom: 12px;">
                 <h2>Búsqueda</h2>
             </div>
-
-            <!-- ENCABEZADO DE IDENTIDAD FIJO -->
             <div style="background: #F3F4F6; border: 1px solid #CBD5E0; border-radius: 8px; padding: 10px; margin-bottom: 15px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);">
                 <p style="margin: 0; font-size: 13px; font-weight: 700; color: #1F2937; line-height: 1.3;">
                     👤 Brigadista: <span id="search-brigadista-name">Cargando...</span>
@@ -84,16 +75,12 @@
                     📍 Municipio: <span id="search-brigadista-municipio">GOMEZ PALACIO</span>
                 </p>
             </div>
-
-            <!-- BOTÓN DE ALTA INSTITUCIONAL -->
             <button type="button" onclick="abrirFormularioVacioAltaNueva()" style="width: 100%; padding: 12px; margin-bottom: 15px; font-weight: bold; background-color: #621132; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; box-shadow: 0 4px 10px rgba(98, 17, 50, 0.2);">
                 ➕ Agregar Nuevo Derechohabiente
             </button>
-
             <div class="form-group">
                 <input type="text" id="search-input" oninput="searchData()" placeholder="Buscar por Calle, Nombre, CURP o Apellidos...">
             </div>
-            
             <div id="search-results" class="results-list"></div>
         </section>
 
@@ -107,7 +94,6 @@
             <input type="hidden" id="f-motivo" value="">
             <form id="edit-form" onsubmit="saveData(event)">
                 <div id="form-fields-wrapper">
-                    <!-- CURP INDEPENDIENTE ANCHO COMPLETO -->
                     <div class="form-group" style="margin-bottom: 16px;">
                         <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: var(--text-muted);">CURP *:</label>
                         <input type="text" id="f-curp" maxlength="18" minlength="18" required style="width: 100%; padding: 11px 14px; box-sizing: border-box; font-size: 16px; text-transform:uppercase;">
@@ -126,15 +112,13 @@
                     <div class="form-group"><label>Teléfono Fijo:</label><input type="tel" id="f-telfijo" pattern="[0-9]{10}" maxlength="10"></div>
                     <div class="form-group"><label>Teléfono Celular:</label><input type="tel" id="f-telcel" pattern="[0-9]{10}" maxlength="10"></div>
                     <div class="form-group"><label>Municipio:</label><input type="text" id="f-municipio"></div>
-                   <!-- BUSCA EL INPUT DE LOCALIDAD DENTRO DE TU EDIT-FORM Y REEMPLÁZALO EXACTAMENTE POR ESTO: -->
-<div class="form-group">
-    <label>Localidad *:</label>
-    <!-- Se agrega el atributo list para vincular el input con las opciones dinámicas del datalist -->
-    <input type="text" id="f-localidad" list="lista-localidades" required style="text-transform:uppercase;">
-    
-    <!-- NUEVO CONTENEDOR DATALIST: Albergará las respuestas que se inyectarán desde el script -->
-    <datalist id="lista-localidades"></datalist>
-</div>
+                    
+                    <!-- UBICACIÓN LIBERADA DEL DATALIST (FUERA DE LA ZONA BLOQUEADA TEXT-DISABLED) -->
+                    <div class="form-group">
+                        <label>Localidad *:</label>
+                        <input type="text" id="f-localidad" list="lista-localidades" required style="text-transform:uppercase;">
+                        <datalist id="lista-localidades"></datalist>
+                    </div>
 
                     <div class="form-group"><label>Sección *:</label><input type="number" id="f-seccion" max="9999" required></div>
                     <div class="form-group"><label>Colonia:</label><input type="text" id="f-colonia"></div>
@@ -144,7 +128,6 @@
                     <div class="form-group"><label>Referencia:</label><textarea id="f-referencia" rows="3"></textarea></div>
                 </div>
 
-                <!-- MATRIZ DE EVALUACIÓN DE 5 RESPUESTAS PUDIENDO OPERAR CORRECTAMENTE -->
                 <div style="margin-bottom: 16px;">
                     <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: var(--text-muted);">Evaluación de la Recepción Recibida *:</label>
                     <div style="display: flex; gap: 6px; width: 100%; box-sizing: border-box; margin-bottom: 6px;">
@@ -193,11 +176,9 @@
         </nav>
     </main>
 
-  <!-- BUSCA LAS LÍNEAS DE SCRIPT AL FINAL DE TU INDEX.HTML Y ENLAZA EL NUEVO ARCHIVO EXACTAMENTE AQUÍ: -->
+    <!-- PROCESADO EN LÍNEA NEUTRAL SEGURO (CON FILTRO DE ACCIONES INTEGRADO EN APP.JS) -->
     <script src="brigadistas.js"></script>
-    <script src="localidades.js"></script> <!-- <-- ENLACE REQUERIDO AGREGADO EN ORDEN DE CARGA -->
-  
+    <script src="localidades.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
-
