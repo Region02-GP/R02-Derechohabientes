@@ -219,8 +219,29 @@ function actualizarEstilosBotonesFormulario() {
         btnLoc.style.backgroundColor = "#F3F4F6"; btnLoc.style.borderColor = "#CBD5E0"; btnLoc.style.color = "#9CA3AF";
     }
 }
+// NUEVA FUNCIÓN: Filtra las opciones del menú select en tiempo real mientras el brigadista escribe
+function filtrarLocalidadesAlVuelo() {
+    const textoBuscar = document.getElementById('f-localidad-buscar').value.toLowerCase().trim();
+    const selectLocalidad = document.getElementById('f-localidad');
+    if (!selectLocalidad || typeof CATALOGO_LOCALIDADES === 'undefined') return;
+
+    // Filtramos el arreglo global basándonos en lo tecleado
+    const localidadesFiltradas = CATALOGO_LOCALIDADES.filter(loc => loc.toLowerCase().includes(textoBuscar));
+
+    // Reconstruimos las opciones del select en caliente
+    let opcionesHTML = '<option value="" disabled selected>-- SELECCIONE UNA LOCALIDAD --</option>';
+    for (var i = 0; i < localidadesFiltradas.length; i++) {
+        opcionesHTML += '<option value="' + localidadesFiltradas[i] + '">' + localidadesFiltradas[i] + '</option>';
+    }
+    selectLocalidad.innerHTML = opcionesHTML;
+}
 
 function openForm(item) {
+    // INYECTA ESTA LÍNEA AL INICIO DE openForm() Y DE abrirFormularioVacioAltaNueva() para vaciar el buscador previo:
+if (document.getElementById('f-localidad-buscar')) {
+    document.getElementById('f-localidad-buscar').value = "";
+}
+
     if (!item) return;
     document.getElementById('f-curp').value = item['CURP'] || '';
     document.getElementById('f-id').value = item['ID'] || '';
@@ -345,6 +366,11 @@ function actualizarEstilosBotonesTrato() {
 }
 
 function abrirFormularioVacioAltaNueva() {
+    // INYECTA ESTA LÍNEA AL INICIO DE openForm() Y DE abrirFormularioVacioAltaNueva() para vaciar el buscador previo:
+if (document.getElementById('f-localidad-buscar')) {
+    document.getElementById('f-localidad-buscar').value = "";
+}
+
     document.getElementById('f-curp').removeAttribute('readonly'); document.getElementById('f-nombre').removeAttribute('readonly'); document.getElementById('f-paterno').removeAttribute('readonly'); document.getElementById('f-materno').removeAttribute('readonly');
     const inputs = ['f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-telfijo', 'f-telcel', 'f-localidad', 'f-seccion', 'f-colonia', 'f-cp', 'f-calle', 'f-numext', 'f-referencia', 'f-causal'];
     inputs.forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ''; });
