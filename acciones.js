@@ -31,13 +31,16 @@ function actualizarEstilosBotonesTrato() {
     }
 }
 
+// BUSCA EL INICIO DE LA FUNCIÓN abrirFormularioVacioAltaNueva() Y AGREGA ESTE BLOQUE INICIAL:
 function abrirFormularioVacioAltaNueva() {
-    const camposWrapper = document.getElementById('form-fields-wrapper');
-    if (camposWrapper) {
-        const gridBloqueado = camposWrapper.querySelector('.form-grid');
-        if (gridBloqueado) gridBloqueado.classList.remove('text-disabled');
+    // NUEVA REGLA CORE: Renderiza el datalist de localidades de forma dinámica al abrir el formulario
+    const datalistEl = document.getElementById('lista-localidades');
+    if (datalistEl && typeof CATALOGO_LOCALIDADES !== 'undefined') {
+        datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}"></option>`).join('');
     }
-    
+
+    const camposWrapper = document.getElementById('form-fields-wrapper');
+
     // CORRECCIÓN SIN ERRORES: Libera las cajas de texto de nombres para captura manual
     document.getElementById('f-curp').removeAttribute('readonly');
     document.getElementById('f-nombre').removeAttribute('readonly');
