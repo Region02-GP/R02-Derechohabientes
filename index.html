@@ -115,15 +115,20 @@
                     
                     <!-- UBICACIÓN LIBERADA DEL DATALIST (FUERA DE LA ZONA BLOQUEADA TEXT-DISABLED) -->
                     <!-- BUSCA EL FORM-GROUP DE LOCALIDAD EN TU INDEX.HTML Y REEMPLÁZALO EXACTAMENTE POR ESTO: -->
-<!-- BUSCA EL CONTENEDOR DE LOCALIDAD EN TU INDEX.HTML Y DÉJALO EXACTAMENTE ASÍ: -->
-<div class="form-group">
-    <label>Localidad *:</label>
-    <!-- Se usa type="search" para activar la predicción nativa de Android y se remueve el estilo uppercase en línea -->
-    <input type="search" id="f-localidad" list="lista-localidades" required placeholder="Escribe para buscar localidad..." style="width: 100%; padding: 11px 14px; border: 1px solid #CBD5E0; border-radius: 8px; box-sizing: border-box; font-size: 16px; background-color: var(--surface-light); color: var(--text-main);">
+<!-- BUSCA EL FORM-GROUP DE LOCALIDAD EN TU INDEX.HTML Y REEMPLÁZALO POR COMPLETO CON ESTO: -->
+<div class="form-group" style="background: #F9FAFB; border: 1px solid #CBD5E0; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+    <label style="font-weight: 700; color: var(--primary-color); display: block; margin-bottom: 6px;">Localidad *:</label>
     
-    <!-- El datalist regresa a su posición correcta y limpia -->
-    <datalist id="lista-localidades"></datalist>
+    <!-- CAMPO CORE VALOR SELECCIONADO: Recibe el dato y es el que se manda a Google Sheets -->
+    <input type="text" id="f-localidad" readonly required placeholder="Ninguna localidad seleccionada" style="background-color: #EDF2F7; color: #1F2937; font-weight: 700; border-color: #CBD5E0; margin-bottom: 10px;">
+    
+    <!-- CAJA DE TEXTO DEL BUSCADOR DE LOCALIDADES -->
+    <input type="text" id="f-localidad-buscar" oninput="buscarLocalidadesEnPantalla()" placeholder="🔍 Teclee aquí para buscar localidad (Ej: SAN)..." style="background-color: #FFFFFF; border-color: var(--secondary-color); margin-bottom: 8px;">
+    
+    <!-- CONTENEDOR FÍSICO DE RESULTADOS (IDÉNTICO AL BUSCADOR GENERAL) -->
+    <div id="localidad-search-results" style="max-height: 180px; overflow-y: auto; border: 1px solid #E5E7EB; border-radius: 6px; background: #FFFFFF; display: none; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);"></div>
 </div>
+
 
 
 
