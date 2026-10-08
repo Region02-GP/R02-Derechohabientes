@@ -160,11 +160,16 @@ function preloadDatabaseToMemory() {
     };
 }
 
+// REEMPLAZA TU FUNCIÓN searchData() DENTRO DE APP.JS CON ESTA VERSIÓN CON CANDADO DE TERRITORIO:
 function searchData() {
     const query = document.getElementById('search-input').value.toLowerCase().trim();
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = "";
     if (query.length < 3) return;
+
+    // Extrae de forma segura el municipio asignado al brigadista logueado
+    const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp];
+    const municipioBrigadista = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : "";
 
     const searchTokens = query.split(/\s+/); 
     let matchedRecords = [];
@@ -172,6 +177,13 @@ function searchData() {
     for (let i = 0; i < localMemoryDatabase.length; i++) {
         const item = localMemoryDatabase[i];
         if (!item) continue;
+
+        // CANDADO OPERATIVO EXCLUSIVO: Si el municipio del derechohabiente no coincide, se oculta de la lista
+        const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
+        if (municipioDerechohabiente !== municipioBrigadista) {
+            continue; 
+        }
+
         const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''}`.toLowerCase();
         if (searchTokens.every(t => combinedText.includes(t))) matchedRecords.push(item);
     }
@@ -211,6 +223,7 @@ function searchData() {
         resultsContainer.appendChild(div);
     });
 }
+
 function seleccionarEstatusVisita(estatus) {
     currentEstatusVisita = estatus.toUpperCase();
     if (currentEstatusVisita === "NO LOCALIZADO") {
