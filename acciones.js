@@ -73,16 +73,18 @@ function abrirFormularioVacioAltaNueva() {
     changeScreen('screen-form');
 }
 
+// REVISE QUE SU FUNCIÓN DE DETECTOR DE DUPLICADOS EN ACCONES.JS ESTÉ EXACTAMENTE ASÍ:
 function verificarCurpDuplicadaEnTiempoReal(e) {
     const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase();
     e.target.value = valorLimpio; 
     
     if (valorLimpio.length === 18) {
+        // BÚSQUEDA GLOBAL DE SEGURIDAD: Escanea toda la RAM sin importar las fronteras del municipio
         const registroExistente = localMemoryDatabase.find(r => r.CURP === valorLimpio);
         if (registroExistente) {
-            if (confirm(`📢 DETECTOR DE DUPLICADOS: La CURP [${valorLimpio}] ya existe en la base (Municipio: ${registroExistente.MUNICIPIO || 'SIN MUNICIPIO'}).\n\n¿Desea abortar el alta y cargar sus datos históricos anteriores?`)) {
-                alert("Cargando información histórica..."); 
-                openForm(registroExistente);
+            if (confirm(`📢 DETECTOR DE DUPLICADOS: La CURP [${valorLimpio}] ya existe en el sistema (Pertenece al Municipio de: ${registroExistente.MUNICIPIO || 'SIN TERRITORIO'}).\n\n¿Desea abortar esta alta nueva y cargar su registro histórico anterior de forma automática?`)) {
+                alert("Cargando información del derechohabiente..."); 
+                openForm(registroExistente); // Abre la Pantalla 4 cruzando el filtro
             } else { 
                 e.target.value = ''; 
                 e.target.focus(); 
@@ -91,3 +93,4 @@ function verificarCurpDuplicadaEnTiempoReal(e) {
         }
     }
 }
+
