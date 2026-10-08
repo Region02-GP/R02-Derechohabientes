@@ -15,7 +15,7 @@
     </header>
 
     <main class="app-container">
-        <!-- PANTALLA 1: LOGIN -->
+        <!-- PANTALLA 1: LOGIN (CORREGIDA Y SIN DUPLICACIONES DE ETIQUETAS) -->
         <section id="screen-login" class="app-screen">
             <h1>Sistema de actualización de datos</h1>
             <div class="screen-toolbar">
@@ -39,7 +39,6 @@
                 <h3 style="font-size: 14px; font-weight: 700; color: #1F2937; margin-bottom: 12px; letter-spacing: 0.3px;">Resumen de la Actividad del Día</h3>
                 
                 <div style="display: flex; flex-direction: row; gap: 8px; width: 100%; box-sizing: border-box;">
-                    
                     <!-- Tarjeta 1: Cargados -->
                     <div style="flex: 1; background: #E6F4EA; border-top: 4px solid #236947; padding: 10px 6px; border-radius: 6px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
                         <p style="margin: 0; font-size: 11px; font-weight: 700; color: #236947; line-height: 1.2;">📂 Cargados</p>
@@ -57,7 +56,6 @@
                         <p style="margin: 0; font-size: 11px; font-weight: 700; color: #b91c1c; line-height: 1.2;">⏳ Pendientes</p>
                         <p style="margin: 4px 0 0 0; font-size: 20px; font-weight: 800; color: #1F2937;" id="metric-pendientes-visitas">0</p>
                     </div>
-
                 </div>
             </div>
 
@@ -71,7 +69,7 @@
                 <button type="button" onclick="downloadAllDataMassive()" id="btn-massive-download" class="btn-secondary">📥 Descargar Base Completa</button>
             </div>
         </section>
-        <!-- PANTALLA 3: BUSCADOR CON ENCABEZADO DE IDENTIDAD CORREGIDO -->
+        <!-- PANTALLA 3: BUSCADOR CON ENCABEZADO DE IDENTIDAD -->
         <section id="screen-search" class="app-screen hidden">
             <div class="screen-toolbar" style="margin-bottom: 12px;">
                 <h2>Búsqueda</h2>
@@ -87,7 +85,7 @@
                 </p>
             </div>
 
-            <!-- BOTÓN DE ALTA INSTITUTIONAL -->
+            <!-- BOTÓN DE ALTA INSTITUCIONAL -->
             <button type="button" onclick="abrirFormularioVacioAltaNueva()" style="width: 100%; padding: 12px; margin-bottom: 15px; font-weight: bold; background-color: #621132; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; box-shadow: 0 4px 10px rgba(98, 17, 50, 0.2);">
                 ➕ Agregar Nuevo Derechohabiente
             </button>
@@ -109,14 +107,12 @@
             <input type="hidden" id="f-motivo" value="">
             <form id="edit-form" onsubmit="saveData(event)">
                 <div id="form-fields-wrapper">
-                    
-                    <!-- CURP INDEPENDIENTE ABARCANDO EL ANCHO COMPLETO -->
+                    <!-- CURP INDEPENDIENTE ANCHO COMPLETO -->
                     <div class="form-group" style="margin-bottom: 16px;">
                         <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: var(--text-muted);">CURP *:</label>
                         <input type="text" id="f-curp" maxlength="18" minlength="18" required style="width: 100%; padding: 11px 14px; box-sizing: border-box; font-size: 16px; text-transform:uppercase;">
                     </div>
 
-                    <!-- CUADRÍCULA CERRADA CORRECTAMENTE -->
                     <div class="form-grid text-disabled">
                         <div><label>ID:</label><input type="text" id="f-id" readonly></div>
                         <div><label>Nombre:</label><input type="text" id="f-nombre" readonly></div>
@@ -138,33 +134,20 @@
                     <div class="form-group"><label>Num Ext:</label><input type="text" id="f-numext"></div>
                     <div class="form-group"><label>Referencia:</label><textarea id="f-referencia" rows="3"></textarea></div>
                 </div>
-                <!-- BUSCA EL CONTENEDOR DE EVALUACIÓN DE TRATO EN TU INDEX.HTML Y REEMPLÁZALO CON ESTO: -->
-<div style="margin-bottom: 16px;">
-    <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: var(--text-muted);">Evaluación de la Recepción Recibida *:</label>
-    
-    <!-- Fila Superior: 3 Botones -->
-    <div style="display: flex; gap: 6px; width: 100%; box-sizing: border-box; margin-bottom: 6px;">
-        <button type="button" id="btn-trato-excelente" onclick="seleccionarTrato('EXCELENTE')" style="flex: 1; padding: 10px 4px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s; font-size: 12px; margin-top: 0;">
-            😊 EXCELENTE
-        </button>
-        <button type="button" id="btn-trato-amable" onclick="seleccionarTrato('AMABLE')" style="flex: 1; padding: 10px 4px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s; font-size: 12px; margin-top: 0;">
-            🙂 AMABLE
-        </button>
-        <button type="button" id="btn-trato-neutral" onclick="seleccionarTrato('NEUTRAL')" style="flex: 1; padding: 10px 4px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s; font-size: 12px; margin-top: 0;">
-            😐 NEUTRAL
-        </button>
-    </div>
 
-    <!-- Fila Inferior: 2 Botones -->
-    <div style="display: flex; gap: 6px; width: 100%; box-sizing: border-box;">
-        <button type="button" id="btn-trato-incomodo" onclick="seleccionarTrato('INCOMODO')" style="flex: 1; padding: 10px 4px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s; font-size: 12px; margin-top: 0;">
-            😟 INCOMODO
-        </button>
-        <button type="button" id="btn-trato-hostil" onclick="seleccionarTrato('HOSTIL')" style="flex: 1; padding: 10px 4px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s; font-size: 12px; margin-top: 0;">
-            😡 HOSTIL
-        </button>
-    </div>
-</div>
+                <!-- MATRIZ DE EVALUACIÓN DE 5 RESPUESTAS PUDIENDO OPERAR CORRECTAMENTE -->
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: var(--text-muted);">Evaluación de la Recepción Recibida *:</label>
+                    <div style="display: flex; gap: 6px; width: 100%; box-sizing: border-box; margin-bottom: 6px;">
+                        <button type="button" id="btn-trato-excelente" onclick="seleccionarTrato('EXCELENTE')" style="flex: 1; padding: 10px 4px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; font-size: 12px; margin-top: 0;">😊 EXCELENTE</button>
+                        <button type="button" id="btn-trato-amable" onclick="seleccionarTrato('AMABLE')" style="flex: 1; padding: 10px 4px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; font-size: 12px; margin-top: 0;">🙂 AMABLE</button>
+                        <button type="button" id="btn-trato-neutral" onclick="seleccionarTrato('NEUTRAL')" style="flex: 1; padding: 10px 4px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; font-size: 12px; margin-top: 0;">😐 NEUTRAL</button>
+                    </div>
+                    <div style="display: flex; gap: 6px; width: 100%; box-sizing: border-box;">
+                        <button type="button" id="btn-trato-incomodo" onclick="seleccionarTrato('INCOMODO')" style="flex: 1; padding: 10px 4px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; font-size: 12px; margin-top: 0;">😟 INCOMODO</button>
+                        <button type="button" id="btn-trato-hostil" onclick="seleccionarTrato('HOSTIL')" style="flex: 1; padding: 10px 4px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; font-size: 12px; margin-top: 0;">😡 HOSTIL</button>
+                    </div>
+                </div>
 
                 <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
                 <div class="form-grid text-disabled">
@@ -193,7 +176,7 @@
             <div id="history-log" class="log-list"></div>
         </section>
 
-        <!-- BARRA DE NAVEGACIÓN INFERIOR LIBERADA Y SÍNCRONA -->
+        <!-- BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL -->
         <nav id="app-bottom-nav" class="bottom-nav hidden">
             <button type="button" id="nav-welcome" onclick="changeScreen('screen-welcome')" class="nav-item"><span>📥</span>Inicio</button>
             <button type="button" id="nav-search" class="nav-item" onclick="changeScreen('screen-search')"><span>🔍</span>Búsqueda</button>
@@ -201,13 +184,9 @@
         </nav>
     </main>
 
-  <!-- BUSCA LAS LÍNEAS DE SCRIPT AL FINAL DE TU INDEX.HTML Y DÉJALAS EXACTAMENTE ASÍ: -->
+    <!-- LLAMADAS ÚNICAS Y EN ORDEN EXCLUSIVO DE CARGADO DE SCRIPTS -->
     <script src="brigadistas.js"></script>
     <script src="acciones.js"></script>
-    <script src="app.js"></script>
-</body>
-</html>
-
     <script src="app.js"></script>
 </body>
 </html>
