@@ -10,7 +10,7 @@
 <body>
     <header class="main-header">
         <div class="header-brand-wrapper">
-            <img src="https://bienestar.gob.mx" alt="Logotipo Institucional" class="header-logo">
+            <img src="https://pub.bienestar.gob.mx/static/media/padrones01.e4252fd6.jpg" alt="Logotipo Institucional" class="header-logo">
         </div>
     </header>
 
@@ -114,11 +114,15 @@
                     <div class="form-group"><label>Municipio:</label><input type="text" id="f-municipio"></div>
                     
                     <!-- UBICACIÓN LIBERADA DEL DATALIST (FUERA DE LA ZONA BLOQUEADA TEXT-DISABLED) -->
-                    <div class="form-group">
-                        <label>Localidad *:</label>
-                        <input type="text" id="f-localidad" list="lista-localidades" required style="text-transform:uppercase;">
-                        <datalist id="lista-localidades"></datalist>
-                    </div>
+                    <!-- BUSCA EL FORM-GROUP DE LOCALIDAD EN TU INDEX.HTML Y REEMPLÁZALO EXACTAMENTE POR ESTO: -->
+<div class="form-group">
+    <label>Localidad *:</label>
+    <!-- Se transforma a un select nativo corporativo de ancho completo para celulares -->
+    <select id="f-localidad" required style="width: 100%; padding: 11px 14px; border: 1px solid #CBD5E0; border-radius: 8px; box-sizing: border-box; font-size: 16px; background-color: var(--surface-light); color: var(--text-main);">
+        <option value="" disabled selected>-- SELECCIONE UNA LOCALIDAD --</option>
+    </select>
+</div>
+
 
                     <div class="form-group"><label>Sección *:</label><input type="number" id="f-seccion" max="9999" required></div>
                     <div class="form-group"><label>Colonia:</label><input type="text" id="f-colonia"></div>
