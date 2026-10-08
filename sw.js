@@ -1,4 +1,4 @@
-const CACHE_NAME = 'r02-v33-produccion';
+const CACHE_NAME = 'r02-v34-produccion';
 const ASSETS = [
     './',
     './index.html',
