@@ -274,7 +274,23 @@ if (document.getElementById('f-localidad-buscar')) {
         }, () => { document.getElementById('f-lat').value = "ERROR"; document.getElementById('f-lon').value = "ERROR"; });
     }
     
+   // BUSCA EL TRAMO FINAL DE TU FUNCIÓN openForm(item) Y REEMPLÁZALO EXACTAMENTE POR ESTO:
     changeScreen('screen-form');
+    
+    // INYECCIÓN PREDICTIVA NATIIVA: Rellena el datalist justo cuando la pantalla ya está dibujada
+    const datalistEl = document.getElementById('lista-localidades');
+    if (datalistEl && typeof CATALOGO_LOCALIDADES !== 'undefined') {
+        datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}">`).join('');
+    }
+    
+    // Formatea el valor previo de Google Sheets de manera segura en mayúsculas sin romper el teclado
+    if (item['LOCALIDAD']) {
+        document.getElementById('f-localidad').value = String(item['LOCALIDAD']).toUpperCase().trim();
+    } else {
+        document.getElementById('f-localidad').value = "";
+    }
+}
+
     
     // RELLENADO INDUSTRIAL GARANTIZADO: Lee el arreglo directo de la RAM local del mismo archivo
     const selectLocalidad = document.getElementById('f-localidad');
@@ -384,17 +400,18 @@ if (document.getElementById('f-localidad-buscar')) {
     }
     const curpInputEl = document.getElementById('f-curp'); curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal); curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
     
+   // BUSCA EL TRAMO FINAL DE TU FUNCIÓN abrirFormularioVacioAltaNueva() Y REEMPLÁZALO POR ESTO:
+    const curpInputEl = document.getElementById('f-curp'); curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal); curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
+    
     changeScreen('screen-form');
     
-    const selectLocalidad = document.getElementById('f-localidad');
-    if (selectLocalidad) {
-        var opcionesHTML = '<option value="" disabled selected>-- SELECCIONE UNA LOCALIDAD --</option>';
-        for (var k = 0; k < CATALOGO_LOCALIDADES.length; k++) {
-            opcionesHTML += '<option value="' + CATALOGO_LOCALIDADES[k] + '">' + CATALOGO_LOCALIDADES[k] + '</option>';
-        }
-        selectLocalidad.innerHTML = opcionesHTML;
+    // INYECCIÓN PREDICTIVA EN ALTAS: Deja el padrón listo para el autocompletado en el registro nuevo
+    const datalistEl = document.getElementById('lista-localidades');
+    if (datalistEl && typeof CATALOGO_LOCALIDADES !== 'undefined') {
+        datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}">`).join('');
     }
 }
+
 
 function verificarCurpDuplicadaEnTiempoReal(e) {
     const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase(); e.target.value = valorLimpio; 
