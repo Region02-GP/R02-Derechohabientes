@@ -31,15 +31,15 @@ function actualizarEstilosBotonesTrato() {
     }
 }
 
-// BUSCA EL INICIO DE LA FUNCIÓN abrirFormularioVacioAltaNueva() Y AGREGA ESTE BLOQUE INICIAL:
 function abrirFormularioVacioAltaNueva() {
-    // NUEVA REGLA CORE: Renderiza el datalist de localidades de forma dinámica al abrir el formulario
+    // REGLA CORE REPARADA: Renderiza las opciones con el formato nativo compatible con teclados Android
     const datalistEl = document.getElementById('lista-localidades');
     if (datalistEl && typeof CATALOGO_LOCALIDADES !== 'undefined') {
-        datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}"></option>`).join('');
+        datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}">`).join('');
     }
 
     const camposWrapper = document.getElementById('form-fields-wrapper');
+
 
     // CORRECCIÓN SIN ERRORES: Libera las cajas de texto de nombres para captura manual
     document.getElementById('f-curp').removeAttribute('readonly');
