@@ -126,7 +126,16 @@
                     <div class="form-group"><label>Teléfono Fijo:</label><input type="tel" id="f-telfijo" pattern="[0-9]{10}" maxlength="10"></div>
                     <div class="form-group"><label>Teléfono Celular:</label><input type="tel" id="f-telcel" pattern="[0-9]{10}" maxlength="10"></div>
                     <div class="form-group"><label>Municipio:</label><input type="text" id="f-municipio"></div>
-                    <div class="form-group"><label>Localidad *:</label><input type="text" id="f-localidad" required></div>
+                   <!-- BUSCA EL INPUT DE LOCALIDAD DENTRO DE TU EDIT-FORM Y REEMPLÁZALO EXACTAMENTE POR ESTO: -->
+<div class="form-group">
+    <label>Localidad *:</label>
+    <!-- Se agrega el atributo list para vincular el input con las opciones dinámicas del datalist -->
+    <input type="text" id="f-localidad" list="lista-localidades" required style="text-transform:uppercase;">
+    
+    <!-- NUEVO CONTENEDOR DATALIST: Albergará las respuestas que se inyectarán desde el script -->
+    <datalist id="lista-localidades"></datalist>
+</div>
+
                     <div class="form-group"><label>Sección *:</label><input type="number" id="f-seccion" max="9999" required></div>
                     <div class="form-group"><label>Colonia:</label><input type="text" id="f-colonia"></div>
                     <div class="form-group"><label>Código Postal:</label><input type="text" id="f-cp" pattern="[0-9]{5}" maxlength="5"></div>
