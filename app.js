@@ -2,6 +2,33 @@
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_rQKWnnixfxxhRqa66SG-FUO33_bHDH08ivvkno8T4zpRL4UaWT0DyDIsQVagdxYV/exec";
 
 
+// CATÁLOGO OFICIAL INTEGRADO PARA EVITAR ERRORES DE CARGA ASÍNCRONA
+const CATALOGO_LOCALIDADES = [
+    "GOMEZ PALACIO", "GONZALEZ COATITAS", "AQUILES SERDAN", "ARTURO MARTINEZ ADAME",
+    "BRITTINGHAM", "BUENAVISTA", "CALLEJON DE CALABAZAS", "CHACONEA", "CHAUHUIZQUE",
+    "COMPAÑIA", "EL COMPAS", "EL CONSUELEÑO", "EL MANANTIAL", "EL MEZQUITAL",
+    "EL QUEMADO", "EL RECUPERO", "EL SENSE", "EL SEVEN", "EL VERGEL", "ESTACION NOE",
+    "EUREKA", "EX-HACIENDA CHURUBUSCO", "FELIPE ANGELES", "FRANCISCO JAVIER MINA",
+    "FRANCISCO VILLA", "GREGORIO GARCIA", "GUADALUPE", "HUITRON", 
+    "INGENIERIO INOCENCIO GALINDO", "JESUS NAZARENO", "LA CHULA", "LA DAMAS",
+    "LA ENRAMADA", "LA ESMERALDA", "LA FLOR", "LA ISLA", "LA LUZ", "LA MARCHA",
+    "LA POPA", "LA PYME", "LA REFORMA", "LA REJAS", "LA SIERRA", "LA UNION",
+    "LAS AGUAS", "LAS CRUCES", "LAS FLORES", "LAS HUERTAS", "LAS ISLAS", "LAS LAMIAS",
+    "LAS MARIAS", "LAS NIEVES", "LAS PALMAS", "LAS ROSAS", "LEON GUZMAN", "LOS ALAMOS",
+    "LOS ANGELES", "LOS ARBOLITOS", "LOS CERRITOS", "LOS MEZQUITES", "LOS OLIVOS",
+    "LOS PINOS", "LOS PLACERES", "MARGARITAS", "MARIA ELENA", "MERAZ", "MILAGROS",
+    "NUEVA ESPERANZA", "NUEVA REFORMA", "NUEVO GOMEZ", "PASTOR ROUAIX", "POANAS",
+    "PROGRESO", "PROVIDENCIA", "PUENTE DE PIEDRA", "REFORMA", "RINCON DE RAMOS",
+    "SAENZ", "SAN AGUSTIN", "SAN ALBERTO", "SAN ANTONIO", "SAN CARLOS", "SAN FELIPE",
+    "SAN IGNACIO", "SAN JACINTO", "SAN JOSE", "SAN JUAN", "SAN LUIS", "SAN MARCOS",
+    "SAN MARTIN", "SAN MIGUEL", "SAN PEDRO", "SAN RAFAEL", "SAN RAMON", "SAN ROQUE",
+    "SAN VALENTIN", "SANTA ANITA", "SANTA CLARA", "SANTA ELENA", "SANTA LUCIA",
+    "SANTA MARIA", "SANTA ROSA", "SANTA TERESA", "SANTIAGO", "SIERRA HERMOSA",
+    "SILVERIO", "SOLARES", "TECOLOTES", "TIERRA BLANCA", "VALLE DE SANTA ROSA",
+    "VALLE VERDE", "VENECIA", "VICENTE GUERRERO", "VILLA HERMOSA", "VILLA JARDIN",
+    "VILLA JUAREZ", "VILLA MONTE REY", "VILLA NAZARENO"
+];
+
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
 let currentUser = null;
@@ -193,6 +220,32 @@ function actualizarEstilosBotonesFormulario() {
     }
 }
 
+function buscarLocalidadesEnPantalla() {
+    const query = document.getElementById('f-localidad-buscar').value.toLowerCase().trim();
+    const resultsContainer = document.getElementById('localidad-search-results');
+    resultsContainer.innerHTML = "";
+    if (query.length < 2) { resultsContainer.style.display = "none"; return; }
+    
+    let coincidencias = CATALOGO_LOCALIDADES.filter(loc => loc.toLowerCase().includes(query));
+    if (coincidencias.length > 0) {
+        resultsContainer.style.display = "block";
+        coincidencias.forEach(loc => {
+            const div = document.createElement('div');
+            div.style.padding = "12px 14px"; div.style.borderBottom = "1px solid #F3F4F6"; div.style.cursor = "pointer";
+            div.style.fontSize = "15px"; div.style.fontWeight = "700"; div.style.color = "#1F2937";
+            div.innerText = "📍 " + loc;
+            div.onclick = function() {
+                document.getElementById('f-localidad').value = loc;
+                document.getElementById('f-localidad-buscar').value = "";
+                resultsContainer.innerHTML = ""; resultsContainer.style.display = "none";
+            };
+            resultsContainer.appendChild(div);
+        });
+    } else {
+        resultsContainer.style.display = "block";
+        resultsContainer.innerHTML = '<div style="padding:12px; color:#b91c1c; font-size:14px; font-weight:bold; text-align:center;">❌ Sin coincidencias</div>';
+    }
+}
 function openForm(item) {
     if (!item) return;
     document.getElementById('f-curp').value = item['CURP'] || '';
@@ -227,18 +280,12 @@ function openForm(item) {
     }
     
     changeScreen('screen-form');
-    
-    // RELLENADO PREDICTIVO SEGURO AL CAMBIAR DE PANTALLA
-    const datalistEl = document.getElementById('lista-localidades');
-    if (datalistEl && typeof CATALOGO_LOCALIDADES !== 'undefined') {
-        datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}">`).join('');
-    }
-    if (item['LOCALIDAD']) {
-        document.getElementById('f-localidad').value = String(item['LOCALIDAD']).toUpperCase().trim();
-    } else {
-        document.getElementById('f-localidad').value = "";
-    }
+    if (document.getElementById('f-localidad-buscar')) document.getElementById('f-localidad-buscar').value = "";
+    if (document.getElementById('localidad-search-results')) document.getElementById('localidad-search-results').style.display = "none";
+    if (item['LOCALIDAD']) document.getElementById('f-localidad').value = String(item['LOCALIDAD']).toUpperCase().trim();
+    else document.getElementById('f-localidad').value = "";
 }
+
 function saveData(event) {
     event.preventDefault();
     const latValue = document.getElementById('f-lat').value; const lonValue = document.getElementById('f-lon').value;
@@ -269,7 +316,6 @@ function saveData(event) {
         alert("✅ ÉXITO: Guardado localmente."); document.getElementById('search-input').value = ""; document.getElementById('search-results').innerHTML = ""; changeScreen('screen-search');
     };
 }
-
 function openHistoryScreen() {
     changeScreen('screen-history');
     document.getElementById('pending-count').innerText = pendingSync.length;
@@ -297,6 +343,7 @@ function downloadBackupCSV() {
     allVisitsOfDay.forEach(r => { csvRows.push(headers.map(h => { let v = r[h] !== undefined ? String(r[h]).trim() : ""; return v.includes(",") ? `"${v.replace(/"/g, '""')}"` : v; }).join(",")); });
     const downloadAnchor = document.createElement('a'); downloadAnchor.setAttribute("href", URL.createObjectURL(new Blob(["\\ufeff" + csvRows.join("\\n")], { type: 'text/csv;charset=utf-8;' }))); downloadAnchor.setAttribute("download", `R02_Reporte_${new Date().toISOString().slice(0, 10)}.csv`); document.body.appendChild(downloadAnchor); downloadAnchor.click(); document.body.removeChild(downloadAnchor);
 }
+
 function clearLocalStorage() {
     if (confirm("🚨 ADVERTENCIA: ¿Vaciamos la memoria?")) {
         pendingSync = []; syncedHistory = []; localMemoryDatabase = []; localStorage.clear();
@@ -331,12 +378,9 @@ function abrirFormularioVacioAltaNueva() {
     const curpInputEl = document.getElementById('f-curp'); curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal); curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
     
     changeScreen('screen-form');
-    
-    // INYECCIÓN PREDICTIVA EN ALTAS NUEVAS: Carga el listado autorregulado en la memoria táctil al renderizar
-    const datalistEl = document.getElementById('lista-localidades');
-    if (datalistEl && typeof CATALOGO_LOCALIDADES !== 'undefined') {
-        datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}">`).join('');
-    }
+    if (document.getElementById('f-localidad-buscar')) document.getElementById('f-localidad-buscar').value = "";
+    if (document.getElementById('localidad-search-results')) document.getElementById('localidad-search-results').style.display = "none";
+    document.getElementById('f-localidad').value = "";
 }
 
 function verificarCurpDuplicadaEnTiempoReal(e) {
@@ -349,81 +393,6 @@ function verificarCurpDuplicadaEnTiempoReal(e) {
         }
     }
 }
-
-// NUEVA FUNCIÓN: Filtra y dibuja tarjetas físicas en pantalla de forma idéntica al buscador principal
-function buscarLocalidadesEnPantalla() {
-    const query = document.getElementById('f-localidad-buscar').value.toLowerCase().trim();
-    const resultsContainer = document.getElementById('localidad-search-results');
-    resultsContainer.innerHTML = "";
-    
-    // Si la caja está limpia o tiene menos de 2 letras, esconde el contenedor de tarjetas
-    if (query.length < 2) { resultsContainer.style.display = "none"; return; }
-    
-    let coincidencias = CATALOGO_LOCALIDADES.filter(loc => loc.toLowerCase().includes(query));
-    
-    if (coincidencias.length > 0) {
-        resultsContainer.style.display = "block";
-        coincidencias.forEach(loc => {
-            const div = document.createElement('div');
-            // Reutiliza los estilos institucionales de alto contraste antirreflejo de tu paleta
-            div.style.padding = "10px 12px";
-            div.style.borderBottom = "1px solid #F3F4F6";
-            div.style.cursor = "pointer";
-            div.style.fontSize = "14px";
-            div.style.fontWeight = "600";
-            div.style.color = "#1F2937";
-            div.innerText = "📍 " + loc;
-            
-            // Evento de selección: Asigna el valor al input oficial y limpia el buscador
-            div.onclick = function() {
-                document.getElementById('f-localidad').value = loc;
-                document.getElementById('f-localidad-buscar').value = "";
-                resultsContainer.innerHTML = "";
-                resultsContainer.style.display = "none";
-            };
-            resultsContainer.appendChild(div);
-        });
-    } else {
-        resultsContainer.style.display = "block";
-        resultsContainer.innerHTML = '<div style="padding:10px; color:#b91c1c; font-size:13px; font-weight:bold; text-align:center;">❌ No se encontraron localidades</div>';
-    }
-}
-// BUSCA TU FUNCIÓN openForm(item) Y REEMPLAZA ÚNICAMENTE SU TRAMO FINAL:
-    currentEstatusVisita = item['ESTATUS_VISITA'] || "LOCALIZADO";
-    motivoNoLocalizadoValue = item['MOTIVO_NO_LOCALIZADO'] || "";
-    actualizarEstilosBotonesFormulario();
-    window.currentTratoValue = item['EVALUACION_TRATO'] || ""; actualizarEstilosBotonesTrato();
-
-    document.getElementById('f-lat').value = "Buscando satélite...";
-    document.getElementById('f-lon').value = "Buscando satélite...";
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((position) => {
-            document.getElementById('f-lat').value = String(position.coords.latitude.toFixed(6)).replace(",", ".");
-            document.getElementById('f-lon').value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
-        }, () => { document.getElementById('f-lat').value = "ERROR"; document.getElementById('f-lon').value = "ERROR"; });
-    }
-    
-    changeScreen('screen-form');
-
-    // COMPATIBILIDAD HISTÓRICA SHEETS: Limpia cajas de búsqueda previas y pinta el valor que ya traía el ciudadano
-    if (document.getElementById('f-localidad-buscar')) document.getElementById('f-localidad-buscar').value = "";
-    if (document.getElementById('localidad-search-results')) document.getElementById('localidad-search-results').style.display = "none";
-    
-    if (item['LOCALIDAD']) {
-        document.getElementById('f-localidad').value = String(item['LOCALIDAD']).toUpperCase().trim();
-    } else {
-        document.getElementById('f-localidad').value = "";
-    }
-}
-// BUSCA TU FUNCIÓN abrirFormularioVacioAltaNueva() Y REEMPLAZA ÚNICAMENTE SU TRAMO FINAL:
-    const curpInputEl = document.getElementById('f-curp'); 
-    curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal); 
-    curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
-    
-    changeScreen('screen-form');
-
-    // Inicializa en blanco el buscador tipo fichas al capturar un beneficiario nuevo
-    if (document.getElementById('f-localidad-buscar')) document.getElementById('f-localidad-buscar').value = "";
-    if (document.getElementById('localidad-search-results')) document.getElementById('localidad-search-results').style.display = "none";
-    document.getElementById('f-localidad').value = "";
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)); });
 }
