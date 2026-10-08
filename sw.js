@@ -1,8 +1,10 @@
-const CACHE_NAME = 'r02-v25';
+const CACHE_NAME = 'r02-v21-produccion';
 const ASSETS = [
     './',
     './index.html',
     './styles.css',
+    './brigadistas.js',
+    './acciones.js',
     './app.js',
     './manifest.json'
 ];
