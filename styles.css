@@ -444,7 +444,7 @@ body {
 
 /* Transparencia sutil a las pantallas para que la marca de agua del fondo se alcance a notar */
 .app-screen {
-    background: rgba(255, 255, 255, 0.94) !important; /* Blanco con 94% de opacidad fija */
+    background: rgba(255, 255, 255, 0.99) !important; /* Blanco con 94% de opacidad fija */
     backdrop-filter: blur(4px) !important; /* Efecto esmerilado premium en navegadores modernos */
     border: 1px solid #E5E7EB !important;
     box-shadow: var(--shadow-screen) !important;
