@@ -254,13 +254,14 @@ function actualizarEstilosBotonesFormulario() {
     }
 }
 
+// BUSCA TU FUNCIÓN openForm(item) DENTRO DE APP.JS Y DÉJALA EXACTAMENTE ASÍ:
 function openForm(item) {
     if (!item) return;
 
-    // INYECCIÓN DINÁMICA ASEGURADA: Rellena el catálogo de localidades al abrir un derechohabiente
+    // INYECCIÓN SÍNCRONA OBLIGATORIA: Puebla el datalist con las localidades del archivo externo
     const datalistEl = document.getElementById('lista-localidades');
     if (datalistEl && typeof CATALOGO_LOCALIDADES !== 'undefined') {
-        datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}">`).join('');
+        datalistEl.innerHTML = CATALOGO_LOCALIDADES.map(loc => `<option value="${loc}"></option>`).join('');
     }
 
     document.getElementById('f-curp').value = item['CURP'] || '';
