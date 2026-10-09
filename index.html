@@ -10,12 +10,12 @@
 <body>
     <header class="main-header">
         <div class="header-brand-wrapper">
-            <img src="https://pub.bienestar.gob.mx/static/media/padrones01.e4252fd6.jpg" alt="Logotipo Institucional" class="header-logo">
+            <img src="https://bienestar.gob.mx" alt="Logotipo Institucional" class="header-logo">
         </div>
     </header>
 
     <main class="app-container">
-        <!-- PANTALLA 1: LOGIN (CORREGIDA) -->
+        <!-- PANTALLA 1: LOGIN -->
         <section id="screen-login" class="app-screen">
             <h1>Sistema de actualización de datos</h1>
             <div class="screen-toolbar">
@@ -27,7 +27,6 @@
             </div>
             <button type="button" onclick="login()">Ingresar</button>
         </section>
-
         <!-- PANTALLA 2: BIENVENIDA CON RESUMEN HORIZONTAL -->
         <section id="screen-welcome" class="app-screen hidden">
             <div class="screen-toolbar">
@@ -87,7 +86,6 @@
             </div>
             <div id="search-results" class="results-list"></div>
         </section>
-
         <!-- PANTALLA 4: FORMULARIO -->
         <section id="screen-form" class="app-screen hidden">
             <h2>Actualización de Domicilio</h2>
@@ -141,13 +139,11 @@
                         <input type="text" id="f-colonia-buscar" oninput="buscarColoniasEnPantalla()" placeholder="🔍 Teclee aquí para buscar colonia...">
                         <div id="colonia-search-results" style="max-height: 150px; overflow-y: auto; border: 1px solid #E5E7EB; border-radius: 6px; background: #FFFFFF; display: none; margin-top: 5px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);"></div>
                     </div>
-                    <!-- BUSCA EL FINAL DE TU FORM-FIELDS-WRAPPER EN TU INDEX.HTML Y REEMPLAZA EL CIERRE EXACTAMENTE POR ESTO: -->
                     <div class="form-group"><label>Código Postal:</label><input type="text" id="f-cp" pattern="[0-9]{5}" maxlength="5"></div>
                     <div class="form-group"><label>Calle:</label><input type="text" id="f-calle"></div>
                     <div class="form-group"><label>Num Ext:</label><input type="text" id="f-numext"></div>
                     <div class="form-group"><label>Referencia:</label><textarea id="f-referencia" rows="3"></textarea></div>
                 </div>
-
                 <div style="margin-bottom: 16px;">
                     <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: var(--text-muted);">Evaluación de la Recepción Recibida *:</label>
                     <div style="display: flex; gap: 6px; width: 100%; box-sizing: border-box; margin-bottom: 6px;">
@@ -162,7 +158,6 @@
                 </div>
 
                 <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-                
                 <div class="form-grid text-disabled">
                     <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
                     <div><label>Longitud GPS:</label><input type="text" id="f-lon" readonly></div>
@@ -174,7 +169,6 @@
 
         <!-- PANTALLA 5: HISTORIAL -->
         <section id="screen-history" class="app-screen hidden">
-
             <h2>Historial y Sincronización</h2>
             <div class="metrics" style="background:#f7fafc; padding:15px; border-radius:4px; margin-bottom:15px; border-left:4px solid var(--primary-color);">
                 <p style="margin:0; font-size:15px;">Cambios pendientes por subir: <strong id="pending-count">0</strong></p>
