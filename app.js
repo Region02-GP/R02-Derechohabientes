@@ -364,14 +364,22 @@ function abrirFormularioVacioAltaNueva() {
 }
 
 function verificarCurpDuplicadaEnTiempoReal(e) {
-    const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase(); e.target.value = valorLimpio; 
+    const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase(); 
+    e.target.value = valorLimpio; 
     if (valorLimpio.length === 18) {
         const registroExistente = localMemoryDatabase.find(r => r.CURP === valorLimpio);
         if (registroExistente) {
-            if (confirm(`📢 DETECTOR DE DUPLICADOS: La CURP [${valorLimpio}] ya existe (Municipio: ${registroExistente.MUNICIPIO || 'SIN MUNICIPIO'}).\n\n¿Desea cargar sus datos antiguos?`)) { alert("Cargando información..."); openForm(registroExistente); }
-            else { e.target.value = ''; e.target.focus(); alert("Ingrese una CURP no registrada."); }
+            if (confirm(`📢 DETECTOR DE DUPLICADOS: La CURP [${valorLimpio}] ya existe (Municipio: ${registroExistente.MUNICIPIO || 'SIN MUNICIPIO'}).\n\n¿Desea cargar sus datos antiguos?`)) { 
+                alert("Cargando información..."); 
+                openForm(registroExistente); 
+            } else { 
+                e.target.value = ''; 
+                e.target.focus(); 
+                alert("Ingrese una CURP no registrada."); 
+            }
         }
     }
 }
+
 
 if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)); }); }
