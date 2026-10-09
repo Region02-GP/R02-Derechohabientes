@@ -9,7 +9,6 @@ let previousScreen = 'screen-welcome';
 let currentEstatusVisita = "LOCALIZADO"; 
 let motivoNoLocalizadoValue = "";        
 window.currentTratoValue = ""; 
-// PARTE 1 DEL CATÁLOGO DE LOCALIDADES COMPLETO PARA EVITAR CARGAS ASÍNCRONAS EXTERNAS
 const CATALOGO_LOCALIDADES = [
     "18 DE MARZO", "ACAPULCO", "ACAPULCO (PROPIEDAD PRIVADA)", "AMERICA UNO", "AMPARO (GRANJA)", "AMPLIACION BUCARELI", 
     "AMPLIACION EL FENIX", "AMPLIACION EL VERGELITO SUR", "AMPLIACION VENECIA", "AMPUEROS", "ANDRES JIMENEZ", 
@@ -42,7 +41,6 @@ const CATALOGO_LOCALIDADES = [
     "EL VEINTINUEVE DE AGOSTO", "EL VERGEL", "EL VERGEL [QUINTAS]", "EL VERGELITO", "EL VOLADO", 
     "EL VUELO DEL AGUILA", "ELIAF (EL CHORIZO)", "ENSENADA", "ESMERALDA", "ESTABLO BREMEN", "ESTABLO BRITINGHAM"
 ];
-// PARTE 2 DEL CATÁLOGO DE LOCALIDADES COMPLETO (UNIDO AL ARREGLO GLOBAL MEDIANTE PUSH MASIVO)
 CATALOGO_LOCALIDADES.push(
     "ESTABLO CHILCHOTA", "ESTABLO EL COMPAS (NORIA NUMERO 5)", "ESTABLO EL PORVENIR", "ESTABLO EL VERGEL", 
     "ESTABLO LA GALLEGA", "ESTABLO MADRID", "ESTACION NOE", "ESTACION VIÑEDO", "EUREKA DE MEDIA LUNA (EUREKA)", 
@@ -114,12 +112,10 @@ CATALOGO_LOCALIDADES.push(
     "VENUSTIANO CARRANZA", "VIANEY (GRANJA)", "VICENTE NAVA", "VICTOR CARRILLO HERNANDEZ", "VILLA GREGORIO GARCIA", 
     "VILLAS URBI DEL CEDRO (VILLAS DEL CEDRO)", "VILMA ALE DE HERRERA (LAS CUADRITAS)", "VIÑASOL", "YOLANDA (GRANJA)"
 );
-// NUEVO CATÁLOGO DE MUNICIPIOS DE TU ZONA R02 DURANGO
 const CATALOGO_MUNICIPIOS = [
     "GOMEZ PALACIO", "EL ORO", "MAPIMI", "INDE", "SAN BERNARDO", "HIDALGO", "TLAHUALILO", "GUANACEVI", "SAN PEDRO DEL GALLO", "OCAMPO"
 ];
 
-// NUEVO CATÁLOGO DE COLONIAS COMUNES COPIADO DE TUS REGISTROS HISTÓRICOS DE CAMPO
 const CATALOGO_COLONIAS = [
     "CENTRO", "FILADELFIA", "MINA", "STACRUZ LUJAN", "ARCINAS", "PASTOR ROUAIX", "EUREKA", "VIÑEDO", "COMPAS",
     "SANTA TERESA", "FRANCISCO VILLA", "EL VERGEL", "GREGORIO GARCIA", "HUITRON", "LA POPULAR", "PUEBLO NUEVO",
@@ -131,12 +127,6 @@ const CATALOGO_COLONIAS = [
     "SAN JUAN", "SAN LUIS", "SAN MARTIN", "SAN MIGUEL", "SAN PEDRO", "SAN RAMON", "SAN ROQUE", "SAN SEBASTIAN", 
     "SANTA CLARA", "SANTA FE", "SANTA MARIA", "SIERRA HERMOSA", "VENECIA"
 ];
-
-const DB_NAME = "R02_DB";
-const DB_VERSION = 1;
-const STORE_NAME = "derechohabientes";
-let db;
-
 const request = indexedDB.open(DB_NAME, DB_VERSION);
 request.onupgradeneeded = (e) => {
     db = e.target.result;
@@ -152,6 +142,7 @@ request.onsuccess = (e) => {
     preloadDatabaseToMemory();
 };
 request.onerror = (e) => { console.error("Error IndexedDB:", e.target.error); };
+
 function updateLocalCounter() {
     if (!db) return;
     const countRequest = db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).count();
@@ -207,6 +198,7 @@ function login() {
         changeScreen('screen-welcome');
     } else { alert("CURP no autorizada o inválida."); }
 }
+
 async function downloadAllDataMassive() {
     const btn = document.getElementById('btn-massive-download');
     const progressContainer = document.getElementById('progress-container');
@@ -339,7 +331,6 @@ function buscarLocalidadesEnPantalla() {
         resultsContainer.innerHTML = '<div style="padding:12px; color:#b91c1c; font-size:14px; font-weight:bold; text-align:center;">❌ Sin coincidencias</div>';
     }
 }
-// NUEVA FUNCIÓN: Filtra y despliega tarjetas de municipios
 function buscarMunicipiosEnPantalla() {
     const query = document.getElementById('f-municipio-buscar').value.toLowerCase().trim();
     const resultsContainer = document.getElementById('municipio-search-results');
@@ -367,7 +358,6 @@ function buscarMunicipiosEnPantalla() {
     }
 }
 
-// NUEVA FUNCIÓN: Filtra y despliega tarjetas de colonias
 function buscarColoniasEnPantalla() {
     const query = document.getElementById('f-colonia-buscar').value.toLowerCase().trim();
     const resultsContainer = document.getElementById('colonia-search-results');
@@ -394,7 +384,6 @@ function buscarColoniasEnPantalla() {
         resultsContainer.innerHTML = '<div style="padding:12px; color:#b91c1c; font-size:14px; font-weight:bold; text-align:center;">❌ Sin coincidencias</div>';
     }
 }
-
 function openForm(item) {
     if (!item) return;
     document.getElementById('f-curp').value = item['CURP'] || '';
@@ -404,9 +393,7 @@ function openForm(item) {
     document.getElementById('f-materno').value = item['AP MATERNO'] || '';
     document.getElementById('f-telfijo').value = item['TEL FIJO'] || '';
     document.getElementById('f-telcel').value = item['TEL CEL'] || '';
-    document.getElementById('f-municipio').value = item['MUNICIPIO'] || '';
     document.getElementById('f-seccion').value = item['SECCION'] || '';
-    document.getElementById('f-colonia').value = item['COLONIA'] || '';
     document.getElementById('f-cp').value = item['CP'] || '';
     document.getElementById('f-calle').value = item['CALLE'] || '';
     document.getElementById('f-numext').value = item['NUM EXT'] || '';
@@ -428,10 +415,7 @@ function openForm(item) {
         }, () => { document.getElementById('f-lat').value = "ERROR"; document.getElementById('f-lon').value = "ERROR"; });
     }
     
-      // REEMPLAZA EL TRAMO FINAL DE TU FUNCIÓN openForm(item) PARA DAR SOPORTE A LOS NUEVOS BUSCADORES:
     changeScreen('screen-form');
-    
-    // Limpieza de cajas de texto de los 3 buscadores concurrentes
     if (document.getElementById('f-localidad-buscar')) document.getElementById('f-localidad-buscar').value = "";
     if (document.getElementById('localidad-search-results')) document.getElementById('localidad-search-results').style.display = "none";
     if (document.getElementById('f-municipio-buscar')) document.getElementById('f-municipio-buscar').value = "";
@@ -439,17 +423,13 @@ function openForm(item) {
     if (document.getElementById('f-colonia-buscar')) document.getElementById('f-colonia-buscar').value = "";
     if (document.getElementById('colonia-search-results')) document.getElementById('colonia-search-results').style.display = "none";
     
-    // Seteo de valores históricos procedentes de Google Sheets
     if (item['LOCALIDAD']) document.getElementById('f-localidad').value = String(item['LOCALIDAD']).toUpperCase().trim();
     else document.getElementById('f-localidad').value = "";
-
     if (item['MUNICIPIO']) document.getElementById('f-municipio').value = String(item['MUNICIPIO']).toUpperCase().trim();
     else document.getElementById('f-municipio').value = "";
-
     if (item['COLONIA']) document.getElementById('f-colonia').value = String(item['COLONIA']).toUpperCase().trim();
     else document.getElementById('f-colonia').value = "";
 }
-
 
 function saveData(event) {
     event.preventDefault();
@@ -540,12 +520,9 @@ function abrirFormularioVacioAltaNueva() {
         navigator.geolocation.getCurrentPosition((position) => { document.getElementById('f-lat').value = String(position.coords.latitude.toFixed(6)).replace(",", "."); document.getElementById('f-lon').value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
         }, () => { document.getElementById('f-lat').value = "ERROR"; document.getElementById('f-lon').value = "ERROR"; });
     }
-      // REEMPLAZA EL TRAMO FINAL DE TU FUNCIÓN abrirFormularioVacioAltaNueva() PARA DAR SOPORTE A MUNICIPIOS Y COLONIAS:
     const curpInputEl = document.getElementById('f-curp'); curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal); curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
     
     changeScreen('screen-form');
-    
-    // Resetea buscadores e indicadores táctiles
     if (document.getElementById('f-localidad-buscar')) document.getElementById('f-localidad-buscar').value = "";
     if (document.getElementById('localidad-search-results')) document.getElementById('localidad-search-results').style.display = "none";
     if (document.getElementById('f-municipio-buscar')) document.getElementById('f-municipio-buscar').value = "";
@@ -555,9 +532,6 @@ function abrirFormularioVacioAltaNueva() {
     
     document.getElementById('f-localidad').value = "";
     document.getElementById('f-colonia').value = "";
-
-    // CANDADO PREDICTIVO: Asigna automáticamente el territorio asignado al brigadista activo
-    const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp];
     document.getElementById('f-municipio').value = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : 'GOMEZ PALACIO'; 
 }
 
@@ -571,3 +545,7 @@ function verificarCurpDuplicadaEnTiempoReal(e) {
         }
     }
 }
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)); });
+}
+
