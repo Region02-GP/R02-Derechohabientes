@@ -133,6 +133,13 @@ const CATALOGO_COLONIAS = [
     "SAN JUAN", "SAN LUIS", "SAN MARTIN", "SAN MIGUEL", "SAN PEDRO", "SAN RAMON", "SAN ROQUE", "SAN SEBASTIAN", 
     "SANTA CLARA", "SANTA FE", "SANTA MARIA", "SIERRA HERMOSA", "VENECIA"
 ];
+// CONFIGURACIÓN E INICIALIZACIÓN DEL MOTOR DE BASE DE DATOS LOCAL INDEXEDDB
+const DB_NAME = "R02_DB";
+const DB_VERSION = 1;
+const STORE_NAME = "derechohabientes";
+let db;
+
+// Apertura del hilo asíncrono
 const request = indexedDB.open(DB_NAME, DB_VERSION);
 request.onupgradeneeded = (e) => {
     db = e.target.result;
@@ -142,6 +149,13 @@ request.onupgradeneeded = (e) => {
         store.createIndex("by_calle", "CALLE", { unique: false });
     }
 };
+request.onsuccess = (e) => { 
+    db = e.target.result; 
+    updateLocalCounter(); 
+    preloadDatabaseToMemory();
+};
+request.onerror = (e) => { console.error("Error IndexedDB:", e.target.error); };
+
 request.onsuccess = (e) => { 
     db = e.target.result; 
     updateLocalCounter(); 
