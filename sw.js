@@ -1,15 +1,13 @@
-const CACHE_NAME = 'r02-v44-produccion';
+// BORRA TODO TU SW.JS ACTUAL Y REEMPLÁZALO POR COMPLETO CON ESTO:
+const CACHE_NAME = 'r02-v4000-sistema-ok';
 const ASSETS = [
     './',
     './index.html',
     './styles.css',
     './brigadistas.js',
-    './localidades.js', // <-- AGREGADO PARA QUE FUNCIONE SIN INTERNET EN CAMPO
-    './acciones.js',
     './app.js',
     './manifest.json'
 ];
-
 
 // Instalación e inyección limpia de archivos obligatorios
 self.addEventListener('install', (e) => {
@@ -35,7 +33,7 @@ self.addEventListener('activate', (e) => {
     );
 });
 
-// Estrategia de red: Intenta ir a internet, si no hay, usa la caché (A prueba de errores 404)
+// Estrategia de red: Intenta ir a internet, si no hay, usa la caché
 self.addEventListener('fetch', (e) => {
     e.respondWith(
         fetch(e.request).catch(() => {
