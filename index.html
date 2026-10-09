@@ -160,17 +160,19 @@
                 </div>
 
                 <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+               <!-- BUSCA EL FINAL DE TU PANTALLA 4 EN INDEX.HTML Y DÉJALO EXACTAMENTE ASÍ: -->
                 <div class="form-grid text-disabled">
                     <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
                     <div><label>Longitud GPS:</label><input type="text" id="f-lon" readonly></div>
                 </div>
                 <button type="submit" style="margin-top: 20px;">Guardar Localmente</button>
                 <button type="button" onclick="changeScreen('screen-search')" class="btn-back">Cancelar</button>
-            </form>
+            </form> <!-- <-- AGREGA ESTA ETIQUETA DE CIERRE AQUÍ SI FALTA -->
         </section>
 
-        <!-- PANTALLA 5: HISTORIAL (REINCORPORADA PARA EVITAR EL CONGELAMIENTO) -->
+        <!-- PANTALLA 5: HISTORIAL -->
         <section id="screen-history" class="app-screen hidden">
+
             <h2>Historial y Sincronización</h2>
             <div class="metrics" style="background:#f7fafc; padding:15px; border-radius:4px; margin-bottom:15px; border-left:4px solid var(--primary-color);">
                 <p style="margin:0; font-size:15px;">Cambios pendientes por subir: <strong id="pending-count">0</strong></p>
