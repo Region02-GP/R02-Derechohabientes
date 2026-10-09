@@ -1,8 +1,6 @@
 // URL del Web App de Google Apps Script 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_rQKWnnixfxxhRqa66SG-FUO33_bHDH08ivvkno8T4zpRL4UaWT0DyDIsQVagdxYV/exec";
 
-// CANDADO BRIGADISTAS: Inicialización de respaldo para arranque seguro
-if (typeof AUTHORIZED_CURPS === 'undefined') { var AUTHORIZED_CURPS = {}; }
 
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
@@ -13,6 +11,8 @@ let motivoNoLocalizadoValue = "";
 window.currentTratoValue = ""; 
 
 const CATALOGO_MUNICIPIOS = [
+// ... (Tu catálogo de municipios y colonias sigue abajo igual)
+
     "GOMEZ PALACIO", "EL ORO", "MAPIMI", "INDE", "SAN BERNARDO", "HIDALGO", "TLAHUALILO", "GUANACEVI", "SAN PEDRO DEL GALLO", "OCAMPO"
 ];
 const CATALOGO_COLONIAS = [
