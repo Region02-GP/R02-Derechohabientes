@@ -156,11 +156,15 @@ function searchData() {
         if (searchTokens.every(t => combinedText.includes(t))) matchedRecords.push(item);
     }
 
+   // BUSCA EN TU APP.JS ESTA SECCIÓN DENTRO DE LA FUNCIÓN searchData() Y REEMPLAZA ÚNICAMENTE ESTE TRAMO:
     matchedRecords.sort((a, b) => String(a['NUM EXT']).localeCompare(String(b['NUM EXT'])));
     matchedRecords.slice(0, 30).forEach(item => {
-        const div = document.createElement('div'); const estatusActual = item['ESTATUS_VISITA'] || "";
-        const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']); const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
+        const div = document.createElement('div'); 
+        const estatusActual = item['ESTATUS_VISITA'] || ""; // <-- CORREGIDO AQUÍ LA PROPIEDAD
+        const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']); 
+        const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
         const estatusFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['ESTATUS_VISITA'] : estatusActual;
+
         let claseColor = estatusFinal === "LOCALIZADO" ? "result-item status-localizado" : (estatusFinal === "NO LOCALIZADO" ? "result-item status-nolocalizado" : "result-item");
         let textoIndicador = estatusFinal === "LOCALIZADO" ? ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>' : (estatusFinal === "NO LOCALIZADO" ? ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>' : "");
 
