@@ -15,7 +15,7 @@
     </header>
 
     <main class="app-container">
-        <!-- PANTALLA 1: LOGIN -->
+        <!-- PANTALLA 1: LOGIN (CORREGIDA) -->
         <section id="screen-login" class="app-screen">
             <h1>Sistema de actualización de datos</h1>
             <div class="screen-toolbar">
@@ -65,7 +65,7 @@
         <!-- PANTALLA 3: BUSCADOR CON ENCABEZADO DE IDENTIDAD -->
         <section id="screen-search" class="app-screen hidden">
             <div class="screen-toolbar">
-                <h2 id="welcome-message">Bienvenido</h2>
+                <h2 id="welcome-message-search">Bienvenido</h2>
             </div>
             <button type="button" onclick="abrirFormularioVacioAltaNueva()" style="width: 100%; padding: 12px; margin-bottom: 15px; font-weight: bold; background-color: #621132; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; box-shadow: 0 4px 10px rgba(98, 17, 50, 0.2);">
                 ➕ Agregar Nuevo Derechohabiente
@@ -146,7 +146,6 @@
                     <div class="form-group"><label>Num Ext:</label><input type="text" id="f-numext"></div>
                     <div class="form-group"><label>Referencia:</label><textarea id="f-referencia" rows="3"></textarea></div>
                 </div>
-
                 <div style="margin-bottom: 16px;">
                     <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: var(--text-muted);">Evaluación de la Recepción Recibida *:</label>
                     <div style="display: flex; gap: 6px; width: 100%; box-sizing: border-box; margin-bottom: 6px;">
@@ -168,6 +167,24 @@
                 <button type="submit" style="margin-top: 20px;">Guardar Localmente</button>
                 <button type="button" onclick="changeScreen('screen-search')" class="btn-back">Cancelar</button>
             </form>
+        </section>
+
+        <!-- PANTALLA 5: HISTORIAL (REINCORPORADA PARA EVITAR EL CONGELAMIENTO) -->
+        <section id="screen-history" class="app-screen hidden">
+            <h2>Historial y Sincronización</h2>
+            <div class="metrics" style="background:#f7fafc; padding:15px; border-radius:4px; margin-bottom:15px; border-left:4px solid var(--primary-color);">
+                <p style="margin:0; font-size:15px;">Cambios pendientes por subir: <strong id="pending-count">0</strong></p>
+            </div>
+            <div class="action-buttons-stack">
+                <button type="button" onclick="syncWithSheets()" class="btn-primary-guinda">🔄 Sincronizar con Google Sheets</button>
+                <div class="button-row-grid">
+                    <button type="button" onclick="downloadBackupCSV()" class="btn-excel-gold" style="margin-top:0;">📊 Descargar Avance</button>
+                    <button type="button" onclick="clearLocalStorage()" class="btn-excel-gold" style="margin-top:0;">🗑️ Borrar Datos</button>
+                </div>
+            </div>
+            <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+            <h3>Registro de Visitas del Día</h3>
+            <div id="history-log" class="log-list"></div>
         </section>
 
         <!-- BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL -->
