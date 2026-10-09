@@ -1,9 +1,7 @@
 // URL del Web App de Google Apps Script 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_rQKWnnixfxxhRqa66SG-FUO33_bHDH08ivvkno8T4zpRL4UaWT0DyDIsQVagdxYV/exec";
 
-
-
-// CANDADO BRIGADISTAS: Inicialización de respaldo para el inicio seguro
+// CANDADO BRIGADISTAS: Inicialización de respaldo para arranque seguro
 if (typeof AUTHORIZED_CURPS === 'undefined') { var AUTHORIZED_CURPS = {}; }
 
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
@@ -17,7 +15,6 @@ window.currentTratoValue = "";
 const CATALOGO_MUNICIPIOS = [
     "GOMEZ PALACIO", "EL ORO", "MAPIMI", "INDE", "SAN BERNARDO", "HIDALGO", "TLAHUALILO", "GUANACEVI", "SAN PEDRO DEL GALLO", "OCAMPO"
 ];
-
 const CATALOGO_COLONIAS = [
     "CENTRO", "FILADELFIA", "MINA", "STACRUZ LUJAN", "ARCINAS", "PASTOR ROUAIX", "EUREKA", "VIÑEDO", "COMPAS",
     "SANTA TERESA", "FRANCISCO VILLA", "EL VERGEL", "GREGORIO GARCIA", "HUITRON", "LA POPULAR", "PUEBLO NUEVO",
@@ -29,28 +26,114 @@ const CATALOGO_COLONIAS = [
     "SAN JUAN", "SAN LUIS", "SAN LUISITO", "SAN MANUEL", "SAN MARTIN", "SAN MIGUEL", "SAN PEDRO", "SAN RAMON", 
     "SAN ROQUE", "SAN SEBASTIAN", "SANTA CLARA", "SANTA FE", "SANTA MARIA", "SIERRA HERMOSA", "VENECIA"
 ];
-
-// FE CORREGIDA CON COMILLAS LIMPIAS: REPARADO EL ERROR QUE DETENÍA EL LOGEO
 const CATALOGO_LOCALIDADES = [
-    "18 DE MARZO", "ACAPULCO", "ACAPULCO (PROPIEDAD PRIVADA)", "AMERICA UNO", "AMPARO (GRANJA)", "AMPLIACION BUCARELI", "AMPLIACION EL FENIX", "AMPLIACION EL VERGELITO SUR", "AMPLIACION VENECIA", "AMPUEROS", "ANDRES JIMENEZ", "ANTONIO TORRES", "AQUILES SERDAN", "ARCINAS", "ARREOLA HERNANDEZ", "ARTURO MARTINEZ ADAME", "ASCENSION CRUZ", "ASTILLERO", "AURELIO RODRIGUEZ", "AUTODROMO MARCO MAGAÑA (DE LA LAGUNA)", "AUTOTRANSPORTES TRANSBAP [TALLER]", "AVICOLA AURORA", "BELLA UNION", "BERLIN", "BETHEL", "BETHEL (GRANJA)", "BETHEL DOS", "BRITTINGHAM", "BUCARELI", "BUENDIA", "BUGAMBILIA (MARIA CRISTINA) (GRANJA)", "CAIRO DOS", "CALIFORNIA", "CALIFORNIA CRIANZA", "CAMILO CENICEROS", "CAMPO C", "CANTERAS NUEVA CARRARA [MARMOLERA]", "CARLOS GERARDO VALDES BOHIGAS", "CASA BLANCA", "CASETA KILOMETRO 11 MAS 458", "CASETA KILOMETRO 17 CANAL SACRAMENTO", "CEFERESO NUMERO 14", "CEMIX", "CENTRO DE ACOPIO (GRANJA BLANCA)", "CERDO REAL", "CHAPINGO", "CHAVEZ (GRANJA)", "CHIHUAHUITA (CHIHUAHUITA NUEVO)", "CHIHUAHUITA (CHIHUAHUITA VIEJO)", "COLONIA AGRICOLA BUENDIA", "COLONIA AGRICOLA LA POPULAR", "COLONIA ESTABLERA SAN FRANCISCO", "COLONIA SAN ANGEL", "COLONIA SEIS DE JULIO (NUEVO NOE)", "CONEJOS", "CONSUELO OROZCO", "CORDERO CASTRO", "COREA", "CORRALITOS", "CRUZ ARREOLA", "CUATRO DE DICIEMBRE (SAGUNDO)", "CUATRO DE JULIO", "CURVA DE CAMACHO", "DAGOBERTO RAMON ARELLANO", "DAVID GAUSIN", "DELGADO SANTA ROSA", "DESARROLLO DORADO DE MILAGROS AC [HOGAR DE ANCIANOS]", "DESARROLLO LACTEO (DESLAC)", "DINAMITA", "DOLORES", "DON MELY (GRANJA)", "DON RICARDO [QUINTA]", "DON ROBERTO", "DOS AMIGOS", "DULCE MARIA (LA LUZ)", "EJIDO BUENDIA (LA CASETA)", "EL AGUILA", "EL ALTO DEL CHIVO (ROMERO ROSAS)", "EL BARRO", "EL BARRO 33 (EL TREINTA Y TRES)", "EL BERCIAL", "EL BUEN PASTOR", "EL CAIRO DOS (GRANJA)", "EL CAIRO [DESPEPITE]", "EL CARIÑO", "EL CARMEN", "EL CASTILLO", "EL CELO", "EL CHAPARRAL", "EL CHIMAL", "EL CHORIZO (FAMILIA TORRES)", "EL COMPAS", "EL CONSUELO", "EL CONSUELO TRES [NORIA]", "EL CORONEL", "EL CORTIJO", "EL DURAZNITO", "EL DURAZNO", "EL EMPAQUE", "EL ERIAZO", "EL ESFUERZO (GRANJA)", "EL FENIX", "EL GARCES", "EL GATO", "EL HERMANO [AUTOPARTES]", "EL INDIO", "EL JUNCO", "EL LABRADOR", "EL LAGUNERO [RESTAURANTE]", "EL MANANTIAL", "EL MEZQUITE", "EL MEZQUITE (CANTU)", "EL NOGUERAL 555 (CAMPO REAL)", "EL OLIVO", "EL PARAISO", "EL PATO", "EL PILAR", "EL PITAYO", "EL POLVORON", "EL PROGRESO", "EL QUEMADO", "EL RECUERDO", "EL REFUGIO", "EL RETOÑO", "EL ROSARIO", "EL SOL (GRANJA)", "EL SOLITO", "EL TAJITO", "EL TREBOL", "EL TREINTA Y UNO", "EL TRIUNFILLO (EL TRIUNFITO)", "EL TRIUNFO", "EL TUANON", "EL VALLE DE EUREKA", "EL VEINTINUEVE DE AGOSTO", "EL VERGEL", "EL VERGELITO", "EL VOLADO", "EL VUELO DEL AGUILA", "ELIAF (EL CHORIZO)", "ENSENADA", "ESMERALDA", "ESTABLO BREMEN", "ESTABLO BRITINGHAM"
+    "18 DE MARZO", "ACAPULCO", "ACAPULCO (PROPIEDAD PRIVADA)", "AMERICA UNO", "AMPARO (GRANJA)", "AMPLIACION BUCARELI", 
+    "AMPLIACION EL FENIX", "AMPLIACION EL VERGELITO SUR", "AMPLIACION VENECIA", "AMPUEROS", "ANDRES JIMENEZ", 
+    "ANTONIO TORRES", "AQUILES SERDAN", "ARCINAS", "ARREOLA HERNANDEZ", "ARTURO MARTINEZ ADAME", "ASCENSION CRUZ", 
+    "ASTILLERO", "AURELIO RODRIGUEZ", "AUTODROMO MARCO MAGAÑA (DE LA LAGUNA)", "AUTOTRANSPORTES TRANSBAP [TALLER]", 
+    "AVICOLA AURORA", "BELLA UNION", "BERLIN", "BETHEL", "BETHEL (GRANJA)", "BETHEL DOS", "BRITTINGHAM", "BUCARELI", 
+    "BUENDIA", "BUGAMBILIA (MARIA CRISTINA) (GRANJA)", "CAIRO DOS", "CALIFORNIA", "CALIFORNIA CRIANZA", 
+    "CAMILO CENICEROS", "CAMPO C", "CANTERAS NUEVA CARRARA [MARMOLERA]", "CARLOS GERARDO VALDES BOHIGAS", 
+    "CASA BLANCA", "CASETA KILOMETRO 11 MAS 458", "CASETA KILOMETRO 17 CANAL SACRAMENTO", "CEFERESO NUMERO 14", 
+    "CEMIX", "CENTRO DE ACOPIO (GRANJA BLANCA)", "CERDO REAL", "CHAPINGO", "CHAVEZ (GRANJA)", 
+    "CHIHUAHUITA (CHIHUAHUITA NUEVO)", "CHIHUAHUITA (CHIHUAHUITA VIEJO)", "COLONIA AGRICOLA BUENDIA", 
+    "COLONIA AGRICOLA LA POPULAR", "COLONIA ESTABLERA SAN FRANCISCO", "COLONIA SAN ANGEL", 
+    "COLONIA SEIS DE JULIO (NUEVO NOE)", "CONEJOS", "CONSUELO OROZCO", "CORDERO CASTRO", "COREA", "CORRALITOS", 
+    "CRUZ ARREOLA", "CUATRO DE DICIEMBRE (SAGUNDO)", "CUATRO DE JULIO", "CURVA DE CAMACHO"
 ];
-
-<!-- BUSCA EL FINAL DE TU PANTALLA 4 EN INDEX.HTML Y DÉJALO EXACTAMENTE ASÍ: -->
-                <div class="form-grid text-disabled">
-                    <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
-                    <div><label>Longitud GPS:</label><input type="text" id="f-lon" readonly></div>
-                </div>
-                <button type="submit" style="margin-top: 20px;">Guardar Localmente</button>
-                <button type="button" onclick="changeScreen('screen-search')" class="btn-back">Cancelar</button>
-            </form> <!-- <-- AGREGA ESTA ETIQUETA DE CIERRE AQUÍ SI FALTA -->
-        </section>
-
-        <!-- PANTALLA 5: HISTORIAL -->
-        <section id="screen-history" class="app-screen hidden">
-
 CATALOGO_LOCALIDADES.push(
-    "ESTABLO CHILCHOTA", "ESTABLO EL COMPAS", "ESTABLO EL PORVENIR", "ESTABLO EL VERGEL", "ESTABLO LA GALLEGA", "ESTABLO MADRID", "ESTACION NOE", "ESTACION VIÑEDO", "EUREKA DE MEDIA LUNA (EUREKA)", "FABRICACIONES ESPECIALIZADAS", "FAMILIA ALDAMA SANCHEZ", "FAMILIA BARBA GUTIERREZ", "FAMILIA CISNEROS CALZADA", "FAMILIA CORDERO FLORES", "FAMILIA CORDERO ROSALES", "FAMILIA COSIO CEPEDA", "FAMILIA ESQUIVEL", "FAMILIA GARCIA DELGADILLO", "FAMILIA GARCIA ESCOBEDO", "FAMILIA GUADARRAMA L", "FAMILIA GUTIERREZ PARRA", "FAMILIA LLANES ONTIVEROS", "FAMILIA LOPEZ ZAPATA", "FAMILIA MARTINEZ ANDRADE", "FAMILIA MARTINEZ LOPEZ", "FAMILIA MOTA ANDRADE", "FAMILIA RAMIREZ PEREZ", "FAMILIA RESENDIZ MONTOYA", "FAMILIA RODRIGUEZ CORDERO", "FAMILIA SANCHEZ AGUILAR", "FAMILIA SANCHEZ MACIAS", "FAMILIA SANCHEZ MONTALVO", "FAMILIA SANCHEZ RAMIREZ", "FAMILIA TORRES", "FAMILIA VALDEZ FAVELA", "FAMILIA VARGAS AGUILAR", "FAMILIA VAZQUEZ", "FAMILIA ZAPATA ROSALES", "FERNANDO TURRUBIATES", "FILADELFIA", "FLORENCIO CASAS", "FRANCISCO ESPARZA A", "FRANCISCO MERCADO", "FRANCISCO VILLA", "FRANCISCO VILLA (LOS SIERRA)", "FUENTE BELLA", "GABY (GRANJA)", "GANADERA GILIO", "GANADERA SOLORZANO", "GARCIA (GRANJA)", "GAUCIN ARAIZA", "GAUCIN LUJAN", "GEMA [ESTABLO]", "GLORIETA", "GOMEZ PALACIO", "GONZALEZ TOSCANO", "GRANJA ALBORADA", "GRANJA ANA", "GRANJA CLAUDIA LETICIA", "GRANJA EL CASTILLO", "GRANJA EL ROCIO", "GRANJA ELVIRA", "GRANJA GUADALUPE", "GRANJA LA CANTABRA", "GRANJA PORCINA NOE", "GRANJA PUERTO ARTURO", "GUADALUPE BERLANGA", "GUERRERO (GRANJA)", "GUTIERREZ PARRA", "HERMANOS QUEZADA", "HOREB", "HUERTO SOFIA", "HUITRON", "IDEAGEMA (GRANJA)", "IDEAL (GRANJA)", "ILHUICAMINA", "INDEPENDENCIA", "INDUSTRIAL GUAJARDO", "INDUSTRIAL MAFER", "ISIDRO MORALES", "J GUADALUPE RODRIGUEZ", "JACINTO CAMACHO", "JAIME ROMERO", "JERICO", "JERUSALEM", "JEZALA", "JIMENEZ (JIMENEZ UNO)", "JIMENEZ 2A", "JOLO", "JOSE ANTUNEZ", "JOSE GUADALUPE ANTUNEZ", "JOSE MARIA MORELOS Y PAVON", "JOSE ROBLES", "JOSE SALDAÑA", "JUAN CARLOS SILVA BERNAL", "JUAN LARRIÑAGA", "JUAN LLANES", "JUAN MANUEL", "JUAN RODRIGUEZ", "LA AMPLIACION", "LA AURORA", "LA BECERRA", "LA BILLETERA", "LA CABAÑA", "LA CAPILLA", "LA CASA ROSA", "LA CHILLA", "LA COMPETENCIA", "LA DOÑA", "LA EMPRESA", "LA ENCANTADA", "LA ESCONDIDA", "LA ESPERANZA", "LA ESTRELLA", "LA FE", "LA FLOR", "LA FORTUNA", "LA FOSA", "LA GAVIA", "LA HERMIDA", "LA HERRADURA", "LA ISLA", "LA JARITA", "LA LAGUNITA", "LA LUZ", "LA MAGDALENA", "LA NORIA DE JABONCILLO", "LA NORIA DEL GAVILAN", "LA PAZ", "LA PEQUEÑA SANTANA", "LA PLATA", "LA PLATILLA", "LA POPULAR", "LA PROVIDENCIA", "LA REVANCHA", "LA ROSITA", "LA RUMOROSA", "LA SOLEDAD", "LA TEHUA", "LA VEGA", "LA VEGA DEL PARAISO", "LAGUSOL", "LAS 3 MARIAS", "LAS CARMELAS", "LAS CARMELITAS", "LAS COYOTERAS", "LAS CRIBAS", "LAS CUATITAS", "LAS FLORES", "LAS LECHUZAS", "LAS MACITAS", "LAS MARGARITAS", "LAS MERCEDES F2", "LAS PALMAS", "LAS PLAYAS", "LAS TRES B", "LAS VIRGINIAS", "LAZARO CARDENAS", "LETICIA", "LOPEZ ZAPATA", "LOS 3 HERMANOS", "LOS ANDRADE", "LOS ANFIBIOS", "LOS ANGELES", "LOS CONTRERAS", "LOS DELGADO", "LOS DOS COMPADRES", "LOS DULCES NOMBRES", "LOS EUCALIPTOS", "LOS MARTINEZ", "LOS MIRASOLES", "LOS NOGALES", "LOS OLIVOS", "LOS ORGANOS", "LOS PAPIRINGOS", "LOS POTRILLOS", "LOS REYES", "LOS TREINTA", "LOS TRES CAMACHO", "LUPITA", "MANILA", "MAPIMI", "MAQUILAS Y MINERALES ALFERY", "MARIA ANTONIETA", "MARIA TERESA", "MARMARTHA", "MARTINEZ LEYVA", "MI TUMBA", "MIGUEL MONTAÑEZ MEZA", "MIGUEL SAMANIEGO", "MOISES LOPEZ", "MOLINO LOS ANTUNEZ", "NATO HERNANDEZ", "NAZAS", "NEXTLALPAN", "NICOLAS ROQUE", "NINGUNO", "NOE", "NOEL GAUSIN", "NOELIE (GRANJA)", "NORIA 1919", "NORIA 1926", "NORIA 1981", "NORIA 273", "NORIA DE JIMENEZ DOS", "NORIA DE LA TEHUA", "NORIA DE LA VIRGINIA", "NORIA DEL CONSUELO", "NORIA EL RECUERDO", "NORIA GREGORIO GARCIA", "NORIA LA CUATRO", "NORIA LA TRES", "NORIA LA UNA", "NORIA PARAISO", "NORIA SAN GONZALO", "NORIA SAN MARTIN", "NORIA SECTOR DOS", "NORIA SECTOR VEINTITRES", "NORIA VENECIA CINCO", "NUEVO AMANECER", "NUEVO BARRO", "NUEVO GOMEZ", "NUEVO JERICO", "NUMANCIA", "PABLO LARRIÑAGA", "PADILLA SALAS", "PALO BLANCO", "PALO HUECO", "PARAISO SECTOR 3", "PASTOR ROUAIX", "PATZCUARO", "PENJAMO", "PEQUEÑA BERLIN", "PIMENTEL", "POANAS", "PORVENIR", "POZO NUMERO DOS", "POZO PANCHO VILLA", "PREVEDEL", "PRODUCTOS AGROPECUARIOS 2 Y 2", "PROVIDENCIA", "PUEBLO NUEVO (EL SIETE)", "PUENTE DE LA TORREÑA", "PURISIMA", "QUINTA ALINA", "QUINTA ARMONIA", "QUINTA BAM BAM", "QUINTA EL CAPRICHO", "QUINTA EL RETIRO", "QUINTA ESPERANZA", "QUINTA LAS ILUSIONES", "QUINTA LILIAN", "QUINTA ROSY", "QUINTA SANTA MONICA", "RAMIRO CANALES", "RAMIRO ROJAS", "RAMONA HERMOSILLO", "RANCHO GORDO", "RANCHO GUADALUPE", "RANCHO LA HECTAREA", "RANCHO NUEVO", "RANCHO ROSALBA", "REAL DE SAN SEBASTIAN", "REFORMA", "REMIGIO CUEVAS GALINDO", "RESUMIDEROS", "REYES CASTRO", "REYES SANCHEZ", "RIGOBERTO BECERRA", "RINCON DE SANTA CRUZ", "RINCONADA", "RIOS (GRANJA)", "RIVERA LLANES", "ROBERTO GARCIA", "ROBERTO RIOS", "RUTILIO GARCIA", "SAN AGUSTIN", "SAN ALBERTO", "SAN ANTONIO", "SAN AURELIO", "SAN CARLOS", "SAN FELIPE", "SAN FERNANDO", "SAN FRANCISCO", "SAN GABRIEL", "SAN GERARDO", "SAN ISIDRO", "SAN JOSE", "SAN JOSE DE VIÑEDO", "SAN JUAN", "SAN LORENZO", "SAN LUIS", "SAN LUISITO", "SAN MANUEL", "SAN MARTIN", "SAN MIGUEL", "SAN PEDRO", "SAN RAMIRO", "SAN RAMON", "SAN ROQUE", "SAN SEBASTIAN", "SAN SERGIO", "SAN VICENTE", "SANTA ANGELICA", "SANTA CLARA", "SANTA CRUZ", "SANTA CRUZ LUJAN", "SANTA FE", "SANTA GERTRUDIS", "SANTA HERMINIA", "SANTA INES", "SANTA JULIA", "SANTA LUCINA", "SANTA MARIA", "SANTA ROSA", "SANTA ROSITA", "SANTA SOFIA", "SANTA TERESA", "SANTIAGO", "SIERRA HERMOSA", "TRECE DE MARZO", "TRES ESTRELLAS", "TRES MARIAS", "TRES ROBLES", "TRES VICTORIAS", "VALDEZ", "VAZQUEZ", "VENECIA", "VENUSTIANO CARRANZA", "VIANEY", "VICENTE NAVA", "VICTOR CARRILLO HERNANDEZ", "VILLA GREGORIO GARCIA", "VILLAS URBI DEL CEDRO", "VILMA ALE DE HERRERA", "VIÑASOL", "YOLANDA (GRANJA)"
+    "DAGOBERTO RAMON ARELLANO", "DAVID GAUSIN", "DELGADO SANTA ROSA", "DESARROLLO DORADO DE MILAGROS AC [HOGAR DE ANCIANOS]", 
+    "DESARROLLO LACTEO (DESLAC)", "DINAMITA", "DOLORES", "DON MELY (GRANJA)", "DON RICARDO [QUINTA]", "DON ROBERTO", 
+    "DOS AMIGOS", "DULCE MARIA (LA LUZ)", "EJIDO BUENDIA (LA CASETA)", "EL AGUILA", "EL ALTO DEL CHIVO (ROMERO ROSAS)", 
+    "EL BARRO", "EL BARRO 33 (EL TREINTA Y TRES)", "EL BERCIAL", "EL BUEN PASTOR", "EL CAIRO DOS (GRANJA)", 
+    "EL CAIRO [DESPEPITE]", "EL CARIÑO", "EL CARMEN", "EL CASTILLO", "EL CELO", "EL CHAPARRAL", "EL CHIMAL", 
+    "EL CHORIZO (FAMILIA TORRES)", "EL COMPAS", "EL CONSUELO", "EL CONSUELO TRES [NORIA]", "EL CORONEL", 
+    "EL CORTIJO", "EL DURAZNITO", "EL DURAZNO", "EL EMPAQUE", "EL ERIAZO", "EL ESFUERZO (GRANJA)", "EL FENIX", 
+    "EL GARCES", "EL GATO", "EL HERMANO [AUTOPARTES]", "EL INDIO", "EL JUNCO", "EL LABRADOR", "EL LAGUNERO [RESTAURANTE]", 
+    "EL MANANTIAL", "EL MEZQUITE", "EL MEZQUITE (CANTU)", "EL NOGUERAL 555 (CAMPO REAL)", "EL OLIVO", "EL PARAISO", 
+    "EL PATO", "EL PILAR", "EL PITAYO", "EL POLVORON", "EL PROGRESO", "EL QUEMADO", "EL RECUERDO", "EL REFUGIO", 
+    "EL RETOÑO", "EL ROSARIO", "EL SOL (GRANJA)", "EL SOLITO", "EL TAJITO", "EL TREBOL", "EL TREINTA Y UNO", 
+    "EL TRIUNFILLO (EL TRIUNFITO)", "EL TRIUNFO", "EL TUANON", "EL VALLE DE EUREKA", "EL VEINTINUEVE DE AGOSTO", 
+    "EL VERGEL", "EL VERGELITO", "EL VOLADO", "EL VUELO DEL AGUILA", "ELIAF (EL CHORIZO)", "ENSENADA", "ESMERALDA", 
+    "ESTABLO BREMEN", "ESTABLO BRITINGHAM"
 );
+CATALOGO_LOCALIDADES.push(
+    "ESTABLO CHILCHOTA", "ESTABLO EL COMPAS", "ESTABLO EL PORVENIR", "ESTABLO EL VERGEL", "ESTABLO LA GALLEGA", 
+    "ESTABLO MADRID", "ESTACION NOE", "ESTACION VIÑEDO", "EUREKA DE MEDIA LUNA (EUREKA)", "FABRICACIONES ESPECIALIZADAS", 
+    "FAMILIA ALDAMA SANCHEZ", "FAMILIA BARBA GUTIERREZ", "FAMILIA CISNEROS CALZADA", "FAMILIA CORDERO FLORES", 
+    "FAMILIA CORDERO ROSALES", "FAMILIA COSIO CEPEDA", "FAMILIA ESQUIVEL", "FAMILIA GARCIA DELGADILLO", 
+    "FAMILIA GARCIA ESCOBEDO", "FAMILIA GUADARRAMA L", "FAMILIA GUTIERREZ PARRA", "FAMILIA LLANES ONTIVEROS", 
+    "FAMILIA LOPEZ ZAPATA", "FAMILIA MARTINEZ ANDRADE", "FAMILIA MARTINEZ LOPEZ", "FAMILIA MOTA ANDRADE", 
+    "FAMILIA RAMIREZ PEREZ", "FAMILIA RESENDIZ MONTOYA", "FAMILIA RODRIGUEZ CORDERO", "FAMILIA SANCHEZ AGUILAR", 
+    "FAMILIA SANCHEZ MACIAS", "FAMILIA SANCHEZ MONTALVO", "FAMILIA SANCHEZ RAMIREZ", "FAMILIA TORRES", 
+    "FAMILIA VALDEZ FAVELA", "FAMILIA VARGAS AGUILAR", "FAMILIA VAZQUEZ", "FAMILIA ZAPATA ROSALES", 
+    "FERNANDO TURRUBIATES", "FILADELFIA", "FLORENCIO CASAS", "FRANCISCO ESPARZA A", "FRANCISCO MERCADO", 
+    "FRANCISCO VILLA", "FRANCISCO VILLA (LOS SIERRA)", "FUENTE BELLA", "GABY (GRANJA)", "GANADERA GILIO", 
+    "GANADERA SOLORZANO", "GARCIA (GRANJA)", "GAUCIN ARAIZA", "GAUCIN LUJAN", "GEMA [ESTABLO]", "GLORIETA", 
+    "GOMEZ PALACIO", "GONZALEZ TOSCANO", "GRANJA ALBORADA", "GRANJA ANA", "GRANJA CLAUDIA LETICIA", 
+    "GRANJA EL CASTILLO", "GRANJA EL ROCIO", "GRANJA ELVIRA", "GRANJA GUADALUPE", "GRANJA LA CANTABRA", 
+    "GRANJA PORCINA NOE", "GRANJA PUERTO ARTURO", "GUADALUPE BERLANGA", "GUERRERO (GRANJA)", "GUTIERREZ PARRA", 
+    "HERMANOS QUEZADA", "HOREB", "HUERTO SOFIA", "HUITRON", "IDEAGEMA (GRANJA)", "IDEAL (GRANJA)", "ILHUICAMINA", 
+    "INDEPENDENCIA", "INDUSTRIAL GUAJARDO", "INDUSTRIAL MAFER", "ISIDRO MORALES", "J GUADALUPE RODRIGUEZ", 
+    "JACINTO CAMACHO", "JAIME ROMERO", "JERICO", "JERUSALEM", "JEZALA", "JIMENEZ (JIMENEZ UNO)", "JIMENEZ 2A", 
+    "JOLO", "JOSE ANTUNEZ", "JOSE GUADALUPE ANTUNEZ", "JOSE MARIA MORELOS Y PAVON", "JOSE ROBLES", "JOSE SALDAÑA", 
+    "JUAN CARLOS SILVA BERNAL", "JUAN LARRIÑAGA", "JUAN LLANES", "JUAN MANUEL", "JUAN RODRIGUEZ", "LA AMPLIACION", 
+    "LA AURORA", "LA BECERRA", "LA BILLETERA", "LA CABAÑA", "LA CAPILLA", "LA CASA ROSA", "LA CHILLA", 
+    "LA COMPETENCIA", "LA DOÑA", "LA EMPRESA", "LA ENCANTADA", "LA ESCONDIDA", "LA ESPERANZA", "LA ESTRELLA", 
+    "LA FE", "LA FLOR", "LA FORTUNA", "LA FOSA", "LA GAVIA", "LA HERMIDA", "LA HERRADURA", "LA ISLA", "LA JARITA", 
+    "LA LAGUNITA", "LA LUZ", "LA MAGDALENA", "LA NORIA DE JABONCILLO", "LA NORIA DEL GAVILAN", "LA PAZ", 
+    "LA PEQUEÑA SANTANA", "LA PLATA", "LA PLATILLA", "LA POPULAR", "LA PROVIDENCIA", "LA REVANCHA", "LA ROSITA", 
+    "LA RUMOROSA", "LA SOLEDAD", "LA TEHUA", "LA VEGA", "LA VEGA DEL PARAISO", "LAGUSOL", "LAS 3 MARIAS", 
+    "LAS CARMELAS", "LAS CARMELITAS", "LAS COYOTERAS", "LAS CRIBAS", "LAS CUATITAS", "LAS FLORES", "LAS LECHUZAS", 
+    "LAS MACITAS", "LAS MARGARITAS", "LAS MERCEDES F2", "LAS PALMAS", "LAS PLAYAS", "LAS TRES B", "LAS VIRGINIAS", 
+    "LAZARO CARDENAS", "LETICIA", "LOPEZ ZAPATA", "LOS 3 HERMANOS", "LOS ANDRADE", "LOS ANFIBIOS", "LOS ANGELES", 
+    "LOS CONTRERAS", "LOS DELGADO", "LOS DOS COMPADRES", "LOS DULCES NOMBRES", "LOS EUCALIPTOS", "LOS MARTINEZ", 
+    "LOS MIRASOLES", "LOS NOGALES", "LOS OLIVOS", "LOS ORGANOS", "LOS PAPIRINGOS", "LOS POTRILLOS", "LOS REYES", 
+    "LOS TREINTA", "LOS TRES CAMACHO", "LUPITA", "MANILA", "MAPIMI", "MAQUILAS Y MINERALES ALFERY", "MARIA ANTONIETA", 
+    "MARIA TERESA", "MARMARTHA", "MARTINEZ LEYVA", "MI TUMBA", "MIGUEL MONTAÑEZ MEZA", "MIGUEL SAMANIEGO", 
+    "MOISES LOPEZ", "MOLINO LOS ANTUNEZ", "NATO HERNANDEZ", "NAZAS", "NEXTLALPAN", "NICOLAS ROQUE", "NINGUNO", 
+    "NOE", "NOEL GAUSIN", "NOELIE (GRANJA)", "NORIA 1919", "NORIA 1926", "NORIA 1981", "NORIA 273", 
+    "NORIA DE JIMENEZ DOS", "NORIA DE LA TEHUA", "NORIA DE LA VIRGINIA", "NORIA DEL CONSUELO", "NORIA EL RECUERDO", 
+    "NORIA GREGORIO GARCIA", "NORIA LA CUATRO", "NORIA LA TRES", "NORIA LA UNA", "NORIA PARAISO", "NORIA SAN GONZALO", 
+    "NORIA SAN MARTIN", "NORIA SECTOR DOS", "NORIA SECTOR VEINTITRES", "NORIA VENECIA CINCO", "NUEVO AMANECER", 
+    "NUEVO BARRO", "NUEVO GOMEZ", "NUEVO JERICO", "NUMANCIA", "PABLO LARRIÑAGA", "PADILLA SALAS", "PALO BLANCO", 
+    "PALO HUECO", "PARAISO SECTOR 3", "PASTOR ROUAIX", "PATZCUARO", "PENJAMO", "PEQUEÑA BERLIN", "PIMENTEL", 
+    "POANAS", "PORVENIR", "POZO NUMERO DOS", "POZO PANCHO VILLA", "PREVEDEL", "PRODUCTOS AGROPECUARIOS 2 Y 2", 
+    "PROVIDENCIA", "PUEBLO NUEVO (EL SIETE)", "PUENTE DE LA TORREÑA", "PURISIMA", "QUINTA ALINA", "QUINTA ARMONIA", 
+    "QUINTA BAM BAM", "QUINTA EL CAPRICHO", "QUINTA EL RETIRO", "QUINTA ESPERANZA", "QUINTA LAS ILUSIONES", 
+    "QUINTA LILIAN", "QUINTA ROSY", "QUINTA SANTA MONICA", "RAMIRO CANALES", "RAMIRO ROJAS", "RAMONA HERMOSILLO", 
+    "RANCHO GORDO", "RANCHO GUADALUPE", "RANCHO LA HECTAREA", "RANCHO NUEVO", "RANCHO ROSALBA", "REAL DE SAN SEBASTIAN", 
+    "REFORMA", "REMIGIO CUEVAS GALINDO", "RESUMIDEROS", "REYES CASTRO", "REYES SANCHEZ", "RIGOBERTO BECERRA", 
+    "RINCON DE SANTA CRUZ", "RINCONADA", "RIOS (GRANJA)", "RIVERA LLANES", "ROBERTO GARCIA", "ROBERTO RIOS", 
+    "RUTILIO GARCIA", "SAN AGUSTIN", "SAN ALBERTO", "SAN ANTONIO", "SAN AURELIO", "SAN CARLOS", "SAN FELIPE", 
+    "SAN FERNANDO", "SAN FRANCISCO", "SAN GABRIEL", "SAN GERARDO", "SAN ISIDRO", "SAN JOSE", "SAN JOSE DE VIÑEDO", 
+    "SAN JUAN", "SAN LORENZO", "SAN LUIS", "SAN LUISITO", "SAN MANUEL", "SAN MARTIN", "SAN MIGUEL", "SAN PEDRO", 
+    "SAN RAMIRO", "SAN RAMON", "SAN ROQUE", "SAN SEBASTIAN", "SAN SERGIO", "SAN VICENTE", "SANTA ANGELICA", 
+    "SANTA CLARA", "SANTA CRUZ", "SANTA CRUZ LUJAN", "SANTA FE", "SANTA GERTRUDIS", "SANTA HERMINIA", "SANTA INES", 
+    "SANTA JULIA", "SANTA LUCINA", "SANTA MARIA", "SANTA ROSA", "SANTA ROSITA", "SANTA SOFIA", "SANTA TERESA", 
+    "SANTIAGO", "SIERRA HERMOSA", "TRECE DE MARZO", "TRES ESTRELLAS", "TRES MARIAS", "TRES ROBLES", "TRES VICTORIAS", 
+    "VALDEZ", "VAZQUEZ", "VENECIA", "VENUSTIANO CARRANZA", "VIANEY", "VICENTE NAVA", "VICTOR CARRILLO HERNANDEZ", 
+    "VILLA GREGORIO GARCIA", "VILLAS URBI DEL CEDRO", "VILMA ALE DE HERRERA", "VIÑASOL", "YOLANDA (GRANJA)"
+);
+const DB_NAME = "R02_DB"; const DB_VERSION = 1; const STORE_NAME = "derechohabientes"; let db;
+const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+request.onupgradeneeded = (e) => {
+    db = e.target.result;
+    if (!db.objectStoreNames.contains(STORE_NAME)) {
+        const store = db.createObjectStore(STORE_NAME, { keyPath: "CURP" });
+        store.createIndex("by_nombre", "NOMBRE", { unique: false }); 
+        store.createIndex("by_calle", "CALLE", { unique: false });
+    }
+};
+
+request.onsuccess = (e) => { 
+    db = e.target.result; 
+    updateLocalCounter(); 
+    preloadDatabaseToMemory(); 
+};
+
+request.onerror = (e) => { console.error("Error IndexedDB:", e.target.error); };
 
 function updateLocalCounter() {
     if (!db) return;
@@ -59,7 +142,8 @@ function updateLocalCounter() {
         const countElement = document.getElementById('local-db-count');
         if (countElement) countElement.innerText = countRequest.result;
     };
-    const totalVisitasHoy = pendingSync.length + syncedHistory.length; const pendientesPorSubir = pendingSync.length;
+    const totalVisitasHoy = pendingSync.length + syncedHistory.length; 
+    const pendientesPorSubir = pendingSync.length;
     if (document.getElementById('metric-total-visitas')) document.getElementById('metric-total-visitas').innerText = totalVisitasHoy;
     if (document.getElementById('metric-pendientes-visitas')) document.getElementById('metric-pendientes-visitas').innerText = pendientesPorSubir;
     if (document.getElementById('pending-count')) document.getElementById('pending-count').innerText = pendientesPorSubir;
@@ -78,7 +162,8 @@ function changeScreen(screenId) {
     }
     
     document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
-    const targetScreen = document.getElementById(screenId); if (targetScreen) targetScreen.classList.remove('hidden');
+    const targetScreen = document.getElementById(screenId); 
+    if (targetScreen) targetScreen.classList.remove('hidden');
 
     const bottomNav = document.getElementById('app-bottom-nav'); if (!bottomNav) return;
     if (screenId === 'screen-login' || screenId === 'screen-form') {
@@ -99,10 +184,9 @@ function login() {
         currentUser = { curp: curpInput, name: brigadistaEncontrado.name };
         if (document.getElementById('welcome-message')) document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
         if (document.getElementById('welcome-message-search')) document.getElementById('welcome-message-search').innerText = `Bienvenido(a), ${currentUser.name}`;
-        changeScreen('screen-welcome');
+        changeScreen('screen-search');
     } else { alert("CURP no autorizada o inválida."); }
 }
-
 async function downloadAllDataMassive() {
     const btn = document.getElementById('btn-massive-download');
     const progressContainer = document.getElementById('progress-container'); const progressBar = document.getElementById('progress-bar'); const progressText = document.getElementById('progress-text');
@@ -134,6 +218,7 @@ async function downloadAllDataMassive() {
         preloadDatabaseToMemory(); updateLocalCounter(); alert(`Éxito: Se guardaron ${totalCargados} registros.`); changeScreen('screen-search');
     } catch (error) { alert(`Error: ${error.message}`); } finally { btn.disabled = false; }
 }
+
 let localMemoryDatabase = [];
 function preloadDatabaseToMemory() {
     if (!db) return;
@@ -156,15 +241,11 @@ function searchData() {
         if (searchTokens.every(t => combinedText.includes(t))) matchedRecords.push(item);
     }
 
-   // BUSCA EN TU APP.JS ESTA SECCIÓN DENTRO DE LA FUNCIÓN searchData() Y REEMPLAZA ÚNICAMENTE ESTE TRAMO:
     matchedRecords.sort((a, b) => String(a['NUM EXT']).localeCompare(String(b['NUM EXT'])));
     matchedRecords.slice(0, 30).forEach(item => {
-        const div = document.createElement('div'); 
-        const estatusActual = item['ESTATUS_VISITA'] || ""; // <-- CORREGIDO AQUÍ LA PROPIEDAD
-        const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']); 
-        const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
+        const div = document.createElement('div'); const estatusActual = item['ESTATUS_VISITA'] || "";
+        const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']); const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
         const estatusFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['ESTATUS_VISITA'] : estatusActual;
-
         let claseColor = estatusFinal === "LOCALIZADO" ? "result-item status-localizado" : (estatusFinal === "NO LOCALIZADO" ? "result-item status-nolocalizado" : "result-item");
         let textoIndicador = estatusFinal === "LOCALIZADO" ? ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>' : (estatusFinal === "NO LOCALIZADO" ? ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>' : "");
 
@@ -173,7 +254,6 @@ function searchData() {
         div.onclick = () => openForm(item); resultsContainer.appendChild(div);
     });
 }
-
 function buscarLocalidadesEnPantalla() {
     const query = document.getElementById('f-localidad-buscar').value.toLowerCase().trim(); const resultsContainer = document.getElementById('localidad-search-results');
     resultsContainer.innerHTML = ""; if (query.length < 2) { resultsContainer.style.display = "none"; return; }
@@ -188,7 +268,7 @@ function buscarLocalidadesEnPantalla() {
             };
             resultsContainer.appendChild(div);
         });
-    } else { resultsContainer.style.display = "block"; resultsContainer.innerHTML = '<div style="padding:12px; color:#b91c1c; font-size:14px; font-weight:bold; text-align:center;">❌ Sin de coincidencia</div>'; }
+    } else { resultsContainer.style.display = "block"; resultsContainer.innerHTML = '<div style="padding:12px; color:#b91c1c; font-size:14px; font-weight:bold; text-align:center;">❌ Sin coincidencia</div>'; }
 }
 
 function buscarMunicipiosEnPantalla() {
@@ -271,6 +351,7 @@ function openForm(item) {
     document.getElementById('f-municipio').value = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
     document.getElementById('f-colonia').value = item['COLONIA'] ? String(item['COLONIA']).toUpperCase().trim() : "";
 }
+
 function saveData(event) {
     event.preventDefault();
     const latValue = document.getElementById('f-lat').value; const lonValue = document.getElementById('f-lon').value;
@@ -298,7 +379,6 @@ function saveData(event) {
         alert("✅ ÉXITO: Guardado localmente."); document.getElementById('search-input').value = ""; document.getElementById('search-results').innerHTML = ""; changeScreen('screen-search');
     };
 }
-
 function openHistoryScreen() {
     changeScreen('screen-history'); document.getElementById('pending-count').innerText = pendingSync.length;
     const logList = document.getElementById('history-log'); logList.innerHTML = ""; 
@@ -323,6 +403,7 @@ function downloadBackupCSV() {
     allVisitsOfDay.forEach(r => { csvRows.push(headers.map(h => { let v = r[h] !== undefined ? String(r[h]).trim() : ""; return v.includes(",") ? `"${v.replace(/"/g, '""')}"` : v; }).join(",")); });
     const downloadAnchor = document.createElement('a'); downloadAnchor.setAttribute("href", URL.createObjectURL(new Blob(["\\ufeff" + csvRows.join("\\n")], { type: 'text/csv;charset=utf-8;' }))); downloadAnchor.setAttribute("download", `R02_Reporte_${new Date().toISOString().slice(0, 10)}.csv`); document.body.appendChild(downloadAnchor); downloadAnchor.click(); document.body.removeChild(downloadAnchor);
 }
+
 function clearLocalStorage() {
     if (confirm("🚨 ADVERTENCIA: ¿Vaciamos la memoria?")) {
         pendingSync = []; syncedHistory = []; localMemoryDatabase = []; localStorage.clear();
@@ -369,22 +450,14 @@ function abrirFormularioVacioAltaNueva() {
 }
 
 function verificarCurpDuplicadaEnTiempoReal(e) {
-    const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase(); 
-    e.target.value = valorLimpio; 
+    const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase(); e.target.value = valorLimpio; 
     if (valorLimpio.length === 18) {
         const registroExistente = localMemoryDatabase.find(r => r.CURP === valorLimpio);
         if (registroExistente) {
-            if (confirm(`📢 DETECTOR DE DUPLICADOS: La CURP [${valorLimpio}] ya existe (Municipio: ${registroExistente.MUNICIPIO || 'SIN MUNICIPIO'}).\n\n¿Desea cargar sus datos antiguos?`)) { 
-                alert("Cargando información..."); 
-                openForm(registroExistente); 
-            } else { 
-                e.target.value = ''; 
-                e.target.focus(); 
-                alert("Ingrese una CURP no registrada."); 
-            }
+            if (confirm(`📢 DETECTOR DE DUPLICADOS: La CURP [${valorLimpio}] ya existe (Municipio: ${registroExistente.MUNICIPIO || 'SIN MUNICIPIO'}).\n\n¿Desea cargar sus datos antiguos?`)) { alert("Cargando información..."); openForm(registroExistente); }
+            else { e.target.value = ''; e.target.focus(); alert("Ingrese una CURP no registrada."); }
         }
     }
 }
-
 
 if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)); }); }
