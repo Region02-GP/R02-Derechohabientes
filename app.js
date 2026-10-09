@@ -2,6 +2,11 @@
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_rQKWnnixfxxhRqa66SG-FUO33_bHDH08ivvkno8T4zpRL4UaWT0DyDIsQVagdxYV/exec";
 
 
+// DECLARACIÓN DE SEGURIDAD INDUSTRIAL: Inicializa e impide que Android tire error si brigadistas.js tarda en cargar
+if (typeof AUTHORIZED_CURPS === 'undefined') {
+    var AUTHORIZED_CURPS = {}; 
+}
+
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
 let currentUser = null;
@@ -9,6 +14,7 @@ let previousScreen = 'screen-welcome';
 let currentEstatusVisita = "LOCALIZADO"; 
 let motivoNoLocalizadoValue = "";        
 window.currentTratoValue = ""; 
+ 
 const CATALOGO_LOCALIDADES = [
     "18 DE MARZO", "ACAPULCO", "ACAPULCO (PROPIEDAD PRIVADA)", "AMERICA UNO", "AMPARO (GRANJA)", "AMPLIACION BUCARELI", 
     "AMPLIACION EL FENIX", "AMPLIACION EL VERGELITO SUR", "AMPLIACION VENECIA", "AMPUEROS", "ANDRES JIMENEZ", 
