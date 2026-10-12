@@ -165,9 +165,69 @@
                     <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
                     <div><label>Longitud GPS:</label><input type="text" id="f-lon" readonly></div>
                 </div>
+                <!-- BUSCA EL FINAL DE TU FORM EN LA PANTALLA 4 Y DEJA LOS BOTONES DE ACCIÓN EXACTAMENTE ASÍ: -->
+                <div class="form-grid text-disabled">
+                    <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
+                    <div><label>Longitud GPS:</label><input type="text" id="f-lon" readonly></div>
+                </div>
+
+                <!-- NUEVO DISPARADOR INTERACTIVO CON ENLACE SÍNCRONO A LA PANTALLA 6 -->
+                <button type="button" onclick="changeScreen('screen-docs')" style="margin-top: 25px; background-color: var(--secondary-color); color: #1F2937; border: 1px solid var(--secondary-dark); box-shadow: var(--shadow-gold);">
+                    📁 Adjuntar Documentos Digitales (INE, CURP, Acta)
+                </button>
+
+                <button type="submit" style="margin-top: 12px;">Guardar Localmente</button>
+                <button type="button" onclick="changeScreen('screen-search')" class="btn-back" style="margin-top: 12px;">Cancelar</button>
+            </form> 
+        </section>
+
                 <button type="submit" style="margin-top: 20px;">Guardar Localmente</button>
                 <button type="button" onclick="changeScreen('screen-search')" class="btn-back">Cancelar</button>
             </form>
+        </section>
+        <!-- PANTALLA 6: CAPTURA DE DOCUMENTOS DIGITALES (NUEVA) -->
+        <section id="screen-docs" class="app-screen hidden">
+            <div class="screen-number-badge">Doc. Digitales</div>
+            <h2>Expediente Digital del Ciudadano</h2>
+            <p style="font-size:13px; color: var(--text-muted); margin-bottom:20px; line-height:1.4;">
+                Presione cada botón para activar la cámara nativa de su Note 20 y capturar los respaldos del derechohabiente:
+            </p>
+
+            <div class="action-buttons-stack" style="gap: 12px;">
+                <!-- Botón 1: INE Frontal -->
+                <div style="background: #F9FAFB; padding: 10px; border-radius: 8px; border: 1px solid #CBD5E0;">
+                    <button type="button" onclick="alert('Cámara Frontal INE activada temporalmente')" style="background-color: #5A6A80; margin-top:0;">🪪 Capturar INE Frontal</button>
+                </div>
+
+                <!-- Botón 2: INE Trasera -->
+                <div style="background: #F9FAFB; padding: 10px; border-radius: 8px; border: 1px solid #CBD5E0;">
+                    <button type="button" onclick="alert('Cámara Trasera INE activada temporalmente')" style="background-color: #5A6A80; margin-top:0;">🪪 Capturar INE Trasera</button>
+                </div>
+
+                <!-- Botón 3: Acta de Nacimiento -->
+                <div style="background: #F9FAFB; padding: 10px; border-radius: 8px; border: 1px solid #CBD5E0;">
+                    <button type="button" onclick="alert('Cámara Acta activada temporalmente')" style="background-color: #5A6A80; margin-top:0;">📜 Capturar Acta de Nacimiento</button>
+                </div>
+
+                <!-- Botón 4: Comprobante de Domicilio -->
+                <div style="background: #F9FAFB; padding: 10px; border-radius: 8px; border: 1px solid #CBD5E0;">
+                    <button type="button" onclick="alert('Cámara Comprobante activada temporalmente')" style="background-color: #5A6A80; margin-top:0;">🏠 Capturar Comprobante Domicilio</button>
+                </div>
+
+                <!-- Botón 5: CURP -->
+                <div style="background: #F9FAFB; padding: 10px; border-radius: 8px; border: 1px solid #CBD5E0;">
+                    <button type="button" onclick="alert('Cámara CURP activada temporalmente')" style="background-color: #5A6A80; margin-top:0;">🆔 Capturar CURP Oficial</button>
+                </div>
+            </div>
+
+            <hr style="margin:25px 0;">
+
+            <!-- CONTROL TOTAL DE RETORNO INTEGRADO -->
+            <div class="button-row-grid">
+                <!-- El botón Guardar ejecuta síncronamente el submit del formulario de la Pantalla 4 -->
+                <button type="button" onclick="document.getElementById('edit-form').requestSubmit();" style="margin-top:0; background-color: var(--primary-color);">💾 Guardar Todo</button>
+                <button type="button" onclick="changeScreen('screen-form')" class="btn-back" style="margin-top:0;">🔙 Regresar</button>
+            </div>
         </section>
 
         <!-- PANTALLA 5: HISTORIAL -->
