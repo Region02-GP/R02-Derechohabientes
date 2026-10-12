@@ -452,6 +452,23 @@ function openForm(item) {
     document.getElementById('f-localidad').value = item['LOCALIDAD'] ? String(item['LOCALIDAD']).toUpperCase().trim() : "";
     document.getElementById('f-municipio').value = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
     document.getElementById('f-colonia').value = item['COLONIA'] ? String(item['COLONIA']).toUpperCase().trim() : "";
+    // INYECTA ESTO EN EL TRAMO FINAL DE TU FUNCIÓN openForm(item) PARA DESPLEGAR CAPTURAS ANTERIORES:
+    expedienteDigitalTemporal = { 
+        doc_ine_frontal: item['DOC_INE_FRONTAL'] || "", doc_ine_trasera: item['DOC_INE_TRASERA'] || "", 
+        doc_acta: item['DOC_ACTA'] || "", doc_comprobante: item['DOC_COMPROBANTE'] || "", doc_curp: item['DOC_CURP'] || "" 
+    };
+
+    const mapeoMiniaturas = [
+        { id: 'preview-ine-frontal', dato: expedienteDigitalTemporal.doc_ine_frontal }, { id: 'preview-ine-trasera', dato: expedienteDigitalTemporal.doc_ine_trasera },
+        { id: 'preview-acta', dato: expedienteDigitalTemporal.doc_acta }, { id: 'preview-comprobante', dato: expedienteDigitalTemporal.doc_comprobante },
+        { id: 'preview-curp', dato: expedienteDigitalTemporal.doc_curp }
+    ];
+
+    mapeoMiniaturas.forEach(m => {
+        const img = document.getElementById(m.id);
+        if (img) { if (m.dato) { img.src = m.dato; img.style.display = "block"; } else { img.src = ""; img.style.display = "none"; } }
+    });
+}
 }
 
 function saveData(event) {
@@ -563,3 +580,43 @@ function verificarCurpDuplicadaEnTiempoReal(e) {
 }
 
 if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)); }); }
+// CONTENEDOR EN MEMORIA RAM PARA LAS CAPTURAS ACTIVAS DEL EXPEDIENTE DIGITAL
+let expedienteDigitalTemporal = { doc_ine_frontal: "", doc_ine_trasera: "", doc_acta: "", doc_comprobante: "", doc_curp: "" };
+
+// FUNCIÓN CORE: Abre la cámara, comprime la foto y dibuja la miniatura en pantalla en milisegundos
+function procesarFotoEvidencia(inputElement, previewId, claveDocumento) {
+    if (inputElement.files && inputElement.files[0]) {
+        const file = inputElement.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            // Asigna el string de datos base64 para previsualizarlo en el Note 20
+            const imagenBase64 = e.target.result;
+            const imgPreview = document.getElementById(previewId);
+            if (imgPreview) {
+                imgPreview.src = imagenBase64;
+                imgPreview.style.display = "block";
+            }
+            // Guarda la evidencia en la RAM local vinculada al expediente activo
+            expedienteDigitalTemporal[claveDocumento] = imagenBase64;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+Usa el código con precaución.
+
+📦 Módulo B: Guardado Integrado del Formulario
+
+Busca tu función saveData(event) en tu app.js, localiza donde se declara el objeto continuo const record = { ... }; y agrégale las claves del expediente digital al final para que IndexedDB las almacene de forma masiva:
+javascript
+    // BUSCA LA DECLARACIÓN 'const record = {' DENTRO DE saveData(event) Y DÉJALA ASÍ:
+    const record = {
+        'CURP': targetCurp, 'ID': idValue, 'NOMBRE': document.getElementById('f-nombre').value, 'AP PATERNO': document.getElementById('f-paterno').value, 'AP MATERNO': document.getElementById('f-materno').value, 'TEL FIJO': document.getElementById('f-telfijo').value, 'TEL CEL': document.getElementById('f-telcel').value, 'MUNICIPIO': document.getElementById('f-municipio').value, 'LOCALIDAD': document.getElementById('f-localidad').value, 'SECCION': document.getElementById('f-seccion').value, 'COLONIA': document.getElementById('f-colonia').value, 'CP': document.getElementById('f-cp').value, 'CALLE': document.getElementById('f-calle').value, 'NUM EXT': document.getElementById('f-numext').value, 'REFERENCIA': document.getElementById('f-referencia').value, 'SITUACION': document.getElementById('f-situacion').value, 'CAUSAL': document.getElementById('f-causal').value, 'ESTATUS_VISITA': currentEstatusVisita, 'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue, 'EVALUACION_TRATO': currentEstatusVisita === "NO LOCALIZADO" ? "" : evaluacionTratoActual, 'Latitud': latValue, 'Longitud': lonValue, 'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"), 'USUARIO_MODIFICA': currentUser.name, 'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || "",
+        
+        // ADICIÓN DE EXPEDIENTE DIGITAL: Guarda los strings base64 en la base de datos IndexedDB del teléfono
+        'DOC_INE_FRONTAL': expedienteDigitalTemporal.doc_ine_frontal || originalRecord.DOC_INE_FRONTAL || "",
+        'DOC_INE_TRASERA': expedienteDigitalTemporal.doc_ine_trasera || originalRecord.DOC_INE_TRASERA || "",
+        'DOC_ACTA': expedienteDigitalTemporal.doc_acta || originalRecord.DOC_ACTA || "",
+        'DOC_COMPROBANTE': expedienteDigitalTemporal.doc_comprobante || originalRecord.DOC_COMPROBANTE || "",
+        'DOC_CURP': expedienteDigitalTemporal.doc_curp || originalRecord.DOC_CURP || ""
+    };
