@@ -194,11 +194,40 @@
                 Presione cada botón para activar la cámara nativa de su Note 20 y capturar los respaldos del derechohabiente:
             </p>
             <div class="action-buttons-stack" style="gap: 12px;">
-                <div style="background: #F9FAFB; padding: 10px; border-radius: 8px; border: 1px solid #CBD5E0;"><button type="button" onclick="alert('Cámara Frontal INE activada')" style="background-color: #5A6A80; margin-top:0;">🪪 Capturar INE Frontal</button></div>
-                <div style="background: #F9FAFB; padding: 10px; border-radius: 8px; border: 1px solid #CBD5E0;"><button type="button" onclick="alert('Cámara Trasera INE activada')" style="background-color: #5A6A80; margin-top:0;">🪪 Capturar INE Trasera</button></div>
-                <div style="background: #F9FAFB; padding: 10px; border-radius: 8px; border: 1px solid #CBD5E0;"><button type="button" onclick="alert('Cámara Acta activada')" style="background-color: #5A6A80; margin-top:0;">📜 Capturar Acta de Nacimiento</button></div>
-                <div style="background: #F9FAFB; padding: 10px; border-radius: 8px; border: 1px solid #CBD5E0;"><button type="button" onclick="alert('Cámara Comprobante activada')" style="background-color: #5A6A80; margin-top:0;">🏠 Capturar Comprobante Domicilio</button></div>
-                <div style="background: #F9FAFB; padding: 10px; border-radius: 8px; border: 1px solid #CBD5E0;"><button type="button" onclick="alert('Cámara CURP activada')" style="background-color: #5A6A80; margin-top:0;">🆔 Capturar CURP Oficial</button></div>
+                <!-- Capturador 1: INE Frontal -->
+                <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; border: 1px solid #CBD5E0; text-align: center;">
+                    <button type="button" onclick="document.getElementById('cam-ine-frontal').click();" style="background-color: #5A6A80; margin-top:0;">🪪 Capturar INE Frontal</button>
+                    <input type="file" id="cam-ine-frontal" accept="image/*" capture="environment" style="display: none;" onchange="procesarFotoEvidencia(this, 'preview-ine-frontal', 'doc_ine_frontal')">
+                    <img id="preview-ine-frontal" src="" style="max-width: 100%; max-height: 120px; border-radius: 6px; margin-top: 8px; display: none; border: 1px solid #CBD5E0;">
+                </div>
+
+                <!-- Capturador 2: INE Trasera -->
+                <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; border: 1px solid #CBD5E0; text-align: center;">
+                    <button type="button" onclick="document.getElementById('cam-ine-trasera').click();" style="background-color: #5A6A80; margin-top:0;">🪪 Capturar INE Trasera</button>
+                    <input type="file" id="cam-ine-trasera" accept="image/*" capture="environment" style="display: none;" onchange="procesarFotoEvidencia(this, 'preview-ine-trasera', 'doc_ine_trasera')">
+                    <img id="preview-ine-trasera" src="" style="max-width: 100%; max-height: 120px; border-radius: 6px; margin-top: 8px; display: none; border: 1px solid #CBD5E0;">
+                </div>
+
+                <!-- Capturador 3: Acta de Nacimiento -->
+                <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; border: 1px solid #CBD5E0; text-align: center;">
+                    <button type="button" onclick="document.getElementById('cam-acta').click();" style="background-color: #5A6A80; margin-top:0;">📜 Capturar Acta de Nacimiento</button>
+                    <input type="file" id="cam-acta" accept="image/*" capture="environment" style="display: none;" onchange="procesarFotoEvidencia(this, 'preview-acta', 'doc_acta')">
+                    <img id="preview-acta" src="" style="max-width: 100%; max-height: 120px; border-radius: 6px; margin-top: 8px; display: none; border: 1px solid #CBD5E0;">
+                </div>
+
+                <!-- Capturador 4: Comprobante de Domicilio -->
+                <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; border: 1px solid #CBD5E0; text-align: center;">
+                    <button type="button" onclick="document.getElementById('cam-comprobante').click();" style="background-color: #5A6A80; margin-top:0;">🏠 Capturar Comprobante Domicilio</button>
+                    <input type="file" id="cam-comprobante" accept="image/*" capture="environment" style="display: none;" onchange="procesarFotoEvidencia(this, 'preview-comprobante', 'doc_comprobante')">
+                    <img id="preview-comprobante" src="" style="max-width: 100%; max-height: 120px; border-radius: 6px; margin-top: 8px; display: none; border: 1px solid #CBD5E0;">
+                </div>
+
+                <!-- Capturador 5: CURP -->
+                <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; border: 1px solid #CBD5E0; text-align: center;">
+                    <button type="button" onclick="document.getElementById('cam-curp').click();" style="background-color: #5A6A80; margin-top:0;">🆔 Capturar CURP Oficial</button>
+                    <input type="file" id="cam-curp" accept="image/*" capture="environment" style="display: none;" onchange="procesarFotoEvidencia(this, 'preview-curp', 'doc_curp')">
+                    <img id="preview-curp" src="" style="max-width: 100%; max-height: 120px; border-radius: 6px; margin-top: 8px; display: none; border: 1px solid #CBD5E0;">
+                </div>
             </div>
             <hr style="margin:25px 0;">
             <div class="button-row-grid">
