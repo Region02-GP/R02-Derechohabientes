@@ -1,6 +1,9 @@
 // URL del Web App de Google Apps Script 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_rQKWnnixfxxhRqa66SG-FUO33_bHDH08ivvkno8T4zpRL4UaWT0DyDIsQVagdxYV/exec";
+// URL DEL WEB APP DE GOOGLE APPS SCRIPT
 
+// CANDADO BRIGADISTAS: Inicialización de seguridad para el inicio limpio
+if (typeof AUTHORIZED_CURPS === 'undefined') { var AUTHORIZED_CURPS = {}; }
 
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
@@ -10,122 +13,23 @@ let currentEstatusVisita = "LOCALIZADO";
 let motivoNoLocalizadoValue = "";        
 window.currentTratoValue = ""; 
 
-const CATALOGO_MUNICIPIOS = [
-// ... (Tu catálogo de municipios y colonias sigue abajo igual)
+// CONTENEDOR EN RAM PARA LAS CAPTURAS ACTIVAS DEL EXPEDIENTE DIGITAL
+let expedienteDigitalTemporal = { doc_ine_frontal: "", doc_ine_trasera: "", doc_acta: "", doc_comprobante: "", doc_curp: "" };
 
+const CATALOGO_MUNICIPIOS = [
     "GOMEZ PALACIO", "EL ORO", "MAPIMI", "INDE", "SAN BERNARDO", "HIDALGO", "TLAHUALILO", "GUANACEVI", "SAN PEDRO DEL GALLO", "OCAMPO"
 ];
-const CATALOGO_COLONIAS = [
-    "18 DE MARZO", "AMPLIACION AMPLIACION MIGUEL DE LA MADRID HURTADO", "AMPLIACION BELLA VISTA", "AMPLIACION BRITTINGHAM", 
-    "AMPLIACION CASA BLANCA", "AMPLIACION CINCO DE MAYO", "AMPLIACION FELIPE ANGELES", "AMPLIACION LA CENTRAL", 
-    "AMPLIACION LA FERIA", "AMPLIACION LA POPULAR", "AMPLIACION LAZARO CARDENAS", "AMPLIACION PARQUE INDUSTRIAL II", 
-    "AMPLIACION RICARDO FLORES MAGON", "AMPLIACION SACRAMENTO", "AMPLIACION SAN FELIPE", "AMPLIACION SANTA ROSA", 
-    "AMERICA UNO", "AQUILES SERDAN", "ARCINAS", "ARTURO MARTINEZ ADAME", "BELLA UNION", "BERLIN", "BRITTINGHAM", 
-    "BUCARELI", "BUENDIA", "CALIFORNIA", "CHIHUAHUITA (CHIHUAHUITA NUEVO)", "CHIHUAHUITA (CHIHUAHUITA VIEJO)", 
-    "COLONIA 14 DE NOVIEMBRE", "COLONIA 15 DE DICIEMBRE", "COLONIA 15 DE MAYO", "COLONIA 7 DE NOVIEMBRE", 
-    "COLONIA ABRAHAM ROSALES", "COLONIA AGRICOLA LA POPULAR", "COLONIA ARMANDO DEL CASTILLO FRANCO", 
-    "COLONIA BELLA VISTA", "COLONIA BICENTENARIO", "COLONIA BRITTINGHAM", "COLONIA CAMPESTRE", "COLONIA CARLOS HERRERA", 
-    "COLONIA CARRILLO PUERTO", "COLONIA CASA BLANCA", "COLONIA CERRO DE LA CRUZ", "COLONIA CERRO DE LA PILA", 
-    "COLONIA CINCO DE MAYO", "COLONIA DIVISION DEL NORTE", "COLONIA DOROTEO ARANGO", "COLONIA EL 28 DE NOVIEMBRE", 
-    "COLONIA EL AMIGO", "COLONIA EL CONSUELO", "COLONIA EL FOCE", "COLONIA EL MEZQUITAL", "COLONIA EL MEZQUITAL II", 
-    "COLONIA EL PARAISO", "COLONIA EL REFUGIO", "COLONIA EMILIANO ZAPATA", "COLONIA ERNESTO HERRERA ZAVALA", 
-    "COLONIA FCO ZARCO", "COLONIA FELIPE ANGELES", "COLONIA FIDEL VELAZQUEZ (CHAPALA)", "COLONIA FILADELFIA", 
-    "COLONIA FRANCISCO PEREZ RIOS", "COLONIA FRANCISCO VILLA", "COLONIA GENARO GARCIA", "COLONIA GONZALEZ DE LA VEGA", 
-    "COLONIA GUADALUPE VICTORIA", "COLONIA GUAYULERAS", "COLONIA HECTOR MAYAGOITIA DOMINGUEZ", "COLONIA HIJOS DE CAMPESINOS", 
-    "COLONIA HORTENCIA", "COLONIA INDEPENDENCIA", "COLONIA JACINTO CANEK", "COLONIA JERUSALEM", "COLONIA JOSE CAMPILLO SAINZ", 
-    "COLONIA JOSE REBOLLO ACOSTA", "COLONIA JOSE RODRIGUEZ RIOS", "COLONIA LA CENTRAL", "COLONIA LA DEPORTIVA", 
-    "COLONIA LA HERRADURA", "COLONIA LAS FLORES", "COLONIA LAS LUISAS", "COLONIA LAS ROSAS", "COLONIA LAZARO CARDENAS", 
-    "COLONIA LETICIA HERRERA", "COLONIA LOPEZ PORTILLO", "COLONIA LOS ALAMOS", "COLONIA LOS VIÑEDOS", 
-    "COLONIA LUIS D COLOSIO MURRIETA", "COLONIA MARIA INES MATA DE RENDON", "COLONIA MIGUEL DE LA MADRID HURTADO"
+    const CATALOGO_COLONIAS = [
+    "CENTRO", "FILADELFIA", "MINA", "STACRUZ LUJAN", "ARCINAS", "PASTOR ROUAIX", "EUREKA", "VIÑEDO", "COMPAS",
+    "SANTA TERESA", "FRANCISCO VILLA", "EL VERGEL", "GREGORIO GARCIA", "HUITRON", "LA POPULAR", "PUEBLO NUEVO",
+    "13 DE MARZO", "18 DE MARZO", "AMPARO", "BUCARELI", "CALIFORNIA", "DINAMITA", "DOLORES", "EL CARIÑO",
+    "ESTACION NOE", "FELIPE ANGELES", "FRANCISCO JAVIER MINA", "GUADALUPE", "ILHUICAMINA", "INDEPENDENCIA",
+    "JIMENEZ", "JOSE MARIA MORELOS", "LA FE", "LA FLOR", "LA LUZ", "LA PLATA", "LAS CUATITAS", "LAZARO CARDENAS",
+    "MANILA", "NUMANCIA", "PALO BLANCO", "PENJAMO", "POANAS", "PORVENIR", "PROVIDENCIA", "PURISIMA", "REFORMA",
+    "SAN ALBERTO", "SAN ANTONIO", "SAN CARLOS", "SAN FELIPE", "SAN FERNANDO", "SAN ISIDRO", "SAN JOSE", 
+    "SAN JUAN", "SAN LUIS", "SAN LUISITO", "SAN MANUEL", "SAN MARTIN", "SAN MIGUEL", "SAN PEDRO", "SAN RAMON", 
+    "SAN ROQUE", "SAN SEBASTIAN", "SANTA CLARA", "SANTA FE", "SANTA MARIA", "SIERRA HERMOSA", "VENECIA"
 ];
-CATALOGO_COLONIAS.push(
-    "COLONIA MIGUEL HIDALGO", "COLONIA NICOLAS FERNANDEZ", "COLONIA NIÑOS HEROES", "COLONIA NOGALES", 
-    "COLONIA NUCLEO UNIVERSITARIO", "COLONIA NUEVA LOS ALAMOS", "COLONIA NUEVO GOMEZ", "COLONIA NUEVO REFUGIO", 
-    "COLONIA OCTAVIANO REDONDO ARCE", "COLONIA OTILIO MONTAÑO", "COLONIA PANFILO NATERA", "COLONIA PANFILO NATERA SECTOR 3", 
-    "COLONIA PARQUE HUNDIDO", "COLONIA PRIMAVERA", "COLONIA RESIDENCIAL EL CAMPANARIO (CDA ARANJUEZ)", 
-    "COLONIA RESIDENCIAL EL CAMPANARIO (CDA BARCELONA)", "COLONIA RESIDENCIAL EL CAMPANARIO (CERRADA BILBAO)", 
-    "COLONIA RESIDENCIAL EL CAMPANARIO CERRADA TOLEDO", "COLONIA REVOLUCION", "COLONIA RICARDO FLORES MAGON", 
-    "COLONIA RINCON CAMPESTRE", "COLONIA ROCIO REBOLLO", "COLONIA RODOLFO FIERRO", "COLONIA ROSALES", 
-    "COLONIA RUBEN JARAMILLO", "COLONIA SACRAMENTO", "COLONIA SAN ANGEL", "COLONIA SAN IGNACIO", "COLONIA SAN ISIDRO", 
-    "COLONIA SANTA ROSA", "COLONIA SANTA ROSA INFONAVIT", "COLONIA SANTA ROSALIA", "COLONIA SEIS DE JULIO (NUEVO NOE)", 
-    "COLONIA SIN NOMBRE", "COLONIA SOLIDARIDAD", "COLONIA TIERRA BLANCA", "COLONIA TIERRA Y LIBERTAD", 
-    "COLONIA VALLE AZUL", "COLONIA VALLE CAMPESTRE", "COLONIA VALLE DEL GUADIANA", "COLONIA VEITIUNO DE MARZO", 
-    "COLONIA VILLA DEL MAR", "COLONIA VILMA ALE DE HERRERA", "COLONIA ZONA CENTRO", "CUATRO DE DICIEMBRE (SAGUNDO)", 
-    "DINAMITA", "DOLORES", "EL BARRO", "EL BARRO 33 (EL TREINTA Y TRES)", "EL CARIÑO", "EL CASTILLO", "EL COMPAS", 
-    "EL CONSUELO", "EL JUNCO", "EL PARAISO", "EL QUEMADO", "EL RECUERDO", "EL RETOÑO", "EL TRIUNFO", "EL VALLE DE EUREKA", 
-    "EL VEINTINUEVE DE AGOSTO", "EL VERGEL", "EL VERGELITO", "EL VOLADO", "ESMERALDA", "ESTACION NOE", "ESTACION VIÑEDO", 
-    "EUREKA DE MEDIA LUNA (EUREKA)", "FAMILIA RODRIGUEZ CORDERO", "FRACCIONAMIENTO 11 DE SEPTIEMBRE", 
-    "FRACCIONAMIENTO AGAVIAS", "FRACCIONAMIENTO ALTOZANO", "FRACCIONAMIENTO AMPLIACION LAS FLORES", 
-    "FRACCIONAMIENTO AMPLIACION SAN ANTONIO", "FRACCIONAMIENTO BOSQUE REAL", "FRACCIONAMIENTO BUGAMBILIAS", 
-    "FRACCIONAMIENTO CASA BLANCA", "FRACCIONAMIENTO CDA DEL JAZMIN (CDAS MIRAVALLE)", "FRACCIONAMIENTO CDA PREMIER (MIRAVALLE)", 
-    "FRACCIONAMIENTO CDA SAN LUIS (CDAS MIRAVALLE)", "FRACCIONAMIENTO CDA STA LORENA (CDAS MIRAVALLE)", 
-    "FRACCIONAMIENTO CDA STA MARTHA (CDAS MIRAVALLE)", "FRACCIONAMIENTO CERRADA ANDALUCIA", "FRACCIONAMIENTO CERRADA DEL ROCIO C 16", 
-    "FRACCIONAMIENTO CERRADA ORALIA", "FRACCIONAMIENTO CERRADA SAN CARLOS (CDAS MIRAVALLE)"
-);
-CATALOGO_COLONIAS.push(
-    "FRACCIONAMIENTO CERRADA SAN MARCOS", "FRACCIONAMIENTO CERRADA SAN PATRICIO", "FRACCIONAMIENTO CERRADA SANTA DOLORES", 
-    "FRACCIONAMIENTO CERRADA SANTA ISABEL", "FRACCIONAMIENTO CERRADA SANTA LAURA", "FRACCIONAMIENTO CERRADA SANTA MARIA", 
-    "FRACCIONAMIENTO CERRADA SANTA TERESA (CDAS MIRAVALLE)", "FRACCIONAMIENTO CERRADA STA ANA (CDAS MIRAVALLE)", 
-    "FRACCIONAMIENTO CERRADA VILLAS MIRAVALLE", "FRACCIONAMIENTO CERRADAS MIRAVALLE", "FRACCIONAMIENTO CERRADAS SAN LORENZO", 
-    "FRACCIONAMIENTO CERRADAS SAN VICENTE", "FRACCIONAMIENTO CERRO LINDO", "FRACCIONAMIENTO DE LOS PINOS (LOS ARRAYANES)", 
-    "FRACCIONAMIENTO DEL ALAMO (LOS ARRAYANES)", "FRACCIONAMIENTO DEL ALMENDRO (LOS ARRAYANES)", "FRACCIONAMIENTO DEL BOSQUE", 
-    "FRACCIONAMIENTO DEL CEDRO (LOS ARRAYANES)", "FRACCIONAMIENTO DEL OLIVO (LOS ARRAYANES)", "FRACCIONAMIENTO DEL ROBLE (LOS ARRAYANES)", 
-    "FRACCIONAMIENTO EL CENTENARIO", "FRACCIONAMIENTO EL DORADO", "FRACCIONAMIENTO EL REFUGIO", "FRACCIONAMIENTO EUCALIPTOS", 
-    "FRACCIONAMIENTO FILADELFIA", "FRACCIONAMIENTO FOVISSSTE", "FRACCIONAMIENTO GEOVILLAS SAN IGNACIO", 
-    "FRACCIONAMIENTO HACIENDA EL REFUGIO", "FRACCIONAMIENTO HAMBURGO", "FRACCIONAMIENTO JARDIN", "FRACCIONAMIENTO LA ESPERANZA", 
-    "FRACCIONAMIENTO LA FERIA", "FRACCIONAMIENTO LA FLORESTA", "FRACCIONAMIENTO LAS CARMELITAS", "FRACCIONAMIENTO LAS GRANJAS", 
-    "FRACCIONAMIENTO LAS GRANJAS 2", "FRACCIONAMIENTO LAS MISIONES MIRAVALLE", "FRACCIONAMIENTO LOMA REAL", 
-    "FRACCIONAMIENTO LOS ALAMOS", "FRACCIONAMIENTO LOS CEDROS", "FRACCIONAMIENTO LOS OLIVOS", "FRACCIONAMIENTO MARBELLA", 
-    "FRACCIONAMIENTO MIRAVALLE", "FRACCIONAMIENTO MIRAVALLE ORIENTE", "FRACCIONAMIENTO MORELOS I", "FRACCIONAMIENTO MORELOS II", 
-    "FRACCIONAMIENTO NUEVO CASTILLO", "FRACCIONAMIENTO NUEVO CUBA", "FRACCIONAMIENTO PARQUE HUNDIDO", "FRACCIONAMIENTO PEDREGAL I", 
-    "FRACCIONAMIENTO PEDREGAL II", "FRACCIONAMIENTO PRIVADA COLONIA LA ESPERANZA", "FRACCIONAMIENTO PUERTA DEL SOL", 
-    "FRACCIONAMIENTO QUINTA NAPOLES", "FRACCIONAMIENTO QUINTAS LAS NOAS", "FRACCIONAMIENTO RAFAEL CASTELLANOS", 
-    "FRACCIONAMIENTO RESIDENCIAL EL CAMPANARIO", "FRACCIONAMIENTO RESIDENCIAL EL CAMPANARIO II", "FRACCIONAMIENTO RESIDENCIAL SAN ALBERTO", 
-    "FRACCIONAMIENTO RINCON FILADELFIA", "FRACCIONAMIENTO RINCON LAS GRANJAS", "FRACCIONAMIENTO RINCON SAN ALBERTO", 
-    "FRACCIONAMIENTO RINCON SAN ANTONIO", "FRACCIONAMIENTO RINCONADA BUGAMBILIAS", "FRACCIONAMIENTO RINCONADA DEL PARQUE", 
-    "FRACCIONAMIENTO RINCONADA NAPOLES", "FRACCIONAMIENTO RINCONADA ROSALES", "FRACCIONAMIENTO RINCONADAS HAMBURGO", 
-    "FRACCIONAMIENTO SALVADOR NAVA MARTINEZ", "FRACCIONAMIENTO SAN ANTONIO", "FRACCIONAMIENTO SAN VICENTE", 
-    "FRACCIONAMIENTO SANTA ROSA", "FRACCIONAMIENTO SANTA SOFIA", "FRACCIONAMIENTO SANTA TERESA", "FRACCIONAMIENTO SANTO DOMINGO", 
-    "FRACCIONAMIENTO SEVILLA", "FRACCIONAMIENTO TORREMOLINOS CERRADA HUELVA", "FRACCIONAMIENTO TORREMOLINOS CERRADA JAEN", 
-    "FRACCIONAMIENTO TORREMOLINOS SAN SEBASTIAN", "FRACCIONAMIENTO URBIVILLAS DEL CEDRO", "FRACCIONAMIENTO VALLE DE CHAPALA", 
-    "FRACCIONAMIENTO VALLE DEL NAZAS", "FRACCIONAMIENTO VEREDAS DE SANTA RITA", "FRACCIONAMIENTO VILLA LAS MISIONES", 
-    "FRACCIONAMIENTO VILLA NAPOLES", "FRACCIONAMIENTO VILLAS DEL DESIERTO", "FRACCIONAMIENTO VILLAS DEL DESIERTO II", 
-    "FRACCIONAMIENTO VILLAS EL REFUGIO", "FRACCIONAMIENTO VILLAS LAS NOAS", "FRACCIONAMIENTO VILLAS SAN ANTONIO", 
-    "FRACCIONAMIENTO VILLAS SAN FERMIN", "FRANCISCO VILLA", "GLORIETA", "HACIENDA LA NORIA", "HUITRON", "INDEPENDENCIA", 
-    "JERUSALEM", "JIMENEZ (JIMENEZ UNO)", "JOLO (DIECINUEVE DE OCTUBRE)", "JOSE MARIA MORELOS Y PAVON", "LA AURORA", 
-    "LA COMPETENCIA", "LA FLOR", "LA FORTUNA", "LA LUZ", "LA MAGDALENA (FRESNEDO) [GRANJA]", "LA PLATA", "LA TEHUA", 
-    "LAS LECHUZAS (LAS BRUJAS)", "LAS MACITAS", "LAS PLAYAS", "LOS ANGELES", "LAZARO CARDENAS", "MANILA", 
-    "MARIA ANTONIETA", "NAZAS (LAS LAGARTIJAS)", "NORIA SECTOR VEINTITRES", "NOE", "NUEVO BARRO", "NUMANCIA", 
-    "PALO BLANCO", "PARQUE INDUSTRIAL PARQUE INDUSTRIAL", "PASTOR ROUAIX (JABONCILLO)", "PASTOR ROUAIX (PENJAMO)", 
-    "POANAS", "PROVIDENCIA", "PUEBLO ABISINIA (DINAMITA)", "PUEBLO AHEDO"
-);
-CATALOGO_COLONIAS.push(
-    "PUEBLO ARTURO MARTINEZ ADAME", "PUEBLO BELLA UNION", "PUEBLO BERLIN", "PUEBLO BRITTINGHAM", "PUEBLO BUCARELI", 
-    "PUEBLO CALIFORNIA", "PUEBLO CHIHUAHUITA VIEJO", "PUEBLO COMPETENCIA", "PUEBLO CUATRO DE DICIEMBRE", "PUEBLO CUBA", 
-    "PUEBLO DIECINUEVE DE OCTUBRE", "PUEBLO DIECIOCHO DE MARZO", "PUEBLO DOLORES", "PUEBLO EL BARRO", "PUEBLO EL CARIÑO", 
-    "PUEBLO EL CASTILLO", "PUEBLO EL COMPAS", "PUEBLO EL CONSUELO", "PUEBLO EL FENIX", "PUEBLO EL JUNCO", 
-    "PUEBLO EL NUEVO CASTILLO", "PUEBLO EL PARAISO", "PUEBLO EL QUEMADO", "PUEBLO EL RECUERDO", "PUEBLO EL RETOÑO", 
-    "PUEBLO EL SIETE (PUEBLO NUEVO)", "PUEBLO EL TRIUNFO", "PUEBLO EL VERGEL", "PUEBLO EL VERGELITO", "PUEBLO EL VOLADO", 
-    "PUEBLO EMILIANO ZAPATA", "PUEBLO ESMERALDA", "PUEBLO EUREKA", "PUEBLO FILADELFIA", "PUEBLO GLORIETA", 
-    "PUEBLO GREGORIO A GARCIA", "PUEBLO HUITRON", "PUEBLO INDEPENDENCIA", "PUEBLO JABONOSO", "PUEBLO JERUSALEM", 
-    "PUEBLO JIMENEZ", "PUEBLO JOSE MARIA MORELOS Y PAVON", "PUEBLO LA AURORA", "PUEBLO LA FLOR", "PUEBLO LA FORTUNA", 
-    "PUEBLO LA LUZ", "PUEBLO LA PLATA", "PUEBLO LA TEHUA", "PUEBLO LAS CATALINAS", "PUEBLO LAS HUERTAS", 
-    "PUEBLO LAS LAGARTIJAS", "PUEBLO LAS LECHUZAS", "PUEBLO LAS LUISAS", "PUEBLO LAS MASITAS", "PUEBLO LAS PLAYAS"
-);
-CATALOGO_COLONIAS.push(
-    "PUEBLO LAZARO CARDENAS", "PUEBLO LOS ANGELES", "PUEBLO LUJAN (SANTA CRUZ)", "PUEBLO MADRID", "PUEBLO MANILA", 
-    "PUEBLO MARIA ANTONIETA", "PUEBLO NOE (EJIDO)", "PUEBLO NOE (EST FFCC)", "PUEBLO NUEVO (EL SIETE)", "PUEBLO NUMANCIA", 
-    "PUEBLO PALO BLANCO", "PUEBLO PASTOR ROUAIX", "PUEBLO PASTOR ROUAIX (JABONCILLO)", "PUEBLO PENJAMO", "PUEBLO POANAS", 
-    "PUEBLO PROVIDENCIA", "PUEBLO PUENTE DE LA TORREÑA", "PUEBLO REFORMA", "PUEBLO RINCON DE SANTA CRUZ", "PUEBLO RINCONADA", 
-    "PUEBLO SAN ALBERTO", "PUEBLO SAN JOSE DEL VIÑEDO", "PUEBLO SAN RAMON", "PUEBLO SAN SEBASTIAN", "PUEBLO SANTA CLARA", 
-    "PUEBLO SANTOÑA", "PUEBLO SEIS DE OCTUBRE", "PUEBLO TRANSPORTE", "PUEBLO VALLE DE EUREKA", "PUEBLO VENECIA", 
-    "PUEBLO VIÑEDO", "PUENTE DE LA TORREÑA", "REFORMA", "RINCONADA", "RINCON DE SANTA CRUZ", "SAN ALBERTO", 
-    "SAN ISIDRO", "SAN JOSE DE VIÑEDO", "SAN MARTIN", "SAN RAMON", "SAN ROQUE", "SAN SEBASTIAN", "SANTA CLARA", 
-    "SANTA CRUZ LUJAN", "SEIS DE OCTUBRE", "SIERRA HERMOSA", "TAJO VIEJO", "TRANSPORTE", "TRANSPORTE DOS", 
-    "TRECE DE MARZO", "UNIDAD HABITACIONAL ALEJANDRA", "VENECIA", "VICENTE NAVA", "VILLA GREGORIO GARCIA", 
-    "VILMA ALE DE HERRERA (LAS CUADRITAS)"
-);
-
 const CATALOGO_LOCALIDADES = [
     "18 DE MARZO", "ACAPULCO", "ACAPULCO (PROPIEDAD PRIVADA)", "AMERICA UNO", "AMPARO (GRANJA)", "AMPLIACION BUCARELI", 
     "AMPLIACION EL FENIX", "AMPLIACION EL VERGELITO SUR", "AMPLIACION VENECIA", "AMPUEROS", "ANDRES JIMENEZ", 
@@ -227,12 +131,7 @@ request.onupgradeneeded = (e) => {
     }
 };
 
-request.onsuccess = (e) => { 
-    db = e.target.result; 
-    updateLocalCounter(); 
-    preloadDatabaseToMemory(); 
-};
-
+request.onsuccess = (e) => { db = e.target.result; updateLocalCounter(); preloadDatabaseToMemory(); };
 request.onerror = (e) => { console.error("Error IndexedDB:", e.target.error); };
 
 function updateLocalCounter() {
@@ -242,13 +141,11 @@ function updateLocalCounter() {
         const countElement = document.getElementById('local-db-count');
         if (countElement) countElement.innerText = countRequest.result;
     };
-    const totalVisitasHoy = pendingSync.length + syncedHistory.length; 
-    const pendientesPorSubir = pendingSync.length;
+    const totalVisitasHoy = pendingSync.length + syncedHistory.length; const pendientesPorSubir = pendingSync.length;
     if (document.getElementById('metric-total-visitas')) document.getElementById('metric-total-visitas').innerText = totalVisitasHoy;
     if (document.getElementById('metric-pendientes-visitas')) document.getElementById('metric-pendientes-visitas').innerText = pendientesPorSubir;
     if (document.getElementById('pending-count')) document.getElementById('pending-count').innerText = pendientesPorSubir;
 }
-// BUSCA TU FUNCIÓN changeScreen EN APP.JS Y REEMPLÁZALA POR COMPLETO CON ESTA VERSIÓN AMPLIADA:
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
@@ -266,8 +163,6 @@ function changeScreen(screenId) {
     const targetScreen = document.getElementById(screenId); if (targetScreen) targetScreen.classList.remove('hidden');
 
     const bottomNav = document.getElementById('app-bottom-nav'); if (!bottomNav) return;
-    
-    // CORRECCIÓN INTEGRADA: Oculta la barra de navegación también en la nueva pantalla de documentos (screen-docs)
     if (screenId === 'screen-login' || screenId === 'screen-form' || screenId === 'screen-docs') {
         bottomNav.style.setProperty('display', 'none', 'important'); bottomNav.classList.add('hidden');
     } else {
@@ -326,7 +221,6 @@ function preloadDatabaseToMemory() {
     if (!db) return;
     db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).getAll().onsuccess = (e) => { localMemoryDatabase = e.target.result || []; };
 }
-
 function searchData() {
     const query = document.getElementById('search-input').value.toLowerCase().trim(); const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = ""; if (query.length < 3) return;
@@ -413,7 +307,7 @@ function seleccionarEstatusVisita(estatus) {
         if (!mot || mot.trim() === "") { alert("🛑 Operación cancelada."); currentEstatusVisita = "LOCALIZADO"; motivoNoLocalizadoValue = ""; actualizarEstilosBotonesFormulario(); return; }
         motivoNoLocalizadoValue = mot.trim();
     } else { motivoNoLocalizadoValue = ""; }
-    actualizarEstilosBotonesFormulario();
+    actualstylesFormulario();
 }
 
 function actualizarEstilosBotonesFormulario() {
@@ -452,23 +346,31 @@ function openForm(item) {
     document.getElementById('f-localidad').value = item['LOCALIDAD'] ? String(item['LOCALIDAD']).toUpperCase().trim() : "";
     document.getElementById('f-municipio').value = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
     document.getElementById('f-colonia').value = item['COLONIA'] ? String(item['COLONIA']).toUpperCase().trim() : "";
-    // INYECTA ESTO EN EL TRAMO FINAL DE TU FUNCIÓN openForm(item) PARA DESPLEGAR CAPTURAS ANTERIORES:
+
     expedienteDigitalTemporal = { 
         doc_ine_frontal: item['DOC_INE_FRONTAL'] || "", doc_ine_trasera: item['DOC_INE_TRASERA'] || "", 
         doc_acta: item['DOC_ACTA'] || "", doc_comprobante: item['DOC_COMPROBANTE'] || "", doc_curp: item['DOC_CURP'] || "" 
     };
-
     const mapeoMiniaturas = [
         { id: 'preview-ine-frontal', dato: expedienteDigitalTemporal.doc_ine_frontal }, { id: 'preview-ine-trasera', dato: expedienteDigitalTemporal.doc_ine_trasera },
         { id: 'preview-acta', dato: expedienteDigitalTemporal.doc_acta }, { id: 'preview-comprobante', dato: expedienteDigitalTemporal.doc_comprobante },
         { id: 'preview-curp', dato: expedienteDigitalTemporal.doc_curp }
     ];
-
     mapeoMiniaturas.forEach(m => {
         const img = document.getElementById(m.id);
         if (img) { if (m.dato) { img.src = m.dato; img.style.display = "block"; } else { img.src = ""; img.style.display = "none"; } }
     });
 }
+function procesarFotoEvidencia(inputElement, previewId, claveDocumento) {
+    if (inputElement.files && inputElement.files[0]) {
+        const file = inputElement.files[0]; const reader = new FileReader();
+        reader.onload = function(e) {
+            const imagenBase64 = e.target.result; const imgPreview = document.getElementById(previewId);
+            if (imgPreview) { imgPreview.src = imagenBase64; imgPreview.style.display = "block"; }
+            expedienteDigitalTemporal[claveDocumento] = imagenBase64;
+        };
+        reader.readAsDataURL(file);
+    }
 }
 
 function saveData(event) {
@@ -488,7 +390,8 @@ function saveData(event) {
 
     const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp); const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
     const record = {
-        'CURP': targetCurp, 'ID': idValue, 'NOMBRE': document.getElementById('f-nombre').value, 'AP PATERNO': document.getElementById('f-paterno').value, 'AP MATERNO': document.getElementById('f-materno').value, 'TEL FIJO': document.getElementById('f-telfijo').value, 'TEL CEL': document.getElementById('f-telcel').value, 'MUNICIPIO': document.getElementById('f-municipio').value, 'LOCALIDAD': document.getElementById('f-localidad').value, 'SECCION': document.getElementById('f-seccion').value, 'COLONIA': document.getElementById('f-colonia').value, 'CP': document.getElementById('f-cp').value, 'CALLE': document.getElementById('f-calle').value, 'NUM EXT': document.getElementById('f-numext').value, 'REFERENCIA': document.getElementById('f-referencia').value, 'SITUACION': document.getElementById('f-situacion').value, 'CAUSAL': document.getElementById('f-causal').value, 'ESTATUS_VISITA': currentEstatusVisita, 'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue, 'EVALUACION_TRATO': currentEstatusVisita === "NO LOCALIZADO" ? "" : evaluacionTratoActual, 'Latitud': latValue, 'Longitud': lonValue, 'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"), 'USUARIO_MODIFICA': currentUser.name, 'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || ""
+        'CURP': targetCurp, 'ID': idValue, 'NOMBRE': document.getElementById('f-nombre').value, 'AP PATERNO': document.getElementById('f-paterno').value, 'AP MATERNO': document.getElementById('f-materno').value, 'TEL FIJO': document.getElementById('f-telfijo').value, 'TEL CEL': document.getElementById('f-telcel').value, 'MUNICIPIO': document.getElementById('f-municipio').value, 'LOCALIDAD': document.getElementById('f-localidad').value, 'SECCION': document.getElementById('f-seccion').value, 'COLONIA': document.getElementById('f-colonia').value, 'CP': document.getElementById('f-cp').value, 'CALLE': document.getElementById('f-calle').value, 'NUM EXT': document.getElementById('f-numext').value, 'REFERENCIA': document.getElementById('f-referencia').value, 'SITUACION': document.getElementById('f-situacion').value, 'CAUSAL': document.getElementById('f-causal').value, 'ESTATUS_VISITA': currentEstatusVisita, 'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue, 'EVALUACION_TRATO': currentEstatusVisita === "NO LOCALIZADO" ? "" : evaluacionTratoActual, 'Latitud': latValue, 'Longitud': lonValue, 'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"), 'USUARIO_MODIFICA': currentUser.name, 'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || "",
+        'DOC_INE_FRONTAL': expedienteDigitalTemporal.doc_ine_frontal || originalRecord.DOC_INE_FRONTAL || "", 'DOC_INE_TRASERA': expedienteDigitalTemporal.doc_ine_trasera || originalRecord.DOC_INE_TRASERA || "", 'DOC_ACTA': expedienteDigitalTemporal.doc_acta || originalRecord.DOC_ACTA || "", 'DOC_COMPROBANTE': expedienteDigitalTemporal.doc_comprobante || originalRecord.DOC_COMPROBANTE || "", 'DOC_CURP': expedienteDigitalTemporal.doc_curp || originalRecord.DOC_CURP || ""
     };
 
     const tx = db.transaction(STORE_NAME, "readwrite"); tx.objectStore(STORE_NAME).put(record);
@@ -541,7 +444,6 @@ function actualizarEstilosBotonesTrato() {
     else if (window.currentTratoValue === "INCOMODO") { btnIn.style.backgroundColor = "#FFF3CD"; btnIn.style.borderColor = "#664D03"; btnIn.style.color = "#664D03"; }
     else if (window.currentTratoValue === "HOSTIL") { btnHo.style.backgroundColor = "#FCE8E6"; btnHo.style.borderColor = "#b91c1c"; btnHo.style.color = "#b91c1c"; }
 }
-
 function abrirFormularioVacioAltaNueva() {
     document.getElementById('f-curp').removeAttribute('readonly'); document.getElementById('f-nombre').removeAttribute('readonly'); document.getElementById('f-paterno').removeAttribute('readonly'); document.getElementById('f-materno').removeAttribute('readonly');
     const inputs = ['f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-telfijo', 'f-telcel', 'f-localidad', 'f-seccion', 'f-colonia', 'f-cp', 'f-calle', 'f-numext', 'f-referencia', 'f-causal'];
@@ -566,6 +468,9 @@ function abrirFormularioVacioAltaNueva() {
     
     document.getElementById('f-localidad').value = ""; document.getElementById('f-colonia').value = "";
     document.getElementById('f-municipio').value = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : 'GOMEZ PALACIO'; 
+    expedienteDigitalTemporal = { doc_ine_frontal: "", doc_ine_trasera: "", doc_acta: "", doc_comprobante: "", doc_curp: "" };
+    const miniaturas = ['preview-ine-frontal', 'preview-ine-trasera', 'preview-acta', 'preview-comprobante', 'preview-curp'];
+    miniaturas.forEach(id => { const img = document.getElementById(id); if (img) { img.src = ""; img.style.display = "none"; } });
 }
 
 function verificarCurpDuplicadaEnTiempoReal(e) {
@@ -580,43 +485,3 @@ function verificarCurpDuplicadaEnTiempoReal(e) {
 }
 
 if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)); }); }
-// CONTENEDOR EN MEMORIA RAM PARA LAS CAPTURAS ACTIVAS DEL EXPEDIENTE DIGITAL
-let expedienteDigitalTemporal = { doc_ine_frontal: "", doc_ine_trasera: "", doc_acta: "", doc_comprobante: "", doc_curp: "" };
-
-// FUNCIÓN CORE: Abre la cámara, comprime la foto y dibuja la miniatura en pantalla en milisegundos
-function procesarFotoEvidencia(inputElement, previewId, claveDocumento) {
-    if (inputElement.files && inputElement.files[0]) {
-        const file = inputElement.files[0];
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            // Asigna el string de datos base64 para previsualizarlo en el Note 20
-            const imagenBase64 = e.target.result;
-            const imgPreview = document.getElementById(previewId);
-            if (imgPreview) {
-                imgPreview.src = imagenBase64;
-                imgPreview.style.display = "block";
-            }
-            // Guarda la evidencia en la RAM local vinculada al expediente activo
-            expedienteDigitalTemporal[claveDocumento] = imagenBase64;
-        };
-        reader.readAsDataURL(file);
-    }
-}
-Usa el código con precaución.
-
-📦 Módulo B: Guardado Integrado del Formulario
-
-Busca tu función saveData(event) en tu app.js, localiza donde se declara el objeto continuo const record = { ... }; y agrégale las claves del expediente digital al final para que IndexedDB las almacene de forma masiva:
-javascript
-    // BUSCA LA DECLARACIÓN 'const record = {' DENTRO DE saveData(event) Y DÉJALA ASÍ:
-    const record = {
-        'CURP': targetCurp, 'ID': idValue, 'NOMBRE': document.getElementById('f-nombre').value, 'AP PATERNO': document.getElementById('f-paterno').value, 'AP MATERNO': document.getElementById('f-materno').value, 'TEL FIJO': document.getElementById('f-telfijo').value, 'TEL CEL': document.getElementById('f-telcel').value, 'MUNICIPIO': document.getElementById('f-municipio').value, 'LOCALIDAD': document.getElementById('f-localidad').value, 'SECCION': document.getElementById('f-seccion').value, 'COLONIA': document.getElementById('f-colonia').value, 'CP': document.getElementById('f-cp').value, 'CALLE': document.getElementById('f-calle').value, 'NUM EXT': document.getElementById('f-numext').value, 'REFERENCIA': document.getElementById('f-referencia').value, 'SITUACION': document.getElementById('f-situacion').value, 'CAUSAL': document.getElementById('f-causal').value, 'ESTATUS_VISITA': currentEstatusVisita, 'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue, 'EVALUACION_TRATO': currentEstatusVisita === "NO LOCALIZADO" ? "" : evaluacionTratoActual, 'Latitud': latValue, 'Longitud': lonValue, 'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"), 'USUARIO_MODIFICA': currentUser.name, 'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || "",
-        
-        // ADICIÓN DE EXPEDIENTE DIGITAL: Guarda los strings base64 en la base de datos IndexedDB del teléfono
-        'DOC_INE_FRONTAL': expedienteDigitalTemporal.doc_ine_frontal || originalRecord.DOC_INE_FRONTAL || "",
-        'DOC_INE_TRASERA': expedienteDigitalTemporal.doc_ine_trasera || originalRecord.DOC_INE_TRASERA || "",
-        'DOC_ACTA': expedienteDigitalTemporal.doc_acta || originalRecord.DOC_ACTA || "",
-        'DOC_COMPROBANTE': expedienteDigitalTemporal.doc_comprobante || originalRecord.DOC_COMPROBANTE || "",
-        'DOC_CURP': expedienteDigitalTemporal.doc_curp || originalRecord.DOC_CURP || ""
-    };
