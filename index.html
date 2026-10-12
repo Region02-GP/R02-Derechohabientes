@@ -161,15 +161,21 @@
                 </div>
 
                 <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-                <div class="form-grid text-disabled">
-                    <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
-                    <div><label>Longitud GPS:</label><input type="text" id="f-lon" readonly></div>
-                </div>
                 <!-- BUSCA EL FINAL DE TU FORM EN LA PANTALLA 4 Y DEJA LOS BOTONES DE ACCIÓN EXACTAMENTE ASÍ: -->
                 <div class="form-grid text-disabled">
                     <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
                     <div><label>Longitud GPS:</label><input type="text" id="f-lon" readonly></div>
                 </div>
+
+                <button type="button" onclick="changeScreen('screen-docs')" style="margin-top: 25px; background-color: var(--secondary-color); color: #1F2937; border: 1px solid var(--secondary-dark); box-shadow: var(--shadow-gold);">
+                    📁 Adjuntar Documentos Digitales (INE, CURP, Acta)
+                </button>
+
+                <button type="submit" style="margin-top: 12px;">Guardar Localmente</button>
+                <button type="button" onclick="changeScreen('screen-search')" class="btn-back" style="margin-top: 12px;">Cancelar</button>
+            </form> 
+        </section>
+
 
                 <!-- NUEVO DISPARADOR INTERACTIVO CON ENLACE SÍNCRONO A LA PANTALLA 6 -->
                 <button type="button" onclick="changeScreen('screen-docs')" style="margin-top: 25px; background-color: var(--secondary-color); color: #1F2937; border: 1px solid var(--secondary-dark); box-shadow: var(--shadow-gold);">
