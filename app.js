@@ -324,17 +324,39 @@ function actualizarEstilosBotonesFormulario() {
 
 function openForm(item) {
     if (!item) return;
-    document.getElementById('f-curp').value = item['CURP'] || ''; document.getElementById('f-id').value = item['ID'] || ''; document.getElementById('f-nombre').value = item['NOMBRE'] || ''; document.getElementById('f-paterno').value = item['AP PATERNO'] || ''; document.getElementById('f-materno').value = item['AP MATERNO'] || ''; document.getElementById('f-telfijo').value = item['TEL FIJO'] || ''; document.getElementById('f-telcel').value = item['TEL CEL'] || ''; document.getElementById('f-seccion').value = item['SECCION'] || ''; document.getElementById('f-cp').value = item['CP'] || ''; document.getElementById('f-calle').value = item['CALLE'] || ''; document.getElementById('f-numext').value = item['NUM EXT'] || ''; document.getElementById('f-referencia').value = item['REFERENCIA'] || ''; document.getElementById('f-situacion').value = item['SITUACION'] || ''; document.getElementById('f-causal').value = item['CAUSAL'] || '';
+    document.getElementById('f-curp').value = item['CURP'] || ''; 
+    document.getElementById('f-id').value = item['ID'] || ''; 
+    document.getElementById('f-nombre').value = item['NOMBRE'] || ''; 
+    document.getElementById('f-paterno').value = item['AP PATERNO'] || ''; 
+    document.getElementById('f-materno').value = item['AP MATERNO'] || ''; 
+    document.getElementById('f-telfijo').value = item['TEL FIJO'] || ''; 
+    document.getElementById('f-telcel').value = item['TEL CEL'] || ''; 
+    document.getElementById('f-seccion').value = item['SECCION'] || ''; 
+    document.getElementById('f-cp').value = item['CP'] || ''; 
+    document.getElementById('f-calle').value = item['CALLE'] || ''; 
+    document.getElementById('f-numext').value = item['NUM EXT'] || ''; 
+    document.getElementById('f-referencia').value = item['REFERENCIA'] || ''; 
+    document.getElementById('f-situacion').value = item['SITUACION'] || ''; 
+    document.getElementById('f-causal').value = item['CAUSAL'] || '';
 
-    currentEstatusVisita = item['ESTATUS_VISITA'] || "LOCALIZADO"; motivoNoLocalizadoValue = item['MOTIVO_NO_LOCALIZADO'] || ""; actualizarEstilosBotonesFormulario();
-    window.currentTratoValue = item['EVALUACION_TRATO'] || ""; actualizarEstilosBotonesTrato();
+    currentEstatusVisita = item['ESTATUS_VISITA'] || "LOCALIZADO"; 
+    motivoNoLocalizadoValue = item['MOTIVO_NO_LOCALIZADO'] || ""; 
+    actualizarEstilosBotonesFormulario(); // <-- CORREGIDO AQUÍ: Se eliminó el "actualstyles" roto que congelaba el login
+    window.currentTratoValue = item['EVALUACION_TRATO'] || ""; 
+    actualizarEstilosBotonesTrato();
 
-    document.getElementById('f-lat').value = "Buscando satélite..."; document.getElementById('f-lon').value = "Buscando satélite...";
+    document.getElementById('f-lat').value = "Buscando satélite..."; 
+    document.getElementById('f-lon').value = "Buscando satélite...";
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((position) => {
-            document.getElementById('f-lat').value = String(position.coords.latitude.toFixed(6)).replace(",", "."); document.getElementById('f-lon').value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
-        }, () => { document.getElementById('f-lat').value = "ERROR"; document.getElementById('f-lon').value = "ERROR"; });
+            document.getElementById('f-lat').value = String(position.coords.latitude.toFixed(6)).replace(",", "."); 
+            document.getElementById('f-lon').value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
+        }, () => { 
+            document.getElementById('f-lat').value = "ERROR"; 
+            document.getElementById('f-lon').value = "ERROR"; 
+        });
     }
+    
     changeScreen('screen-form');
     if (document.getElementById('f-localidad-buscar')) document.getElementById('f-localidad-buscar').value = "";
     if (document.getElementById('localidad-search-results')) document.getElementById('localidad-search-results').style.display = "none";
@@ -352,15 +374,21 @@ function openForm(item) {
         doc_acta: item['DOC_ACTA'] || "", doc_comprobante: item['DOC_COMPROBANTE'] || "", doc_curp: item['DOC_CURP'] || "" 
     };
     const mapeoMiniaturas = [
-        { id: 'preview-ine-frontal', dato: expedienteDigitalTemporal.doc_ine_frontal }, { id: 'preview-ine-trasera', dato: expedienteDigitalTemporal.doc_ine_trasera },
-        { id: 'preview-acta', dato: expedienteDigitalTemporal.doc_acta }, { id: 'preview-comprobante', dato: expedienteDigitalTemporal.doc_comprobante },
+        { id: 'preview-ine-frontal', dato: expedienteDigitalTemporal.doc_ine_frontal }, 
+        { id: 'preview-ine-trasera', dato: expedienteDigitalTemporal.doc_ine_trasera },
+        { id: 'preview-acta', dato: expedienteDigitalTemporal.doc_acta }, 
+        { id: 'preview-comprobante', dato: expedienteDigitalTemporal.doc_comprobante },
         { id: 'preview-curp', dato: expedienteDigitalTemporal.doc_curp }
     ];
     mapeoMiniaturas.forEach(m => {
         const img = document.getElementById(m.id);
-        if (img) { if (m.dato) { img.src = m.dato; img.style.display = "block"; } else { img.src = ""; img.style.display = "none"; } }
+        if (img) { 
+            if (m.dato) { img.src = m.dato; img.style.display = "block"; } 
+            else { img.src = ""; img.style.display = "none"; } 
+        }
     });
 }
+
 function procesarFotoEvidencia(inputElement, previewId, claveDocumento) {
     if (inputElement.files && inputElement.files[0]) {
         const file = inputElement.files[0]; const reader = new FileReader();
