@@ -248,6 +248,7 @@ function updateLocalCounter() {
     if (document.getElementById('metric-pendientes-visitas')) document.getElementById('metric-pendientes-visitas').innerText = pendientesPorSubir;
     if (document.getElementById('pending-count')) document.getElementById('pending-count').innerText = pendientesPorSubir;
 }
+// BUSCA TU FUNCIÓN changeScreen EN APP.JS Y REEMPLÁZALA POR COMPLETO CON ESTA VERSIÓN AMPLIADA:
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
@@ -262,11 +263,12 @@ function changeScreen(screenId) {
     }
     
     document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
-    const targetScreen = document.getElementById(screenId); 
-    if (targetScreen) targetScreen.classList.remove('hidden');
+    const targetScreen = document.getElementById(screenId); if (targetScreen) targetScreen.classList.remove('hidden');
 
     const bottomNav = document.getElementById('app-bottom-nav'); if (!bottomNav) return;
-    if (screenId === 'screen-login' || screenId === 'screen-form') {
+    
+    // CORRECCIÓN INTEGRADA: Oculta la barra de navegación también en la nueva pantalla de documentos (screen-docs)
+    if (screenId === 'screen-login' || screenId === 'screen-form' || screenId === 'screen-docs') {
         bottomNav.style.setProperty('display', 'none', 'important'); bottomNav.classList.add('hidden');
     } else {
         bottomNav.style.setProperty('display', 'flex', 'important'); bottomNav.classList.remove('hidden');
