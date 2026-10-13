@@ -585,18 +585,11 @@ function clearLocalStorage() {
 }
 
 function seleccionarTrato(opcion) { window.currentTratoValue = opcion.toUpperCase(); actualizarEstilosBotonesTrato(); }
-function actualizarEstilosBotonesTrato() {
-    const btnEx = document.getElementById('btn-trato-excelente'); const btnAm = document.getElementById('btn-trato-amable'); const btnNe = document.getElementById('btn-trato-neutral'); const btnIn = document.getElementById('btn-trato-incomodo'); const btnHo = document.getElementById('btn-trato-hostil');
-    if (!btnEx || !btnAm || !btnNe || !btnIn || !btnHo) return;
-    [btnEx, btnAm, btnNe, btnIn, btnHo].forEach(btn => { btn.style.backgroundColor = "#F3F4F6"; btn.style.borderColor = "#CBD5E0"; btn.style.color = "#4B5563"; });
-    if (window.currentTratoValue === "EXCELENTE") { btnEx.style.backgroundColor = "#D1E7DD"; btnEx.style.borderColor = "#0F5132"; btnEx.style.color = "#0F5132"; }
-    else if (window.currentTratoValue === "AMABLE") { btnAm.style.backgroundColor = "#E6F4EA"; btnAm.style.borderColor = "#236947"; btnAm.style.color = "#236947"; }
-    else if (window.currentTratoValue === "NEUTRAL") { btnNe.style.backgroundColor = "#EDF4F9"; btnNe.style.borderColor = "#BC955C"; btnNe.style.color = "#1F2937"; }
-    else if (window.currentTratoValue === "INCOMODO") { btnIn.style.backgroundColor = "#FFF3CD"; btnIn.style.borderColor = "#664D03"; btnIn.style.color = "#664D03"; }
-    else if (window.currentTratoValue === "HOSTIL") { btnHo.style.backgroundColor = "#FCE8E6"; btnHo.style.borderColor = "#b91c1c"; btnHo.style.color = "#b91c1c"; }
+function seleccionarTrato(opcion) { 
+    window.currentTratoValue = opcion.toUpperCase(); 
+    actualizarEstilosBotonesTrato(); 
 }
 
-if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)); }); }
 function actualizarEstilosBotonesTrato() {
     const btnEx = document.getElementById('btn-trato-excelente'); 
     const btnAm = document.getElementById('btn-trato-amable'); 
@@ -622,72 +615,6 @@ function actualizarEstilosBotonesTrato() {
     } else if (window.currentTratoValue === "HOSTIL") { 
         btnHo.style.backgroundColor = "#FCE8E6"; btnHo.style.borderColor = "#b91c1c"; btnHo.style.color = "#b91c1c"; 
     }
-}
-function openForm(item) {
-    if (!item) return;
-    document.getElementById('f-curp').value = item['CURP'] || ''; 
-    document.getElementById('f-id').value = item['ID'] || ''; 
-    document.getElementById('f-nombre').value = item['NOMBRE'] || ''; 
-    document.getElementById('f-paterno').value = item['AP PATERNO'] || ''; 
-    document.getElementById('f-materno').value = item['AP MATERNO'] || ''; 
-    document.getElementById('f-telfijo').value = item['TEL FIJO'] || ''; 
-    document.getElementById('f-telcel').value = item['TEL CEL'] || ''; 
-    document.getElementById('f-seccion').value = item['SECCION'] || ''; 
-    document.getElementById('f-cp').value = item['CP'] || ''; 
-    document.getElementById('f-calle').value = item['CALLE'] || ''; 
-    document.getElementById('f-numext').value = item['NUM EXT'] || ''; 
-    document.getElementById('f-referencia').value = item['REFERENCIA'] || ''; 
-    document.getElementById('f-situacion').value = item['SITUACION'] || ''; 
-    document.getElementById('f-causal').value = item['CAUSAL'] || '';
-
-    currentEstatusVisita = item['ESTATUS_VISITA'] || "LOCALIZADO"; 
-    motivoNoLocalizadoValue = item['MOTIVO_NO_LOCALIZADO'] || ""; 
-    actualizarEstilosBotonesFormulario(); 
-    window.currentTratoValue = item['EVALUACION_TRATO'] || ""; 
-    actualizarEstilosBotonesTrato();
-
-    document.getElementById('f-lat').value = "Buscando satélite..."; 
-    document.getElementById('f-lon').value = "Buscando satélite...";
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((position) => {
-            document.getElementById('f-lat').value = String(position.coords.latitude.toFixed(6)).replace(",", "."); 
-            document.getElementById('f-lon').value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
-        }, () => { 
-            document.getElementById('f-lat').value = "ERROR"; 
-            document.getElementById('f-lon').value = "ERROR"; 
-        });
-    }
-    
-    changeScreen('screen-form');
-    if (document.getElementById('f-localidad-buscar')) document.getElementById('f-localidad-buscar').value = "";
-    if (document.getElementById('localidad-search-results')) document.getElementById('localidad-search-results').style.display = "none";
-    if (document.getElementById('f-municipio-buscar')) document.getElementById('f-municipio-buscar').value = "";
-    if (document.getElementById('municipio-search-results')) document.getElementById('municipio-search-results').style.display = "none";
-    if (document.getElementById('f-colonia-buscar')) document.getElementById('f-colonia-buscar').value = "";
-    if (document.getElementById('colonia-search-results')) document.getElementById('colonia-search-results').style.display = "none";
-    
-    document.getElementById('f-localidad').value = item['LOCALIDAD'] ? String(item['LOCALIDAD']).toUpperCase().trim() : "";
-    document.getElementById('f-municipio').value = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
-    document.getElementById('f-colonia').value = item['COLONIA'] ? String(item['COLONIA']).toUpperCase().trim() : "";
-
-    expedienteDigitalTemporal = { 
-        doc_ine_frontal: item['DOC_INE_FRONTAL'] || "", doc_ine_trasera: item['DOC_INE_TRASERA'] || "", 
-        doc_acta: item['DOC_ACTA'] || "", doc_comprobante: item['DOC_COMPROBANTE'] || "", doc_curp: item['DOC_CURP'] || "" 
-    };
-    const mapeoMiniaturas = [
-        { id: 'preview-ine-frontal', dato: expedienteDigitalTemporal.doc_ine_frontal }, 
-        { id: 'preview-ine-trasera', dato: expedienteDigitalTemporal.doc_ine_trasera },
-        { id: 'preview-acta', dato: expedienteDigitalTemporal.doc_acta }, 
-        { id: 'preview-comprobante', dato: expedienteDigitalTemporal.doc_comprobante },
-        { id: 'preview-curp', dato: expedienteDigitalTemporal.doc_curp }
-    ];
-    mapeoMiniaturas.forEach(m => {
-        const img = document.getElementById(m.id);
-        if (img) { 
-            if (m.dato) { img.src = m.dato; img.style.display = "block"; } 
-            else { img.src = ""; img.style.display = "none"; } 
-        }
-    });
 }
 
 function abrirFormularioVacioAltaNueva() {
@@ -715,28 +642,15 @@ function abrirFormularioVacioAltaNueva() {
     miniaturas.forEach(id => { const img = document.getElementById(id); if (img) { img.src = ""; img.style.display = "none"; } });
 }
 
-// REEMPLAZA EL FINAL ABSOLUTO DE TU APP.JS PARA QUE QUEDE EXACTAMENTE ASÍ:
 function verificarCurpDuplicadaEnTiempoReal(e) {
-    const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase(); 
-    e.target.value = valorLimpio; 
-    
+    const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase(); e.target.value = valorLimpio; 
     if (valorLimpio.length === 18 && typeof localMemoryDatabase !== 'undefined') {
         const registroExistente = localMemoryDatabase.find(r => r.CURP === valorLimpio);
         if (registroExistente) {
-            if (confirm(`📢 DETECTOR DE DUPLICADOS: La CURP [${valorLimpio}] ya existe (Municipio: ${registroExistente.MUNICIPIO || 'SIN MUNICIPIO'}).\n\n¿Desea cargar sus datos antiguos?`)) { 
-                alert("Cargando información..."); 
-                openForm(registroExistente); 
-            } else { 
-                e.target.value = ''; 
-                e.target.focus(); 
-                alert("Ingrese una CURP no registrada."); 
-            }
+            if (confirm(`📢 DETECTOR DE DUPLICADOS: La CURP [${valorLimpio}] ya existe (Municipio: ${registroExistente.MUNICIPIO || 'SIN MUNICIPIO'}).\n\n¿Desea cargar sus datos antiguos?`)) { alert("Cargando información..."); openForm(registroExistente); }
+            else { e.target.value = ''; e.target.focus(); alert("Ingrese una CURP no registrada."); }
         }
     }
-} // <-- ESTA ES LA LLAVE CRÍTICA QUE FALTA PARA CERRAR LA FUNCIÓN EN TU PADRÓN REAL
-
-if ('serviceWorker' in navigator) { 
-    window.addEventListener('load', () => { 
-        navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)); 
-    }); 
 }
+
+if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)); }); }
