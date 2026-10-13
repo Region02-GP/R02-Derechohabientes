@@ -320,7 +320,7 @@ function seleccionarEstatusVisita(estatus) {
     } else { 
         motivoNoLocalizadoValue = ""; 
     }
-    // LINEA REPARADA: Cambiado el "actualstyles" roto por la función correcta de estilos
+    // CORREGIDO: Se invoca a la función real existente en tu código para pintar los botones
     actualizarEstilosBotonesFormulario();
 }
 
