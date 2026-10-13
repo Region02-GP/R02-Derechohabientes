@@ -1,8 +1,7 @@
 // URL del Web App de Google Apps Script 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_rQKWnnixfxxhRqa66SG-FUO33_bHDH08ivvkno8T4zpRL4UaWT0DyDIsQVagdxYV/exec";
-// URL DEL WEB APP DE GOOGLE APPS SCRIPT
 
-// CANDADO BRIGADISTAS: Inicialización de seguridad para el inicio limpio
+
 if (typeof AUTHORIZED_CURPS === 'undefined') { var AUTHORIZED_CURPS = {}; }
 
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
@@ -13,13 +12,13 @@ let currentEstatusVisita = "LOCALIZADO";
 let motivoNoLocalizadoValue = "";        
 window.currentTratoValue = ""; 
 
-// CONTENEDOR EN RAM PARA LAS CAPTURAS ACTIVAS DEL EXPEDIENTE DIGITAL
 let expedienteDigitalTemporal = { doc_ine_frontal: "", doc_ine_trasera: "", doc_acta: "", doc_comprobante: "", doc_curp: "" };
 
 const CATALOGO_MUNICIPIOS = [
     "GOMEZ PALACIO", "EL ORO", "MAPIMI", "INDE", "SAN BERNARDO", "HIDALGO", "TLAHUALILO", "GUANACEVI", "SAN PEDRO DEL GALLO", "OCAMPO"
 ];
-    const CATALOGO_COLONIAS = [
+
+const CATALOGO_COLONIAS = [
     "CENTRO", "FILADELFIA", "MINA", "STACRUZ LUJAN", "ARCINAS", "PASTOR ROUAIX", "EUREKA", "VIÑEDO", "COMPAS",
     "SANTA TERESA", "FRANCISCO VILLA", "EL VERGEL", "GREGORIO GARCIA", "HUITRON", "LA POPULAR", "PUEBLO NUEVO",
     "13 DE MARZO", "18 DE MARZO", "AMPARO", "BUCARELI", "CALIFORNIA", "DINAMITA", "DOLORES", "EL CARIÑO",
@@ -31,109 +30,24 @@ const CATALOGO_MUNICIPIOS = [
     "SAN ROQUE", "SAN SEBASTIAN", "SANTA CLARA", "SANTA FE", "SANTA MARIA", "SIERRA HERMOSA", "VENECIA"
 ];
 const CATALOGO_LOCALIDADES = [
-    "18 DE MARZO", "ACAPULCO", "ACAPULCO (PROPIEDAD PRIVADA)", "AMERICA UNO", "AMPARO (GRANJA)", "AMPLIACION BUCARELI", 
-    "AMPLIACION EL FENIX", "AMPLIACION EL VERGELITO SUR", "AMPLIACION VENECIA", "AMPUEROS", "ANDRES JIMENEZ", 
-    "ANTONIO TORRES", "AQUILES SERDAN", "ARCINAS", "ARREOLA HERNANDEZ", "ARTURO MARTINEZ ADAME", "ASCENSION CRUZ", 
-    "ASTILLERO", "AURELIO RODRIGUEZ", "AUTODROMO MARCO MAGAÑA (DE LA LAGUNA)", "AUTOTRANSPORTES TRANSBAP [TALLER]", 
-    "AVICOLA AURORA", "BELLA UNION", "BERLIN", "BETHEL", "BETHEL (GRANJA)", "BETHEL DOS", "BRITTINGHAM", "BUCARELI", 
-    "BUENDIA", "BUGAMBILIA (MARIA CRISTINA) (GRANJA)", "CAIRO DOS", "CALIFORNIA", "CALIFORNIA CRIANZA", 
-    "CAMILO CENICEROS", "CAMPO C", "CANTERAS NUEVA CARRARA [MARMOLERA]", "CARLOS GERARDO VALDES BOHIGAS", 
-    "CASA BLANCA", "CASETA KILOMETRO 11 MAS 458", "CASETA KILOMETRO 17 CANAL SACRAMENTO", "CEFERESO NUMERO 14", 
-    "CEMIX", "CENTRO DE ACOPIO (GRANJA BLANCA)", "CERDO REAL", "CHAPINGO", "CHAVEZ (GRANJA)", 
-    "CHIHUAHUITA (CHIHUAHUITA NUEVO)", "CHIHUAHUITA (CHIHUAHUITA VIEJO)", "COLONIA AGRICOLA BUENDIA", 
-    "COLONIA AGRICOLA LA POPULAR", "COLONIA ESTABLERA SAN FRANCISCO", "COLONIA SAN ANGEL", 
-    "COLONIA SEIS DE JULIO (NUEVO NOE)", "CONEJOS", "CONSUELO OROZCO", "CORDERO CASTRO", "COREA", "CORRALITOS", 
-    "CRUZ ARREOLA", "CUATRO DE DICIEMBRE (SAGUNDO)", "CUATRO DE JULIO", "CURVA DE CAMACHO"
+    "18 DE MARZO", "ACAPULCO", "ACAPULCO (PROPIEDAD PRIVADA)", "AMERICA UNO", "AMPARO (GRANJA)", "AMPLIACION BUCARELI", "AMPLIACION EL FENIX", "AMPLIACION EL VERGELITO SUR", "AMPLIACION VENECIA", "AMPUEROS", "ANDRES JIMENEZ", "ANTONIO TORRES", "AQUILES SERDAN", "ARCINAS", "ARREOLA HERNANDEZ", "ARTURO MARTINEZ ADAME", "ASCENSION CRUZ", "ASTILLERO", "AURELIO RODRIGUEZ", "AUTODROMO MARCO MAGAÑA (DE LA LAGUNA)", "AUTOTRANSPORTES TRANSBAP [TALLER]", "AVICOLA AURORA", "BELLA UNION", "BERLIN", "BETHEL", "BETHEL (GRANJA)", "BETHEL DOS", "BRITTINGHAM", "BUCARELI", "BUENDIA", "BUGAMBILIA (MARIA CRISTINA) (GRANJA)", "CAIRO DOS", "CALIFORNIA", "CALIFORNIA CRIANZA", "CAMILO CENICEROS", "CAMPO C", "CANTERAS NUEVA CARRARA [MARMOLERA]", "CARLOS GERARDO VALDES BOHIGAS", "CASA BLANCA", "CASETA KILOMETRO 11 MAS 458", "CASETA KILOMETRO 17 CANAL SACRAMENTO", "CEFERESO NUMERO 14", "CEMIX", "CENTRO DE ACOPIO (GRANJA BLANCA)", "CERDO REAL", "CHAPINGO", "CHAVEZ (GRANJA)", "CHIHUAHUITA (CHIHUAHUITA NUEVO)", "CHIHUAHUITA (CHIHUAHUITA VIEJO)", "COLONIA AGRICOLA BUENDIA", "COLONIA AGRICOLA LA POPULAR", "COLONIA ESTABLERA SAN FRANCISCO", "COLONIA SAN ANGEL", "COLONIA SEIS DE JULIO (NUEVO NOE)", "CONEJOS", "CONSUELO OROZCO", "CORDERO CASTRO", "COREA", "CORRALITOS", "CRUZ ARREOLA", "CUATRO DE DICIEMBRE (SAGUNDO)", "CUATRO DE JULIO", "CURVA DE CAMACHO", "DAGOBERTO RAMON ARELLANO", "DAVID GAUSIN", "DELGADO SANTA ROSA", "DESARROLLO DORADO DE MILAGROS AC [HOGAR DE ANCIANOS]", "DESARROLLO LACTEO (DESLAC)", "DINAMITA", "DOLORES", "DON MELY (GRANJA)", "DON RICARDO [QUINTA]", "DON ROBERTO", "DOS AMIGOS", "DULCE MARIA (LA LUZ)", "EJIDO BUENDIA (LA CASETA)", "EL AGUILA", "EL ALTO DEL CHIVO (ROMERO ROSAS)", "EL BARRO", "EL BARRO 33 (EL TREINTA Y TRES)", "EL BERCIAL", "EL BUEN PASTOR", "EL CAIRO DOS (GRANJA)", "EL CAIRO [DESPEPITE]", "EL CARIÑO", "EL CARMEN", "EL CASTILLO", "EL CELO", "EL CHAPARRAL", "EL CHIMAL", "EL CHORIZO (FAMILIA TORRES)", "EL COMPAS", "EL CONSUELO", "EL CONSUELO TRES [NORIA]", "EL CORONEL", "EL CORTIJO", "EL DURAZNITO", "EL DURAZNO", "EL EMPAQUE", "EL ERIAZO", "EL ESFUERZO (GRANJA)", "EL FENIX", "EL GARCES", "EL GATO", "EL HERMANO [AUTOPARTES]", "EL INDIO", "EL JUNCO", "EL LABRADOR", "EL LAGUNERO [RESTAURANTE]", "EL MANANTIAL", "EL MEZQUITE", "EL MEZQUITE (CANTU)", "EL NOGUERAL 555 (CAMPO REAL)", "EL OLIVO", "EL PARAISO", "EL PATO", "EL PILAR", "EL PITAYO", "EL POLVORON", "EL PROGRESO", "EL QUEMADO", "EL RECUERDO", "EL REFUGIO", "EL RETOÑO", "EL ROSARIO", "EL SOL (GRANJA)", "EL SOLITO", "EL TAJITO", "EL TREBOL", "EL TREINTA Y UNO", "EL TRIUNFILLO (EL TRIUNFITO)", "EL TRIUNFO", "EL TUANON", "EL VALLE DE EUREKA", "EL VEINTINUEVE DE AGOSTO", "EL VERGEL", "EL VERGELITO", "EL VOLADO", "EL VUELO DEL AGUILA", "ELIAF (EL CHORIZO)", "ENSENADA", "ESMERALDA", "ESTABLO BREMEN", "ESTABLO BRITINGHAM"
 ];
+
 CATALOGO_LOCALIDADES.push(
-    "DAGOBERTO RAMON ARELLANO", "DAVID GAUSIN", "DELGADO SANTA ROSA", "DESARROLLO DORADO DE MILAGROS AC [HOGAR DE ANCIANOS]", 
-    "DESARROLLO LACTEO (DESLAC)", "DINAMITA", "DOLORES", "DON MELY (GRANJA)", "DON RICARDO [QUINTA]", "DON ROBERTO", 
-    "DOS AMIGOS", "DULCE MARIA (LA LUZ)", "EJIDO BUENDIA (LA CASETA)", "EL AGUILA", "EL ALTO DEL CHIVO (ROMERO ROSAS)", 
-    "EL BARRO", "EL BARRO 33 (EL TREINTA Y TRES)", "EL BERCIAL", "EL BUEN PASTOR", "EL CAIRO DOS (GRANJA)", 
-    "EL CAIRO [DESPEPITE]", "EL CARIÑO", "EL CARMEN", "EL CASTILLO", "EL CELO", "EL CHAPARRAL", "EL CHIMAL", 
-    "EL CHORIZO (FAMILIA TORRES)", "EL COMPAS", "EL CONSUELO", "EL CONSUELO TRES [NORIA]", "EL CORONEL", 
-    "EL CORTIJO", "EL DURAZNITO", "EL DURAZNO", "EL EMPAQUE", "EL ERIAZO", "EL ESFUERZO (GRANJA)", "EL FENIX", 
-    "EL GARCES", "EL GATO", "EL HERMANO [AUTOPARTES]", "EL INDIO", "EL JUNCO", "EL LABRADOR", "EL LAGUNERO [RESTAURANTE]", 
-    "EL MANANTIAL", "EL MEZQUITE", "EL MEZQUITE (CANTU)", "EL NOGUERAL 555 (CAMPO REAL)", "EL OLIVO", "EL PARAISO", 
-    "EL PATO", "EL PILAR", "EL PITAYO", "EL POLVORON", "EL PROGRESO", "EL QUEMADO", "EL RECUERDO", "EL REFUGIO", 
-    "EL RETOÑO", "EL ROSARIO", "EL SOL (GRANJA)", "EL SOLITO", "EL TAJITO", "EL TREBOL", "EL TREINTA Y UNO", 
-    "EL TRIUNFILLO (EL TRIUNFITO)", "EL TRIUNFO", "EL TUANON", "EL VALLE DE EUREKA", "EL VEINTINUEVE DE AGOSTO", 
-    "EL VERGEL", "EL VERGELITO", "EL VOLADO", "EL VUELO DEL AGUILA", "ELIAF (EL CHORIZO)", "ENSENADA", "ESMERALDA", 
-    "ESTABLO BREMEN", "ESTABLO BRITINGHAM"
-);
-CATALOGO_LOCALIDADES.push(
-    "ESTABLO CHILCHOTA", "ESTABLO EL COMPAS", "ESTABLO EL PORVENIR", "ESTABLO EL VERGEL", "ESTABLO LA GALLEGA", 
-    "ESTABLO MADRID", "ESTACION NOE", "ESTACION VIÑEDO", "EUREKA DE MEDIA LUNA (EUREKA)", "FABRICACIONES ESPECIALIZADAS", 
-    "FAMILIA ALDAMA SANCHEZ", "FAMILIA BARBA GUTIERREZ", "FAMILIA CISNEROS CALZADA", "FAMILIA CORDERO FLORES", 
-    "FAMILIA CORDERO ROSALES", "FAMILIA COSIO CEPEDA", "FAMILIA ESQUIVEL", "FAMILIA GARCIA DELGADILLO", 
-    "FAMILIA GARCIA ESCOBEDO", "FAMILIA GUADARRAMA L", "FAMILIA GUTIERREZ PARRA", "FAMILIA LLANES ONTIVEROS", 
-    "FAMILIA LOPEZ ZAPATA", "FAMILIA MARTINEZ ANDRADE", "FAMILIA MARTINEZ LOPEZ", "FAMILIA MOTA ANDRADE", 
-    "FAMILIA RAMIREZ PEREZ", "FAMILIA RESENDIZ MONTOYA", "FAMILIA RODRIGUEZ CORDERO", "FAMILIA SANCHEZ AGUILAR", 
-    "FAMILIA SANCHEZ MACIAS", "FAMILIA SANCHEZ MONTALVO", "FAMILIA SANCHEZ RAMIREZ", "FAMILIA TORRES", 
-    "FAMILIA VALDEZ FAVELA", "FAMILIA VARGAS AGUILAR", "FAMILIA VAZQUEZ", "FAMILIA ZAPATA ROSALES", 
-    "FERNANDO TURRUBIATES", "FILADELFIA", "FLORENCIO CASAS", "FRANCISCO ESPARZA A", "FRANCISCO MERCADO", 
-    "FRANCISCO VILLA", "FRANCISCO VILLA (LOS SIERRA)", "FUENTE BELLA", "GABY (GRANJA)", "GANADERA GILIO", 
-    "GANADERA SOLORZANO", "GARCIA (GRANJA)", "GAUCIN ARAIZA", "GAUCIN LUJAN", "GEMA [ESTABLO]", "GLORIETA", 
-    "GOMEZ PALACIO", "GONZALEZ TOSCANO", "GRANJA ALBORADA", "GRANJA ANA", "GRANJA CLAUDIA LETICIA", 
-    "GRANJA EL CASTILLO", "GRANJA EL ROCIO", "GRANJA ELVIRA", "GRANJA GUADALUPE", "GRANJA LA CANTABRA", 
-    "GRANJA PORCINA NOE", "GRANJA PUERTO ARTURO", "GUADALUPE BERLANGA", "GUERRERO (GRANJA)", "GUTIERREZ PARRA", 
-    "HERMANOS QUEZADA", "HOREB", "HUERTO SOFIA", "HUITRON", "IDEAGEMA (GRANJA)", "IDEAL (GRANJA)", "ILHUICAMINA", 
-    "INDEPENDENCIA", "INDUSTRIAL GUAJARDO", "INDUSTRIAL MAFER", "ISIDRO MORALES", "J GUADALUPE RODRIGUEZ", 
-    "JACINTO CAMACHO", "JAIME ROMERO", "JERICO", "JERUSALEM", "JEZALA", "JIMENEZ (JIMENEZ UNO)", "JIMENEZ 2A", 
-    "JOLO", "JOSE ANTUNEZ", "JOSE GUADALUPE ANTUNEZ", "JOSE MARIA MORELOS Y PAVON", "JOSE ROBLES", "JOSE SALDAÑA", 
-    "JUAN CARLOS SILVA BERNAL", "JUAN LARRIÑAGA", "JUAN LLANES", "JUAN MANUEL", "JUAN RODRIGUEZ", "LA AMPLIACION", 
-    "LA AURORA", "LA BECERRA", "LA BILLETERA", "LA CABAÑA", "LA CAPILLA", "LA CASA ROSA", "LA CHILLA", 
-    "LA COMPETENCIA", "LA DOÑA", "LA EMPRESA", "LA ENCANTADA", "LA ESCONDIDA", "LA ESPERANZA", "LA ESTRELLA", 
-    "LA FE", "LA FLOR", "LA FORTUNA", "LA FOSA", "LA GAVIA", "LA HERMIDA", "LA HERRADURA", "LA ISLA", "LA JARITA", 
-    "LA LAGUNITA", "LA LUZ", "LA MAGDALENA", "LA NORIA DE JABONCILLO", "LA NORIA DEL GAVILAN", "LA PAZ", 
-    "LA PEQUEÑA SANTANA", "LA PLATA", "LA PLATILLA", "LA POPULAR", "LA PROVIDENCIA", "LA REVANCHA", "LA ROSITA", 
-    "LA RUMOROSA", "LA SOLEDAD", "LA TEHUA", "LA VEGA", "LA VEGA DEL PARAISO", "LAGUSOL", "LAS 3 MARIAS", 
-    "LAS CARMELAS", "LAS CARMELITAS", "LAS COYOTERAS", "LAS CRIBAS", "LAS CUATITAS", "LAS FLORES", "LAS LECHUZAS", 
-    "LAS MACITAS", "LAS MARGARITAS", "LAS MERCEDES F2", "LAS PALMAS", "LAS PLAYAS", "LAS TRES B", "LAS VIRGINIAS", 
-    "LAZARO CARDENAS", "LETICIA", "LOPEZ ZAPATA", "LOS 3 HERMANOS", "LOS ANDRADE", "LOS ANFIBIOS", "LOS ANGELES", 
-    "LOS CONTRERAS", "LOS DELGADO", "LOS DOS COMPADRES", "LOS DULCES NOMBRES", "LOS EUCALIPTOS", "LOS MARTINEZ", 
-    "LOS MIRASOLES", "LOS NOGALES", "LOS OLIVOS", "LOS ORGANOS", "LOS PAPIRINGOS", "LOS POTRILLOS", "LOS REYES", 
-    "LOS TREINTA", "LOS TRES CAMACHO", "LUPITA", "MANILA", "MAPIMI", "MAQUILAS Y MINERALES ALFERY", "MARIA ANTONIETA", 
-    "MARIA TERESA", "MARMARTHA", "MARTINEZ LEYVA", "MI TUMBA", "MIGUEL MONTAÑEZ MEZA", "MIGUEL SAMANIEGO", 
-    "MOISES LOPEZ", "MOLINO LOS ANTUNEZ", "NATO HERNANDEZ", "NAZAS", "NEXTLALPAN", "NICOLAS ROQUE", "NINGUNO", 
-    "NOE", "NOEL GAUSIN", "NOELIE (GRANJA)", "NORIA 1919", "NORIA 1926", "NORIA 1981", "NORIA 273", 
-    "NORIA DE JIMENEZ DOS", "NORIA DE LA TEHUA", "NORIA DE LA VIRGINIA", "NORIA DEL CONSUELO", "NORIA EL RECUERDO", 
-    "NORIA GREGORIO GARCIA", "NORIA LA CUATRO", "NORIA LA TRES", "NORIA LA UNA", "NORIA PARAISO", "NORIA SAN GONZALO", 
-    "NORIA SAN MARTIN", "NORIA SECTOR DOS", "NORIA SECTOR VEINTITRES", "NORIA VENECIA CINCO", "NUEVO AMANECER", 
-    "NUEVO BARRO", "NUEVO GOMEZ", "NUEVO JERICO", "NUMANCIA", "PABLO LARRIÑAGA", "PADILLA SALAS", "PALO BLANCO", 
-    "PALO HUECO", "PARAISO SECTOR 3", "PASTOR ROUAIX", "PATZCUARO", "PENJAMO", "PEQUEÑA BERLIN", "PIMENTEL", 
-    "POANAS", "PORVENIR", "POZO NUMERO DOS", "POZO PANCHO VILLA", "PREVEDEL", "PRODUCTOS AGROPECUARIOS 2 Y 2", 
-    "PROVIDENCIA", "PUEBLO NUEVO (EL SIETE)", "PUENTE DE LA TORREÑA", "PURISIMA", "QUINTA ALINA", "QUINTA ARMONIA", 
-    "QUINTA BAM BAM", "QUINTA EL CAPRICHO", "QUINTA EL RETIRO", "QUINTA ESPERANZA", "QUINTA LAS ILUSIONES", 
-    "QUINTA LILIAN", "QUINTA ROSY", "QUINTA SANTA MONICA", "RAMIRO CANALES", "RAMIRO ROJAS", "RAMONA HERMOSILLO", 
-    "RANCHO GORDO", "RANCHO GUADALUPE", "RANCHO LA HECTAREA", "RANCHO NUEVO", "RANCHO ROSALBA", "REAL DE SAN SEBASTIAN", 
-    "REFORMA", "REMIGIO CUEVAS GALINDO", "RESUMIDEROS", "REYES CASTRO", "REYES SANCHEZ", "RIGOBERTO BECERRA", 
-    "RINCON DE SANTA CRUZ", "RINCONADA", "RIOS (GRANJA)", "RIVERA LLANES", "ROBERTO GARCIA", "ROBERTO RIOS", 
-    "RUTILIO GARCIA", "SAN AGUSTIN", "SAN ALBERTO", "SAN ANTONIO", "SAN AURELIO", "SAN CARLOS", "SAN FELIPE", 
-    "SAN FERNANDO", "SAN FRANCISCO", "SAN GABRIEL", "SAN GERARDO", "SAN ISIDRO", "SAN JOSE", "SAN JOSE DE VIÑEDO", 
-    "SAN JUAN", "SAN LORENZO", "SAN LUIS", "SAN LUISITO", "SAN MANUEL", "SAN MARTIN", "SAN MIGUEL", "SAN PEDRO", 
-    "SAN RAMIRO", "SAN RAMON", "SAN ROQUE", "SAN SEBASTIAN", "SAN SERGIO", "SAN VICENTE", "SANTA ANGELICA", 
-    "SANTA CLARA", "SANTA CRUZ", "SANTA CRUZ LUJAN", "SANTA FE", "SANTA GERTRUDIS", "SANTA HERMINIA", "SANTA INES", 
-    "SANTA JULIA", "SANTA LUCINA", "SANTA MARIA", "SANTA ROSA", "SANTA ROSITA", "SANTA SOFIA", "SANTA TERESA", 
-    "SANTIAGO", "SIERRA HERMOSA", "TRECE DE MARZO", "TRES ESTRELLAS", "TRES MARIAS", "TRES ROBLES", "TRES VICTORIAS", 
-    "VALDEZ", "VAZQUEZ", "VENECIA", "VENUSTIANO CARRANZA", "VIANEY", "VICENTE NAVA", "VICTOR CARRILLO HERNANDEZ", 
-    "VILLA GREGORIO GARCIA", "VILLAS URBI DEL CEDRO", "VILMA ALE DE HERRERA", "VIÑASOL", "YOLANDA (GRANJA)"
-);
+    "ESTABLO CHILCHOTA", "ESTABLO EL COMPAS", "ESTABLO EL PORVENIR", "ESTABLO EL VERGEL", "ESTABLO LA GALLEGA", "ESTABLO MADRID", "ESTACION NOE", "ESTACION VIÑEDO", "EUREKA DE MEDIA LUNA (EUREKA)", "FABRICACIONES ESPECIALIZADAS", "FAMILIA ALDAMA SANCHEZ", "FAMILIA BARBA GUTIERREZ", "FAMILIA CISNEROS CALZADA", "FAMILIA CORDERO FLORES", "FAMILIA CORDERO ROSALES", "FAMILIA COSIO CEPEDA", "FAMILIA ESQUIVEL", "FAMILIA GARCIA DELGADILLO", "FAMILIA GARCIA ESCOBEDO", "FAMILIA GUADARRAMA L", "FAMILIA GUTIERREZ PARRA", "FAMILIA LLANES ONTIVEROS", "FAMILIA LOPEZ ZAPATA", "FAMILIA MARTINEZ ANDRADE", "FAMILIA MARTINEZ LOPEZ", "FAMILIA MOTA ANDRADE", "FAMILIA RAMIREZ PEREZ", "FAMILIA RESENDIZ MONTOYA", "FAMILIA RODRIGUEZ CORDERO", "FAMILIA SANCHEZ AGUILAR", "FAMILIA SANCHEZ MACIAS", "FAMILIA SANCHEZ MONTALVO", "FAMILIA SANCHEZ RAMIREZ", "FAMILIA TORRES", "FAMILIA VALDEZ FAVELA", "FAMILIA VARGAS AGUILAR", "FAMILIA VAZQUEZ", "FAMILIA ZAPATA ROSALES", "FERNANDO TURRUBIATES", "FILADELFIA", "FLORENCIO CASAS", "FRANCISCO ESPARZA A", "FRANCISCO MERCADO", "FRANCISCO VILLA", "FRANCISCO VILLA (LOS SIERRA)", "FUENTE BELLA", "GABY (GRANJA)", "GANADERA GILIO", "GANADERA SOLORZANO", "GARCIA (GRANJA)", "GAUCIN ARAIZA", "GAUCIN LUJAN", "GEMA [ESTABLO]", "GLORIETA", "GOMEZ PALACIO", "GONZALEZ TOSCANO", "GRANJA ALBORADA", "GRANJA ANA", "GRANJA CLAUDIA LETICIA", "GRANJA EL CASTILLO", "GRANJA EL ROCIO", "GRANJA ELVIRA", "GRANJA GUADALUPE", "GRANJA LA CANTABRA", "GRANJA PORCINA NOE", "GRANJA PUERTO ARTURO", "GUADALUPE BERLANGA", "GUERRERO (GRANJA)", "GUTIERREZ PARRA", "HERMANOS QUEZADA", "HOREB", "HUERTO SOFIA", "HUITRON", "IDEAGEMA (GRANJA)", "IDEAL (GRANJA)", "ILHUICAMINA", "INDEPENDENCIA", "INDUSTRIAL GUAJARDO", "INDUSTRIAL MAFER", "ISIDRO MORALES", "J GUADALUPE RODRIGUEZ", "JACINTO CAMACHO", "JAIME ROMERO", "JERICO", "JERUSALEM", "JEZALA", "JIMENEZ (JIMENEZ UNO)", "JIMENEZ 2A", "JOLO", "JOSE ANTUNEZ", "JOSE GUADALUPE ANTUNEZ", "JOSE MARIA MORELOS Y PAVON", "JOSE ROBLES", "JOSE SALDAÑA", "JUAN CARLOS SILVA BERNAL", "JUAN LARRIÑAGA", "JUAN LLANES", "JUAN MANUEL", "JUAN RODRIGUEZ", "LA AMPLIACION", "LA AURORA", "LA BECERRA", "LA BILLETERA", "LA CABAÑA", "LA CAPILLA", "LA CASA ROSA", "LA CHILLA", "LA COMPETENCIA", "LA DOÑA", "LA EMPRESA", "LA ENCANTADA", "LA ESCONDIDA", "LA ESPERANZA", "LA ESTRELLA", "LA FE", "LA FLOR", "LA FORTUNA", "LA FOSA", "LA GAVIA", "LA HERMIDA", "LA HERRADURA", "LA ISLA", "LA JARITA", "LA LAGUNITA", "LA LUZ", "LA MAGDALENA", "LA NORIA DE JABONCILLO", "LA NORIA DEL GAVILAN", "LA PAZ", "LA PEQUEÑA SANTANA", "LA PLATA", "LA PLATILLA", "LA POPULAR", "LA PROVIDENCIA", "LA REVANCHA", "LA ROSITA", "LA RUMOROSA", "LA SOLEDAD", "LA TEHUA", "LA VEGA", "LA VEGA DEL PARAISO", "LAGUSOL", "LAS 3 MARIAS", "LAS CARMELAS", "LAS CARMELITAS", "LAS COYOTERAS", "LAS CRIBAS", "LAS CUATITAS", "LAS FLORES", "LAS LECHUZAS", "LAS MACITAS", "LAS MARGARITAS", "LAS MERCEDES F2", "LAS PALMAS", "LAS PLAYAS", "LAS TRES B", "LAS VIRGINIAS", "LAZARO CARDENAS", "LETICIA", "LOPEZ ZAPATA", "LOS 3 HERMANOS", "LOS ANDRADE", "LOS ANFIBIOS", "LOS ANGELES", "LOS CONTRERAS", "LOS DELGADO", "LOS DOS COMPADRES", "LOS DULCES NOMBRES", "LOS EUCALIPTOS", "LOS MARTINEZ", "LOS MIRASOLES", "LOS NOGALES", "LOS OLIVOS", "LOS ORGANOS", "LOS PAPIRINGOS", "LOS POTRILLOS", "LOS REYES", "LOS TREINTA", "LOS TRES CAMACHO", "LUPITA", "MANILA", "MAPIMI", "MAQUILAS Y MINERALES ALFERY", "MARIA ANTONIETA", "MARIA TERESA", "MARMARTHA", "MARTINEZ LEYVA", "MI TUMBA", "MIGUEL MONTAÑEZ MEZA", "MIGUEL SAMANIEGO", "MOISES LOPEZ", "MOLINO LOS ANTUNEZ", "NATO HERNANDEZ", "NAZAS", "NEXTLALPAN", "NICOLAS ROQUE", "NINGUNO", "NOE", "NOEL GAUSIN", "NOELIE (GRANJA)", "NORIA 1919", "NORIA 1926", "NORIA 1981", "NORIA 273", "NORIA DE JIMENEZ DOS", "NORIA DE LA TEHUA", "NORIA DE LA VIRGINIA", "NORIA DEL CONSUELO", "NORIA EL RECUERDO", "NORIA GREGORIO GARCIA", "NORIA LA CUATRO", "NORIA LA TRES", "NORIA LA UNA", "NORIA PARAISO", "NORIA SAN GONZALO", "NORIA SAN MARTIN", "NORIA SECTOR DOS", "NORIA SECTOR VEINTITRES", "NORIA VENECIA CINCO", "NUEVO AMANECER", "NUEVO BARRO", "NUEVO GOMEZ", "NUEVO JERICO", "NUMANCIA", "PABLO LARRIÑAGA", "PADILLA SALAS", "PALO BLANCO", "PALO HUECO", "PARAISO SECTOR 3", "PASTOR ROUAIX", "PATZCUARO", "PENJAMO", "PEQUEÑA BERLIN", "PIMENTEL", "POANAS", "PORVENIR", "POZO NUMERO DOS", "POZO PANCHO VILLA", "PREVEDEL", "PRODUCTOS AGROPECUARIOS 2 Y 2", "PROVIDENCIA", "PUEBLO NUEVO (EL SIETE)", "PUENTE DE LA TORREÑA", "PURISIMA", "QUINTA ALINA", "QUINTA ARMONIA", "QUINTA BAM BAM", "QUINTA EL CAPRICHO", "QUINTA EL RETIRO", "QUINTA ESPERANZA", "QUINTA LAS ILUSIONES", "QUINTA LILIAN", "QUINTA ROSY", "QUINTA SANTA MONICA", "RAMIRO CANALES", "RAMIRO ROJAS", "RAMONA HERMOSILLO", "RANCHO GORDO", "RANCHO GUADALUPE", "RANCHO LA HECTAREA", "RANCHO NUEVO", "RANCHO ROSALBA", "REAL DE SAN SEBASTIAN", "REFORMA", "REMIGIO CUEVAS GALINDO", "RESUMIDEROS", "REYES CASTRO", "REYES SANCHEZ", "RIGOBERTO BECERRA", "RINCON DE SANTA CRUZ", "RINCONADA", "RIOS (GRANJA)", "RIVERA LLANES", "ROBERTO GARCIA", "ROBERTO RIOS", "RUTILIO GARCIA", "SAN AGUSTIN", "SAN ALBERTO", "SAN ANTONIO", "SAN AURELIO", "SAN CARLOS", "SAN FELIPE", "SAN FERNANDO", "SAN FRANCISCO", "SAN GABRIEL", "SAN GERARDO", "SAN ISIDRO", "SAN JOSE", "SAN JOSE DE VIÑEDO", "SAN JUAN", "SAN LORENZO", "SAN LUIS", "SAN LUISITO", "SAN MANUEL", "SAN MARTIN", "SAN MIGUEL", "SAN PEDRO", "SAN RAMIRO", "SAN RAMON", "SAN ROQUE", "SAN SEBASTIAN", "SAN SERGIO", "SAN VICENTE", "SANTA ANGELICA", "SANTA CLARA", "SANTA CRUZ", "SANTA CRUZ LUJAN", "SANTA FE", "SANTA GERTRUDIS", "SANTA HERMINIA", "SANTA INES", "SANTA JULIA", "SANTA LUCINA", "SANTA MARIA", "SANTA ROSA", "SANTA ROSITA", "SANTA SOFIA", "SANTA TERESA", "SANTIAGO", "SIERRA HERMOSA", "TRECE DE MARZO", "TRES ESTRELLAS", "TRES MARIAS", "TRES ROBLES", "TRES VICTORIAS", "VALDEZ", "VAZQUEZ", "VENECIA", "VENUSTIANO CARRANZA", "VIANEY", "VICENTE NAVA", "VICTOR CARRILLO HERNANDEZ", "VILLA GREGORIO GARCIA", "VILLAS URBI DEL CEDRO", "VILMA ALE DE HERRERA", "VIÑASOL", "YOLANDA (GRANJA)"
+];
+
 const DB_NAME = "R02_DB"; const DB_VERSION = 1; const STORE_NAME = "derechohabientes"; let db;
 const request = indexedDB.open(DB_NAME, DB_VERSION);
-
 request.onupgradeneeded = (e) => {
     db = e.target.result;
     if (!db.objectStoreNames.contains(STORE_NAME)) {
         const store = db.createObjectStore(STORE_NAME, { keyPath: "CURP" });
-        store.createIndex("by_nombre", "NOMBRE", { unique: false }); 
-        store.createIndex("by_calle", "CALLE", { unique: false });
+        store.createIndex("by_nombre", "NOMBRE", { unique: false }); store.createIndex("by_calle", "CALLE", { unique: false });
     }
 };
-
 request.onsuccess = (e) => { db = e.target.result; updateLocalCounter(); preloadDatabaseToMemory(); };
 request.onerror = (e) => { console.error("Error IndexedDB:", e.target.error); };
-
 function updateLocalCounter() {
     if (!db) return;
     const countRequest = db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).count();
@@ -146,6 +60,7 @@ function updateLocalCounter() {
     if (document.getElementById('metric-pendientes-visitas')) document.getElementById('metric-pendientes-visitas').innerText = pendientesPorSubir;
     if (document.getElementById('pending-count')) document.getElementById('pending-count').innerText = pendientesPorSubir;
 }
+
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
@@ -221,6 +136,7 @@ function preloadDatabaseToMemory() {
     if (!db) return;
     db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).getAll().onsuccess = (e) => { localMemoryDatabase = e.target.result || []; };
 }
+
 function searchData() {
     const query = document.getElementById('search-input').value.toLowerCase().trim(); const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = ""; if (query.length < 3) return;
@@ -239,11 +155,7 @@ function searchData() {
 
     matchedRecords.sort((a, b) => String(a['NUM EXT']).localeCompare(String(b['NUM EXT'])));
     matchedRecords.slice(0, 30).forEach(item => {
-        const div = document.createElement('div'); 
-        
-        // REPARADO AQUÍ: Cambiado 'ESTATS_VISITA' por 'ESTATUS_VISITA' de forma correcta
-        const estatusActual = item['ESTATUS_VISITA'] || "";
-        
+        const div = document.createElement('div'); const estatusActual = item['ESTATUS_VISITA'] || "";
         const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']); const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
         const estatusFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['ESTATUS_VISITA'] : estatusActual;
         let claseColor = estatusFinal === "LOCALIZADO" ? "result-item status-localizado" : (estatusFinal === "NO LOCALIZADO" ? "result-item status-nolocalizado" : "result-item");
@@ -320,7 +232,6 @@ function seleccionarEstatusVisita(estatus) {
     } else { 
         motivoNoLocalizadoValue = ""; 
     }
-    // CORREGIDO: Se invoca a la función real existente en tu código para pintar los botones
     actualizarEstilosBotonesFormulario();
 }
 
@@ -355,7 +266,7 @@ function openForm(item) {
 
     currentEstatusVisita = item['ESTATUS_VISITA'] || "LOCALIZADO"; 
     motivoNoLocalizadoValue = item['MOTIVO_NO_LOCALIZADO'] || ""; 
-    actualizarEstilosBotonesFormulario(); // <-- CORREGIDO AQUÍ: Se eliminó el "actualstyles" roto que congelaba el login
+    actualizarEstilosBotonesFormulario(); 
     window.currentTratoValue = item['EVALUACION_TRATO'] || ""; 
     actualizarEstilosBotonesTrato();
 
@@ -421,102 +332,6 @@ function procesarFotoEvidencia(inputElement, previewId, claveDocumento) {
     }
 }
 
-function abrirFormularioVacioAltaNueva() {
-    // CANDADO ANTICONGELAMIENTO: Verifica que el usuario haya iniciado sesión antes de tocar la RAM
-    if (!currentUser) {
-        alert("🚨 ERROR OPERATIVO: Inicie sesión primero.");
-        changeScreen('screen-login');
-        return;
-    }
-
-    // Libera los atributos del DOM de forma segura
-    const fCurp = document.getElementById('f-curp'); if (fCurp) fCurp.removeAttribute('readonly');
-    const fNom = document.getElementById('f-nombre'); if (fNom) fNom.removeAttribute('readonly');
-    const fPat = document.getElementById('f-paterno'); if (fPat) fPat.removeAttribute('readonly');
-    const fMat = document.getElementById('f-materno'); if (fMat) fMat.removeAttribute('readonly');
-    
-    const inputs = ['f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-telfijo', 'f-telcel', 'f-localidad', 'f-seccion', 'f-colonia', 'f-cp', 'f-calle', 'f-numext', 'f-referencia', 'f-causal'];
-    inputs.forEach(id => { 
-        const el = document.getElementById(id);
-        if (el) el.value = ''; 
-    });
-    
-    // Asignación predictiva por Brigadista Autorizado
-    let municipioAsignado = 'GOMEZ PALACIO';
-    if (typeof AUTHORIZED_CURPS !== 'undefined' && AUTHORIZED_CURPS[currentUser.curp]) {
-        municipioAsignado = AUTHORIZED_CURPS[currentUser.curp].municipio || 'GOMEZ PALACIO';
-    }
-    
-    const fMun = document.getElementById('f-municipio'); if (fMun) fMun.value = municipioAsignado.toUpperCase().trim();
-    const fId = document.getElementById('f-id'); if (fId) fId.value = 'NUEVO';
-    const fSit = document.getElementById('f-situacion'); if (fSit) fSit.value = 'SIN_REGISTRO';
-    
-    currentEstatusVisita = "LOCALIZADO"; 
-    motivoNoLocalizadoValue = ""; 
-    window.currentTratoValue = ""; 
-    
-    actualizarEstilosBotonesFormulario(); 
-    actualizarEstilosBotonesTrato();
-    
-    const fLat = document.getElementById('f-lat'); if (fLat) fLat.value = "Buscando satélite...";
-    const fLon = document.getElementById('f-lon'); if (fLon) fLon.value = "Buscando satélite...";
-    
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((position) => { 
-            if (fLat) fLat.value = String(position.coords.latitude.toFixed(6)).replace(",", "."); 
-            if (fLon) fLon.value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
-        }, () => { 
-            if (fLat) fLat.value = "ERROR"; 
-            if (fLon) fLon.value = "ERROR"; 
-        });
-    }
-    
-    if (fCurp) {
-        fCurp.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal); 
-        fCurp.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
-    }
-    
-    changeScreen('screen-form');
-    
-    // Limpieza de barras síncronas tipo fichas concurrentes
-    const lBuscar = document.getElementById('f-localidad-buscar'); if (lBuscar) lBuscar.value = "";
-    const lResults = document.getElementById('localidad-search-results'); if (lResults) lResults.style.display = "none";
-    const mBuscar = document.getElementById('f-municipio-buscar'); if (mBuscar) mBuscar.value = "";
-    const mResults = document.getElementById('municipio-search-results'); if (mResults) mResults.style.display = "none";
-    const cBuscar = document.getElementById('f-colonia-buscar'); if (cBuscar) cBuscar.value = "";
-    const cResults = document.getElementById('colonia-search-results'); if (cResults) cResults.style.display = "none";
-    
-    const fLoc = document.getElementById('f-localidad'); if (fLoc) fLoc.value = ""; 
-    const fCol = document.getElementById('f-colonia'); if (fCol) fCol.value = "";
-    
-    // Reseteo e inicialización limpia del contenedor multimedia RAM
-    expedienteDigitalTemporal = { doc_ine_frontal: "", doc_ine_trasera: "", doc_acta: "", doc_comprobante: "", doc_curp: "" };
-    
-    const miniaturas = ['preview-ine-frontal', 'preview-ine-trasera', 'preview-acta', 'preview-comprobante', 'preview-curp'];
-    miniaturas.forEach(id => { 
-        const img = document.getElementById(id); 
-        if (img) { img.src = ""; img.style.display = "none"; } 
-    });
-}
-
-function verificarCurpDuplicadaEnTiempoReal(e) {
-    const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase(); 
-    e.target.value = valorLimpio; 
-    if (valorLimpio.length === 18 && typeof localMemoryDatabase !== 'undefined') {
-        const registroExistente = localMemoryDatabase.find(r => r.CURP === valorLimpio);
-        if (registroExistente) {
-            if (confirm(`📢 DETECTOR DE DUPLICADOS: La CURP [${valorLimpio}] ya existe (Municipio: ${registroExistente.MUNICIPIO || 'SIN MUNICIPIO'}).\n\n¿Desea cargar sus datos antiguos?`)) { 
-                alert("Cargando información..."); 
-                openForm(registroExistente); 
-            } else { 
-                e.target.value = ''; 
-                e.target.focus(); 
-                alert("Ingrese una CURP no registrada."); 
-            }
-        }
-    }
-}
-
 function saveData(event) {
     event.preventDefault();
     const latValue = document.getElementById('f-lat').value; const lonValue = document.getElementById('f-lon').value;
@@ -533,15 +348,9 @@ function saveData(event) {
     }
 
     const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp); const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
-    
-    // OBJETO RECONSTRUIDO CON TODAS LAS COMAS EN SU LUGAR PARA MÁXIMA COMPILACIÓN
     const record = {
         'CURP': targetCurp, 'ID': idValue, 'NOMBRE': document.getElementById('f-nombre').value, 'AP PATERNO': document.getElementById('f-paterno').value, 'AP MATERNO': document.getElementById('f-materno').value, 'TEL FIJO': document.getElementById('f-telfijo').value, 'TEL CEL': document.getElementById('f-telcel').value, 'MUNICIPIO': document.getElementById('f-municipio').value, 'LOCALIDAD': document.getElementById('f-localidad').value, 'SECCION': document.getElementById('f-seccion').value, 'COLONIA': document.getElementById('f-colonia').value, 'CP': document.getElementById('f-cp').value, 'CALLE': document.getElementById('f-calle').value, 'NUM EXT': document.getElementById('f-numext').value, 'REFERENCIA': document.getElementById('f-referencia').value, 'SITUACION': document.getElementById('f-situacion').value, 'CAUSAL': document.getElementById('f-causal').value, 'ESTATUS_VISITA': currentEstatusVisita, 'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue, 'EVALUACION_TRATO': currentEstatusVisita === "NO LOCALIZADO" ? "" : evaluacionTratoActual, 'Latitud': latValue, 'Longitud': lonValue, 'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"), 'USUARIO_MODIFICA': currentUser.name, 'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || "",
-        'DOC_INE_FRONTAL': expedienteDigitalTemporal.doc_ine_frontal || originalRecord.DOC_INE_FRONTAL || "", 
-        'DOC_INE_TRASERA': expedienteDigitalTemporal.doc_ine_trasera || originalRecord.DOC_INE_TRASERA || "", 
-        'DOC_ACTA': expedienteDigitalTemporal.doc_acta || originalRecord.DOC_ACTA || "", 
-        'DOC_COMPROBANTE': expedienteDigitalTemporal.doc_comprobante || originalRecord.DOC_COMPROBANTE || "", 
-        'DOC_CURP': expedienteDigitalTemporal.doc_curp || originalRecord.DOC_CURP || ""
+        'DOC_INE_FRONTAL': expedienteDigitalTemporal.doc_ine_frontal || originalRecord.DOC_INE_FRONTAL || "", 'DOC_INE_TRASERA': expedienteDigitalTemporal.doc_ine_trasera || originalRecord.DOC_INE_TRASERA || "", 'DOC_ACTA': expedienteDigitalTemporal.doc_acta || originalRecord.DOC_ACTA || "", 'DOC_COMPROBANTE': expedienteDigitalTemporal.doc_comprobante || originalRecord.DOC_COMPROBANTE || "", 'DOC_CURP': expedienteDigitalTemporal.doc_curp || originalRecord.DOC_CURP || ""
     };
 
     const tx = db.transaction(STORE_NAME, "readwrite"); tx.objectStore(STORE_NAME).put(record);
@@ -551,7 +360,6 @@ function saveData(event) {
         alert("✅ ÉXITO: Guardado localmente."); document.getElementById('search-input').value = ""; document.getElementById('search-results').innerHTML = ""; changeScreen('screen-search');
     };
 }
-
 function openHistoryScreen() {
     changeScreen('screen-history'); document.getElementById('pending-count').innerText = pendingSync.length;
     const logList = document.getElementById('history-log'); logList.innerHTML = ""; 
@@ -581,39 +389,6 @@ function clearLocalStorage() {
     if (confirm("🚨 ADVERTENCIA: ¿Vaciamos la memoria?")) {
         pendingSync = []; syncedHistory = []; localMemoryDatabase = []; localStorage.clear();
         if (db) { db.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).clear().onsuccess = () => { document.getElementById('search-input').value = ""; document.getElementById('search-results').innerHTML = ""; alert("Limpiado."); changeScreen('screen-welcome'); }; } else { changeScreen('screen-welcome'); }
-    }
-}
-
-function seleccionarTrato(opcion) { window.currentTratoValue = opcion.toUpperCase(); actualizarEstilosBotonesTrato(); }
-function seleccionarTrato(opcion) { 
-    window.currentTratoValue = opcion.toUpperCase(); 
-    actualizarEstilosBotonesTrato(); 
-}
-
-function actualizarEstilosBotonesTrato() {
-    const btnEx = document.getElementById('btn-trato-excelente'); 
-    const btnAm = document.getElementById('btn-trato-amable'); 
-    const btnNe = document.getElementById('btn-trato-neutral'); 
-    const btnIn = document.getElementById('btn-trato-incomodo'); 
-    const btnHo = document.getElementById('btn-trato-hostil');
-    if (!btnEx || !btnAm || !btnNe || !btnIn || !btnHo) return;
-
-    [btnEx, btnAm, btnNe, btnIn, btnHo].forEach(btn => { 
-        btn.style.backgroundColor = "#F3F4F6"; 
-        btn.style.borderColor = "#CBD5E0"; 
-        btn.style.color = "#4B5563"; 
-    });
-
-    if (window.currentTratoValue === "EXCELENTE") { 
-        btnEx.style.backgroundColor = "#D1E7DD"; btnEx.style.borderColor = "#0F5132"; btnEx.style.color = "#0F5132"; 
-    } else if (window.currentTratoValue === "AMABLE") { 
-        btnAm.style.backgroundColor = "#E6F4EA"; btnAm.style.borderColor = "#236947"; btnAm.style.color = "#236947"; 
-    } else if (window.currentTratoValue === "NEUTRAL") { 
-        btnNe.style.backgroundColor = "#EDF4F9"; btnNe.style.borderColor = "#BC955C"; btnNe.style.color = "#1F2937"; 
-    } else if (window.currentTratoValue === "INCOMODO") { 
-        btnIn.style.backgroundColor = "#FFF3CD"; btnIn.style.borderColor = "#664D03"; btnIn.style.color = "#664D03"; 
-    } else if (window.currentTratoValue === "HOSTIL") { 
-        btnHo.style.backgroundColor = "#FCE8E6"; btnHo.style.borderColor = "#b91c1c"; btnHo.style.color = "#b91c1c"; 
     }
 }
 
@@ -653,4 +428,15 @@ function verificarCurpDuplicadaEnTiempoReal(e) {
     }
 }
 
-if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)); }); }
+function seleccionarTrato(opcion) { window.currentTratoValue = opcion.toUpperCase(); actualizarEstilosBotonesTrato(); }
+
+function actualizarEstilosBotonesTrato() {
+    const btnEx = document.getElementById('btn-trato-excelente'); const btnAm = document.getElementById('btn-trato-amable'); const btnNe = document.getElementById('btn-trato-neutral'); const btnIn = document.getElementById('btn-trato-incomodo'); const btnHo = document.getElementById('btn-trato-hostil');
+    if (!btnEx || !btnAm || !btnNe || !btnIn || !btnHo) return;
+    [btnEx, btnAm, btnNe, btnIn, btnHo].forEach(btn => { btn.style.backgroundColor = "#F3F4F6"; btn.style.borderColor = "#CBD5E0"; btn.style.color = "#4B5563"; });
+    if (window.currentTratoValue === "EXCELENTE") { btnEx.style.backgroundColor = "#D1E7DD"; btnEx.style.borderColor = "#0F5132"; btnEx.style.color = "#0F5132"; }
+    else if (window.currentTratoValue === "AMABLE") { btnAm.style.backgroundColor = "#E6F4EA"; btnAm.style.borderColor = "#236947"; btnAm.style.color = "#236947"; }
+    else if (window.currentTratoValue === "NEUTRAL") { btnNe.style.backgroundColor = "#EDF4F9"; btnNe.style.borderColor = "#BC955C"; btnNe.style.color = "#1F2937"; }
+    else if (window.currentTratoValue === "INCOMODO") { btnIn.style.backgroundColor = "#FFF3CD"; btnIn.style.borderColor = "#664D03"; btnIn.style.color = "#664D03"; }
+    else if (window.currentTratoValue === "HOSTIL") { btnHo.style.backgroundColor = "#FCE8E6"; btnHo.style.borderColor = "#b91c1c"; btnHo.style.color = "#b91c1c"; }
+}
