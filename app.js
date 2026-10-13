@@ -533,9 +533,15 @@ function saveData(event) {
     }
 
     const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp); const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
+    
+    // OBJETO RECONSTRUIDO CON TODAS LAS COMAS EN SU LUGAR PARA MÁXIMA COMPILACIÓN
     const record = {
         'CURP': targetCurp, 'ID': idValue, 'NOMBRE': document.getElementById('f-nombre').value, 'AP PATERNO': document.getElementById('f-paterno').value, 'AP MATERNO': document.getElementById('f-materno').value, 'TEL FIJO': document.getElementById('f-telfijo').value, 'TEL CEL': document.getElementById('f-telcel').value, 'MUNICIPIO': document.getElementById('f-municipio').value, 'LOCALIDAD': document.getElementById('f-localidad').value, 'SECCION': document.getElementById('f-seccion').value, 'COLONIA': document.getElementById('f-colonia').value, 'CP': document.getElementById('f-cp').value, 'CALLE': document.getElementById('f-calle').value, 'NUM EXT': document.getElementById('f-numext').value, 'REFERENCIA': document.getElementById('f-referencia').value, 'SITUACION': document.getElementById('f-situacion').value, 'CAUSAL': document.getElementById('f-causal').value, 'ESTATUS_VISITA': currentEstatusVisita, 'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue, 'EVALUACION_TRATO': currentEstatusVisita === "NO LOCALIZADO" ? "" : evaluacionTratoActual, 'Latitud': latValue, 'Longitud': lonValue, 'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"), 'USUARIO_MODIFICA': currentUser.name, 'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || "",
-        'DOC_INE_FRONTAL': expedienteDigitalTemporal.doc_ine_frontal || originalRecord.DOC_INE_FRONTAL || "", 'DOC_INE_TRASERA': expedienteDigitalTemporal.doc_ine_trasera || originalRecord.DOC_INE_TRASERA || "", 'DOC_ACTA': expedienteDigitalTemporal.doc_acta || originalRecord.DOC_ACTA || "", 'DOC_COMPROBANTE': expedienteDigitalTemporal.doc_comprobante || originalRecord.DOC_COMPROBANTE || "", 'DOC_CURP': expedienteDigitalTemporal.doc_curp || originalRecord.DOC_CURP || ""
+        'DOC_INE_FRONTAL': expedienteDigitalTemporal.doc_ine_frontal || originalRecord.DOC_INE_FRONTAL || "", 
+        'DOC_INE_TRASERA': expedienteDigitalTemporal.doc_ine_trasera || originalRecord.DOC_INE_TRASERA || "", 
+        'DOC_ACTA': expedienteDigitalTemporal.doc_acta || originalRecord.DOC_ACTA || "", 
+        'DOC_COMPROBANTE': expedienteDigitalTemporal.doc_comprobante || originalRecord.DOC_COMPROBANTE || "", 
+        'DOC_CURP': expedienteDigitalTemporal.doc_curp || originalRecord.DOC_CURP || ""
     };
 
     const tx = db.transaction(STORE_NAME, "readwrite"); tx.objectStore(STORE_NAME).put(record);
@@ -545,6 +551,7 @@ function saveData(event) {
         alert("✅ ÉXITO: Guardado localmente."); document.getElementById('search-input').value = ""; document.getElementById('search-results').innerHTML = ""; changeScreen('screen-search');
     };
 }
+
 function openHistoryScreen() {
     changeScreen('screen-history'); document.getElementById('pending-count').innerText = pendingSync.length;
     const logList = document.getElementById('history-log'); logList.innerHTML = ""; 
