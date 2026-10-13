@@ -239,7 +239,11 @@ function searchData() {
 
     matchedRecords.sort((a, b) => String(a['NUM EXT']).localeCompare(String(b['NUM EXT'])));
     matchedRecords.slice(0, 30).forEach(item => {
-        const div = document.createElement('div'); const estatusActual = item['ESTATUS_VISITA'] || "";
+        const div = document.createElement('div'); 
+        
+        // REPARADO AQUÍ: Cambiado 'ESTATS_VISITA' por 'ESTATUS_VISITA' de forma correcta
+        const estatusActual = item['ESTATUS_VISITA'] || "";
+        
         const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']); const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
         const estatusFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['ESTATUS_VISITA'] : estatusActual;
         let claseColor = estatusFinal === "LOCALIZADO" ? "result-item status-localizado" : (estatusFinal === "NO LOCALIZADO" ? "result-item status-nolocalizado" : "result-item");
@@ -250,6 +254,7 @@ function searchData() {
         div.onclick = () => openForm(item); resultsContainer.appendChild(div);
     });
 }
+
 function buscarLocalidadesEnPantalla() {
     const query = document.getElementById('f-localidad-buscar').value.toLowerCase().trim(); const resultsContainer = document.getElementById('localidad-search-results');
     resultsContainer.innerHTML = ""; if (query.length < 2) { resultsContainer.style.display = "none"; return; }
