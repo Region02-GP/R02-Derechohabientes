@@ -2,7 +2,7 @@
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_rQKWnnixfxxhRqa66SG-FUO33_bHDH08ivvkno8T4zpRL4UaWT0DyDIsQVagdxYV/exec";
 
 
-if (typeof AUTHORIZED_CURPS === 'undefined') { var AUTHORIZED_CURPS = {}; }
+// <-- ELIMINA POR COMPLETO LA LÍNEA QUE DECÍA: if (typeof AUTHORIZED_CURPS === 'undefined') ...
 
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
@@ -15,6 +15,8 @@ window.currentTratoValue = "";
 let expedienteDigitalTemporal = { doc_ine_frontal: "", doc_ine_trasera: "", doc_acta: "", doc_comprobante: "", doc_curp: "" };
 
 const CATALOGO_MUNICIPIOS = [
+// ... (Todo lo demás hacia abajo se queda exactamente igual)
+
     "GOMEZ PALACIO", "EL ORO", "MAPIMI", "INDE", "SAN BERNARDO", "HIDALGO", "TLAHUALILO", "GUANACEVI", "SAN PEDRO DEL GALLO", "OCAMPO"
 ];
 
