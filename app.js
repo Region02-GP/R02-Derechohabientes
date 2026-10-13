@@ -228,6 +228,7 @@ function seleccionarEstatusVisita(estatus) {
     } else { 
         motivoNoLocalizadoValue = ""; 
     }
+    // REPARADO: Se invoca correctamente el nombre de la función original de estilos visuales
     actualizarEstilosBotonesFormulario();
 }
 
