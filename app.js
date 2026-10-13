@@ -402,16 +402,118 @@ function openForm(item) {
         }
     });
 }
-
 function procesarFotoEvidencia(inputElement, previewId, claveDocumento) {
-    if (inputElement.files && inputElement.files[0]) {
-        const file = inputElement.files[0]; const reader = new FileReader();
+    if (inputElement && inputElement.files && inputElement.files[0]) {
+        const file = inputElement.files[0]; 
+        const reader = new FileReader();
         reader.onload = function(e) {
-            const imagenBase64 = e.target.result; const imgPreview = document.getElementById(previewId);
-            if (imgPreview) { imgPreview.src = imagenBase64; imgPreview.style.display = "block"; }
-            expedienteDigitalTemporal[claveDocumento] = imagenBase64;
+            const imagenBase64 = e.target.result; 
+            const imgPreview = document.getElementById(previewId);
+            if (imgPreview) { 
+                imgPreview.src = imagenBase64; 
+                imgPreview.style.display = "block"; 
+            }
+            if (typeof expedienteDigitalTemporal !== 'undefined') {
+                expedienteDigitalTemporal[claveDocumento] = imagenBase64;
+            }
         };
         reader.readAsDataURL(file);
+    }
+}
+
+function abrirFormularioVacioAltaNueva() {
+    // CANDADO ANTICONGELAMIENTO: Verifica que el usuario haya iniciado sesión antes de tocar la RAM
+    if (!currentUser) {
+        alert("🚨 ERROR OPERATIVO: Inicie sesión primero.");
+        changeScreen('screen-login');
+        return;
+    }
+
+    // Libera los atributos del DOM de forma segura
+    const fCurp = document.getElementById('f-curp'); if (fCurp) fCurp.removeAttribute('readonly');
+    const fNom = document.getElementById('f-nombre'); if (fNom) fNom.removeAttribute('readonly');
+    const fPat = document.getElementById('f-paterno'); if (fPat) fPat.removeAttribute('readonly');
+    const fMat = document.getElementById('f-materno'); if (fMat) fMat.removeAttribute('readonly');
+    
+    const inputs = ['f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-telfijo', 'f-telcel', 'f-localidad', 'f-seccion', 'f-colonia', 'f-cp', 'f-calle', 'f-numext', 'f-referencia', 'f-causal'];
+    inputs.forEach(id => { 
+        const el = document.getElementById(id);
+        if (el) el.value = ''; 
+    });
+    
+    // Asignación predictiva por Brigadista Autorizado
+    let municipioAsignado = 'GOMEZ PALACIO';
+    if (typeof AUTHORIZED_CURPS !== 'undefined' && AUTHORIZED_CURPS[currentUser.curp]) {
+        municipioAsignado = AUTHORIZED_CURPS[currentUser.curp].municipio || 'GOMEZ PALACIO';
+    }
+    
+    const fMun = document.getElementById('f-municipio'); if (fMun) fMun.value = municipioAsignado.toUpperCase().trim();
+    const fId = document.getElementById('f-id'); if (fId) fId.value = 'NUEVO';
+    const fSit = document.getElementById('f-situacion'); if (fSit) fSit.value = 'SIN_REGISTRO';
+    
+    currentEstatusVisita = "LOCALIZADO"; 
+    motivoNoLocalizadoValue = ""; 
+    window.currentTratoValue = ""; 
+    
+    actualizarEstilosBotonesFormulario(); 
+    actualizarEstilosBotonesTrato();
+    
+    const fLat = document.getElementById('f-lat'); if (fLat) fLat.value = "Buscando satélite...";
+    const fLon = document.getElementById('f-lon'); if (fLon) fLon.value = "Buscando satélite...";
+    
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => { 
+            if (fLat) fLat.value = String(position.coords.latitude.toFixed(6)).replace(",", "."); 
+            if (fLon) fLon.value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
+        }, () => { 
+            if (fLat) fLat.value = "ERROR"; 
+            if (fLon) fLon.value = "ERROR"; 
+        });
+    }
+    
+    if (fCurp) {
+        fCurp.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal); 
+        fCurp.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
+    }
+    
+    changeScreen('screen-form');
+    
+    // Limpieza de barras síncronas tipo fichas concurrentes
+    const lBuscar = document.getElementById('f-localidad-buscar'); if (lBuscar) lBuscar.value = "";
+    const lResults = document.getElementById('localidad-search-results'); if (lResults) lResults.style.display = "none";
+    const mBuscar = document.getElementById('f-municipio-buscar'); if (mBuscar) mBuscar.value = "";
+    const mResults = document.getElementById('municipio-search-results'); if (mResults) mResults.style.display = "none";
+    const cBuscar = document.getElementById('f-colonia-buscar'); if (cBuscar) cBuscar.value = "";
+    const cResults = document.getElementById('colonia-search-results'); if (cResults) cResults.style.display = "none";
+    
+    const fLoc = document.getElementById('f-localidad'); if (fLoc) fLoc.value = ""; 
+    const fCol = document.getElementById('f-colonia'); if (fCol) fCol.value = "";
+    
+    // Reseteo e inicialización limpia del contenedor multimedia RAM
+    expedienteDigitalTemporal = { doc_ine_frontal: "", doc_ine_trasera: "", doc_acta: "", doc_comprobante: "", doc_curp: "" };
+    
+    const miniaturas = ['preview-ine-frontal', 'preview-ine-trasera', 'preview-acta', 'preview-comprobante', 'preview-curp'];
+    miniaturas.forEach(id => { 
+        const img = document.getElementById(id); 
+        if (img) { img.src = ""; img.style.display = "none"; } 
+    });
+}
+
+function verificarCurpDuplicadaEnTiempoReal(e) {
+    const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase(); 
+    e.target.value = valorLimpio; 
+    if (valorLimpio.length === 18 && typeof localMemoryDatabase !== 'undefined') {
+        const registroExistente = localMemoryDatabase.find(r => r.CURP === valorLimpio);
+        if (registroExistente) {
+            if (confirm(`📢 DETECTOR DE DUPLICADOS: La CURP [${valorLimpio}] ya existe (Municipio: ${registroExistente.MUNICIPIO || 'SIN MUNICIPIO'}).\n\n¿Desea cargar sus datos antiguos?`)) { 
+                alert("Cargando información..."); 
+                openForm(registroExistente); 
+            } else { 
+                e.target.value = ''; 
+                e.target.focus(); 
+                alert("Ingrese una CURP no registrada."); 
+            }
+        }
     }
 }
 
@@ -485,45 +587,6 @@ function actualizarEstilosBotonesTrato() {
     else if (window.currentTratoValue === "NEUTRAL") { btnNe.style.backgroundColor = "#EDF4F9"; btnNe.style.borderColor = "#BC955C"; btnNe.style.color = "#1F2937"; }
     else if (window.currentTratoValue === "INCOMODO") { btnIn.style.backgroundColor = "#FFF3CD"; btnIn.style.borderColor = "#664D03"; btnIn.style.color = "#664D03"; }
     else if (window.currentTratoValue === "HOSTIL") { btnHo.style.backgroundColor = "#FCE8E6"; btnHo.style.borderColor = "#b91c1c"; btnHo.style.color = "#b91c1c"; }
-}
-function abrirFormularioVacioAltaNueva() {
-    document.getElementById('f-curp').removeAttribute('readonly'); document.getElementById('f-nombre').removeAttribute('readonly'); document.getElementById('f-paterno').removeAttribute('readonly'); document.getElementById('f-materno').removeAttribute('readonly');
-    const inputs = ['f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-telfijo', 'f-telcel', 'f-localidad', 'f-seccion', 'f-colonia', 'f-cp', 'f-calle', 'f-numext', 'f-referencia', 'f-causal'];
-    inputs.forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ''; });
-    const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; document.getElementById('f-municipio').value = brigadistaActivo ? brigadistaActivo.municipio : 'GOMEZ PALACIO'; 
-    document.getElementById('f-id').value = 'NUEVO'; document.getElementById('f-situacion').value = 'SIN_REGISTRO';
-    currentEstatusVisita = "LOCALIZADO"; motivoNoLocalizadoValue = ""; window.currentTratoValue = ""; actualizarEstilosBotonesFormulario(); actualizarEstilosBotonesTrato();
-    document.getElementById('f-lat').value = "Buscando satélite..."; document.getElementById('f-lon').value = "Buscando satélite...";
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((position) => { document.getElementById('f-lat').value = String(position.coords.latitude.toFixed(6)).replace(",", "."); document.getElementById('f-lon').value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
-        }, () => { document.getElementById('f-lat').value = "ERROR"; document.getElementById('f-lon').value = "ERROR"; });
-    }
-    const curpInputEl = document.getElementById('f-curp'); curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal); curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal);
-    
-    changeScreen('screen-form');
-    if (document.getElementById('f-localidad-buscar')) document.getElementById('f-localidad-buscar').value = "";
-    if (document.getElementById('localidad-search-results')) document.getElementById('localidad-search-results').style.display = "none";
-    if (document.getElementById('f-municipio-buscar')) document.getElementById('f-municipio-buscar').value = "";
-    if (document.getElementById('municipio-search-results')) document.getElementById('municipio-search-results').style.display = "none";
-    if (document.getElementById('f-colonia-buscar')) document.getElementById('f-colonia-buscar').value = "";
-    if (document.getElementById('colonia-search-results')) document.getElementById('colonia-search-results').style.display = "none";
-    
-    document.getElementById('f-localidad').value = ""; document.getElementById('f-colonia').value = "";
-    document.getElementById('f-municipio').value = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : 'GOMEZ PALACIO'; 
-    expedienteDigitalTemporal = { doc_ine_frontal: "", doc_ine_trasera: "", doc_acta: "", doc_comprobante: "", doc_curp: "" };
-    const miniaturas = ['preview-ine-frontal', 'preview-ine-trasera', 'preview-acta', 'preview-comprobante', 'preview-curp'];
-    miniaturas.forEach(id => { const img = document.getElementById(id); if (img) { img.src = ""; img.style.display = "none"; } });
-}
-
-function verificarCurpDuplicadaEnTiempoReal(e) {
-    const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase(); e.target.value = valorLimpio; 
-    if (valorLimpio.length === 18) {
-        const registroExistente = localMemoryDatabase.find(r => r.CURP === valorLimpio);
-        if (registroExistente) {
-            if (confirm(`📢 DETECTOR DE DUPLICADOS: La CURP [${valorLimpio}] ya existe (Municipio: ${registroExistente.MUNICIPIO || 'SIN MUNICIPIO'}).\n\n¿Desea cargar sus datos antiguos?`)) { alert("Cargando información..."); openForm(registroExistente); }
-            else { e.target.value = ''; e.target.focus(); alert("Ingrese una CURP no registrada."); }
-        }
-    }
 }
 
 if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)); }); }
