@@ -314,15 +314,50 @@ function openForm(item) {
 }
 function procesarFotoEvidencia(inputElement, previewId, claveDocumento) {
     if (inputElement && inputElement.files && inputElement.files[0]) {
-        const file = inputElement.files[0]; const reader = new FileReader();
+        const file = inputElement.files[0];
+        const reader = new FileReader();
+        
         reader.onload = function(e) {
-            const imagenBase64 = e.target.result; const imgPreview = document.getElementById(previewId);
-            if (imgPreview) { imgPreview.src = imagenBase64; imgPreview.style.display = "block"; }
-            if (typeof expedienteDigitalTemporal !== 'undefined') { expedienteDigitalTemporal[claveDocumento] = imagenBase64; }
+            const imgHtml = new Image();
+            imgHtml.onload = function() {
+                // Configura un tamaño máximo óptimo para expedientes digitales
+                const MAX_WIDTH = 800;
+                let width = imgHtml.width;
+                let height = imgHtml.height;
+                
+                if (width > MAX_WIDTH) {
+                    height = Math.round((height * MAX_WIDTH) / width);
+                    width = MAX_WIDTH;
+                }
+                
+                // Dibuja la foto en un lienzo oculto para comprimir los megapíxeles
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(imgHtml, 0, 0, width, height);
+                
+                // Reduce la calidad al 60% para que sea ultra ligera (pasa de megas a kilobytes)
+                const imagenComprimidaBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                
+                // Muestra la miniatura en caliente en el Note 20
+                const imgPreview = document.getElementById(previewId);
+                if (imgPreview) {
+                    imgPreview.src = imagenComprimidaBase64;
+                    imgPreview.style.display = "block";
+                }
+                
+                // Almacena el texto optimizado en la RAM
+                if (typeof expedienteDigitalTemporal !== 'undefined') {
+                    expedienteDigitalTemporal[claveDocumento] = imagenComprimidaBase64;
+                }
+            };
+            imgHtml.src = e.target.result;
         };
         reader.readAsDataURL(file);
     }
 }
+
 
 function saveData(event) {
     if (event) event.preventDefault();
