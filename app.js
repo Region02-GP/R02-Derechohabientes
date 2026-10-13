@@ -391,6 +391,37 @@ function clearLocalStorage() {
         if (db) { db.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).clear().onsuccess = () => { document.getElementById('search-input').value = ""; document.getElementById('search-results').innerHTML = ""; alert("Limpiado."); changeScreen('screen-welcome'); }; } else { changeScreen('screen-welcome'); }
     }
 }
+function seleccionarTrato(opcion) { 
+    window.currentTratoValue = opcion.toUpperCase(); 
+    actualizarEstilosBotonesTrato(); 
+}
+
+function actualizarEstilosBotonesTrato() {
+    const btnEx = document.getElementById('btn-trato-excelente'); 
+    const btnAm = document.getElementById('btn-trato-amable'); 
+    const btnNe = document.getElementById('btn-trato-neutral'); 
+    const btnIn = document.getElementById('btn-trato-incomodo'); 
+    const btnHo = document.getElementById('btn-trato-hostil');
+    if (!btnEx || !btnAm || !btnNe || !btnIn || !btnHo) return;
+
+    [btnEx, btnAm, btnNe, btnIn, btnHo].forEach(btn => { 
+        btn.style.backgroundColor = "#F3F4F6"; 
+        btn.style.borderColor = "#CBD5E0"; 
+        btn.style.color = "#4B5563"; 
+    });
+
+    if (window.currentTratoValue === "EXCELENTE") { 
+        btnEx.style.backgroundColor = "#D1E7DD"; btnEx.style.borderColor = "#0F5132"; btnEx.style.color = "#0F5132"; 
+    } else if (window.currentTratoValue === "AMABLE") { 
+        btnAm.style.backgroundColor = "#E6F4EA"; btnAm.style.borderColor = "#236947"; btnAm.style.color = "#236947"; 
+    } else if (window.currentTratoValue === "NEUTRAL") { 
+        btnNe.style.backgroundColor = "#EDF4F9"; btnNe.style.borderColor = "#BC955C"; btnNe.style.color = "#1F2937"; 
+    } else if (window.currentTratoValue === "INCOMODO") { 
+        btnIn.style.backgroundColor = "#FFF3CD"; btnIn.style.borderColor = "#664D03"; btnIn.style.color = "#664D03"; 
+    } else if (window.currentTratoValue === "HOSTIL") { 
+        btnHo.style.backgroundColor = "#FCE8E6"; btnHo.style.borderColor = "#b91c1c"; btnHo.style.color = "#b91c1c"; 
+    }
+}
 
 function abrirFormularioVacioAltaNueva() {
     if (!currentUser) { alert("🚨 ERROR OPERATIVO: Inicie sesión primero."); changeScreen('screen-login'); return; }
@@ -428,15 +459,4 @@ function verificarCurpDuplicadaEnTiempoReal(e) {
     }
 }
 
-function seleccionarTrato(opcion) { window.currentTratoValue = opcion.toUpperCase(); actualizarEstilosBotonesTrato(); }
-
-function actualizarEstilosBotonesTrato() {
-    const btnEx = document.getElementById('btn-trato-excelente'); const btnAm = document.getElementById('btn-trato-amable'); const btnNe = document.getElementById('btn-trato-neutral'); const btnIn = document.getElementById('btn-trato-incomodo'); const btnHo = document.getElementById('btn-trato-hostil');
-    if (!btnEx || !btnAm || !btnNe || !btnIn || !btnHo) return;
-    [btnEx, btnAm, btnNe, btnIn, btnHo].forEach(btn => { btn.style.backgroundColor = "#F3F4F6"; btn.style.borderColor = "#CBD5E0"; btn.style.color = "#4B5563"; });
-    if (window.currentTratoValue === "EXCELENTE") { btnEx.style.backgroundColor = "#D1E7DD"; btnEx.style.borderColor = "#0F5132"; btnEx.style.color = "#0F5132"; }
-    else if (window.currentTratoValue === "AMABLE") { btnAm.style.backgroundColor = "#E6F4EA"; btnAm.style.borderColor = "#236947"; btnAm.style.color = "#236947"; }
-    else if (window.currentTratoValue === "NEUTRAL") { btnNe.style.backgroundColor = "#EDF4F9"; btnNe.style.borderColor = "#BC955C"; btnNe.style.color = "#1F2937"; }
-    else if (window.currentTratoValue === "INCOMODO") { btnIn.style.backgroundColor = "#FFF3CD"; btnIn.style.borderColor = "#664D03"; btnIn.style.color = "#664D03"; }
-    else if (window.currentTratoValue === "HOSTIL") { btnHo.style.backgroundColor = "#FCE8E6"; btnHo.style.borderColor = "#b91c1c"; btnHo.style.color = "#b91c1c"; }
-}
+if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)); }); }
