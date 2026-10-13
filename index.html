@@ -160,6 +160,7 @@
                 </div>
 
                 <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+                <!-- BUSCA EL FINAL DE TU PANTALLA 4 EN INDEX.HTML Y REEMPLÁZALO EXACTAMENTE POR ESTO: -->
                 <div class="form-grid text-disabled">
                     <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
                     <div><label>Longitud GPS:</label><input type="text" id="f-lon" readonly></div>
@@ -167,8 +168,9 @@
                 <button type="button" onclick="changeScreen('screen-docs')" style="margin-top: 25px; background-color: var(--secondary-color); color: #1F2937; border: 1px solid var(--secondary-dark); box-shadow: var(--shadow-gold);">📁 Adjuntar Documentos Digitales</button>
                 <button type="submit" style="margin-top: 12px;">Guardar Localmente</button>
                 <button type="button" onclick="changeScreen('screen-search')" class="btn-back" style="margin-top: 12px;">Cancelar</button>
-            </form>
+            <!-- 🚨 NOTA: AQUÍ DEBÍA ESTAR EL </form> PERO LO BORRAMOS PARA QUE EL FORMULARIO SIGA ABIERTO -->
         </section>
+
         <!-- PANTALLA 5: HISTORIAL -->
         <section id="screen-history" class="app-screen hidden">
             <h2>Historial y Sincronización</h2>
@@ -221,16 +223,18 @@
                     <img id="preview-curp" src="" style="max-width: 100%; max-height: 120px; border-radius: 6px; margin-top: 8px; display: none; border: 1px solid #CBD5E0;">
                 </div>
             </div>
-            <!-- BUSCA EL TRAMO FINAL DE TU PANTALLA 6 EN INDEX.HTML Y DEJA LOS BOTONES DE CIERRE EXACTAMENTE ASÍ: -->
+           <!-- BUSCA EL TRAMO FINAL DE TU PANTALLA 6 EN INDEX.HTML Y REEMPLÁZALO EXACTAMENTE POR ESTO: -->
             <hr style="margin:25px 0;">
             <div class="button-row-grid">
-                <!-- MODIFICACIÓN: Invocación directa sin bloqueos de validación HTML -->
-                <button type="button" onclick="saveData(null);" style="margin-top:0; background-color: var(--primary-color);">💾 Guardar Todo</button>
+                <!-- El botón Guardar Todo ahora ejecutará el submit nativo del formulario unificado -->
+                <button type="submit" style="margin-top:0; background-color: var(--primary-color);">💾 Guardar Todo</button>
                 <button type="button" onclick="changeScreen('screen-form')" class="btn-back" style="margin-top:0;">🔙 Regresar</button>
             </div>
+            </form> <!-- 🚨 INYECTA AQUÍ LA ETIQUETA DE CIERRE DEL FORMULARIO MAESTRO -->
         </section>
 
         <!-- BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL -->
+
         <nav id="app-bottom-nav" class="bottom-nav hidden">
             <button type="button" id="nav-welcome" onclick="changeScreen('screen-welcome')" class="nav-item"><span>📥</span>Inicio</button>
             <button type="button" id="nav-search" class="nav-item" onclick="changeScreen('screen-search')"><span>🔍</span>Búsqueda</button>
