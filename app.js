@@ -304,10 +304,19 @@ function seleccionarEstatusVisita(estatus) {
     currentEstatusVisita = estatus.toUpperCase();
     if (currentEstatusVisita === "NO LOCALIZADO") {
         let mot = prompt("Escriba el motivo por el cual NO FUE LOCALIZADO:");
-        if (!mot || mot.trim() === "") { alert("🛑 Operación cancelada."); currentEstatusVisita = "LOCALIZADO"; motivoNoLocalizadoValue = ""; actualizarEstilosBotonesFormulario(); return; }
+        if (!mot || mot.trim() === "") { 
+            alert("🛑 Operación cancelada."); 
+            currentEstatusVisita = "LOCALIZADO"; 
+            motivoNoLocalizadoValue = ""; 
+            actualizarEstilosBotonesFormulario(); 
+            return; 
+        }
         motivoNoLocalizadoValue = mot.trim();
-    } else { motivoNoLocalizadoValue = ""; }
-    actualstylesFormulario();
+    } else { 
+        motivoNoLocalizadoValue = ""; 
+    }
+    // LINEA REPARADA: Cambiado el "actualstyles" roto por la función correcta de estilos
+    actualizarEstilosBotonesFormulario();
 }
 
 function actualizarEstilosBotonesFormulario() {
