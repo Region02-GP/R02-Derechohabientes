@@ -327,7 +327,7 @@ function procesarFotoEvidencia(inputElement, previewId, claveDocumento) {
 function saveData(event) {
     if (event) event.preventDefault();
     
-    // 1. Validaciones Core mediante código libre de bloqueos de pantalla
+    // 1. Validaciones directas en memoria RAM
     const fCurp = document.getElementById('f-curp');
     const targetCurp = fCurp ? fCurp.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase().trim() : "";
     if (!targetCurp || targetCurp.length !== 18) return alert("🛑 ERROR EN CAMPO: La CURP debe tener 18 caracteres obligatorios.");
@@ -342,12 +342,11 @@ function saveData(event) {
         if (evaluacionTratoActual === "" || evaluacionTratoActual === "SIN_EVALUACION") {
             alert("🛑 REGLA OBLIGATORIA: Debe seleccionar una de las 5 opciones de trato con emojis.");
             changeScreen('screen-form');
-            const btnEx = document.getElementById('btn-trato-excelente'); if (btnEx) btnEx.scrollIntoView({ behavior: 'smooth' }); 
             return;
         }
     }
 
-    // 2. Verificación e Ingesta del registro síncrono
+    // 2. Construcción del registro limpio
     const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp); 
     const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
     
@@ -384,7 +383,7 @@ function saveData(event) {
         'DOC_CURP': expedienteDigitalTemporal.doc_curp || originalRecord.DOC_CURP || ""
     };
 
-    // 3. Persistencia atómica en el disco duro IndexedDB
+    // 3. Persistencia local en IndexedDB
     const tx = db.transaction(STORE_NAME, "readwrite"); 
     tx.objectStore(STORE_NAME).put(record);
     tx.oncomplete = function() {
@@ -398,6 +397,7 @@ function saveData(event) {
         changeScreen('screen-search');
     };
 }
+
 function openHistoryScreen() {
     changeScreen('screen-history'); document.getElementById('pending-count').innerText = pendingSync.length;
     const logList = document.getElementById('history-log'); logList.innerHTML = ""; 
@@ -477,6 +477,16 @@ function verificarCurpDuplicadaEnTiempoReal(e) {
             else { e.target.value = ''; e.target.focus(); alert("Ingrese una CURP no registrada."); }
         }
     }
+}
+function actualizarEstilosBotonesTrato() {
+    const btnEx = document.getElementById('btn-trato-excelente'); const btnAm = document.getElementById('btn-trato-amable'); const btnNe = document.getElementById('btn-trato-neutral'); const btnIn = document.getElementById('btn-trato-incomodo'); const btnHo = document.getElementById('btn-trato-hostil');
+    if (!btnEx || !btnAm || !btnNe || !btnIn || !btnHo) return;
+    [btnEx, btnAm, btnNe, btnIn, btnHo].forEach(btn => { btn.style.backgroundColor = "#F3F4F6"; btn.style.borderColor = "#CBD5E0"; btn.style.color = "#4B5563"; });
+    if (window.currentTratoValue === "EXCELENTE") { btnEx.style.backgroundColor = "#D1E7DD"; btnEx.style.borderColor = "#0F5132"; btnEx.style.color = "#0F5132"; }
+    else if (window.currentTratoValue === "AMABLE") { btnAm.style.backgroundColor = "#E6F4EA"; btnAm.style.borderColor = "#236947"; btnAm.style.color = "#236947"; }
+    else if (window.currentTratoValue === "NEUTRAL") { btnNe.style.backgroundColor = "#EDF4F9"; btnNe.style.borderColor = "#BC955C"; btnNe.style.color = "#1F2937"; }
+    else if (window.currentTratoValue === "INCOMODO") { btnIn.style.backgroundColor = "#FFF3CD"; btnIn.style.borderColor = "#664D03"; btnIn.style.color = "#664D03"; }
+    else if (window.currentTratoValue === "HOSTIL") { btnHo.style.backgroundColor = "#FCE8E6"; btnHo.style.borderColor = "#b91c1c"; btnHo.style.color = "#b91c1c"; }
 }
 
 if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)); }); }
