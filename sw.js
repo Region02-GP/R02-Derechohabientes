@@ -1,5 +1,5 @@
 // BORRA TODO TU SW.JS ACTUAL Y REEMPLÁZALO POR COMPLETO CON ESTO:
-const CACHE_NAME = 'r02-v4022-sistema-ok';
+const CACHE_NAME = 'r02-v4023-sistema-ok';
 const ASSETS = [
     './',
     './index.html',
