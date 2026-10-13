@@ -221,9 +221,11 @@
                     <img id="preview-curp" src="" style="max-width: 100%; max-height: 120px; border-radius: 6px; margin-top: 8px; display: none; border: 1px solid #CBD5E0;">
                 </div>
             </div>
+            <!-- BUSCA EL TRAMO FINAL DE TU PANTALLA 6 EN INDEX.HTML Y DEJA LOS BOTONES DE CIERRE EXACTAMENTE ASÍ: -->
             <hr style="margin:25px 0;">
             <div class="button-row-grid">
-                <button type="button" onclick="document.getElementById('edit-form').requestSubmit();" style="margin-top:0; background-color: var(--primary-color);">💾 Guardar Todo</button>
+                <!-- MODIFICACIÓN: Invocación directa sin bloqueos de validación HTML -->
+                <button type="button" onclick="saveData(null);" style="margin-top:0; background-color: var(--primary-color);">💾 Guardar Todo</button>
                 <button type="button" onclick="changeScreen('screen-form')" class="btn-back" style="margin-top:0;">🔙 Regresar</button>
             </div>
         </section>
