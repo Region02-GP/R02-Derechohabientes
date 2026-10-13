@@ -2,7 +2,8 @@
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_rQKWnnixfxxhRqa66SG-FUO33_bHDH08ivvkno8T4zpRL4UaWT0DyDIsQVagdxYV/exec";
 
 
-// <-- ELIMINA POR COMPLETO LA LÍNEA QUE DECÍA: if (typeof AUTHORIZED_CURPS === 'undefined') ...
+// BLINDAJE DEFINITIVO: Garantiza que la variable exista en el inicio global antes de que cargue brigadistas.js
+if (typeof window.AUTHORIZED_CURPS === 'undefined') { window.AUTHORIZED_CURPS = {}; }
 
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
 let syncedHistory = JSON.parse(localStorage.getItem('syncedHistory')) || [];
