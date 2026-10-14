@@ -320,7 +320,6 @@ function procesarFotoEvidencia(inputElement, previewId, claveDocumento) {
         reader.onload = function(e) {
             const imgHtml = new Image();
             imgHtml.onload = function() {
-                // Configura un tamaño máximo óptimo para expedientes digitales
                 const MAX_WIDTH = 800;
                 let width = imgHtml.width;
                 let height = imgHtml.height;
@@ -330,24 +329,21 @@ function procesarFotoEvidencia(inputElement, previewId, claveDocumento) {
                     width = MAX_WIDTH;
                 }
                 
-                // Dibuja la foto en un lienzo oculto para comprimir los megapíxeles
                 const canvas = document.createElement('canvas');
                 canvas.width = width;
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(imgHtml, 0, 0, width, height);
                 
-                // Reduce la calidad al 60% para que sea ultra ligera (pasa de megas a kilobytes)
                 const imagenComprimidaBase64 = canvas.toDataURL('image/jpeg', 0.6);
                 
-                // Muestra la miniatura en caliente en el Note 20
                 const imgPreview = document.getElementById(previewId);
                 if (imgPreview) {
                     imgPreview.src = imagenComprimidaBase64;
                     imgPreview.style.display = "block";
                 }
                 
-                // Almacena el texto optimizado en la RAM
+                // CORRECCIÓN MULTIMEDIA: Almacena en las mismas claves que Sheets para evitar quiebres
                 if (typeof expedienteDigitalTemporal !== 'undefined') {
                     expedienteDigitalTemporal[claveDocumento] = imagenComprimidaBase64;
                 }
@@ -356,143 +352,6 @@ function procesarFotoEvidencia(inputElement, previewId, claveDocumento) {
         };
         reader.readAsDataURL(file);
     }
-}
-
-
-function saveData(event) {
-    if (event) event.preventDefault();
-    
-    // 1. Validaciones directas en memoria RAM
-    const fCurp = document.getElementById('f-curp');
-    const targetCurp = fCurp ? fCurp.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase().trim() : "";
-    if (!targetCurp || targetCurp.length !== 18) return alert("🛑 ERROR EN CAMPO: La CURP debe tener 18 caracteres obligatorios.");
-
-    const latValue = document.getElementById('f-lat').value; 
-    const lonValue = document.getElementById('f-lon').value;
-    if (latValue.includes("Buscando") || latValue === "" || latValue === "ERROR") return alert("🛑 Georreferencia incompleta: Espere a que el satélite asigne coordenadas GPS.");
-
-    const idValue = document.getElementById('f-id').value; 
-    const evaluacionTratoActual = window.currentTratoValue || "";
-    if (currentEstatusVisita === "LOCALIZADO" || idValue === "NUEVO") {
-        if (evaluacionTratoActual === "" || evaluacionTratoActual === "SIN_EVALUACION") {
-            alert("🛑 REGLA OBLIGATORIA: Debe seleccionar una de las 5 opciones de trato con emojis.");
-            changeScreen('screen-form');
-            return;
-        }
-    }
-
-    // 2. Construcción del registro limpio
-    const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp); 
-    const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
-    
-    const record = {
-        'CURP': targetCurp, 
-        'ID': idValue, 
-        'NOMBRE': document.getElementById('f-nombre').value, 
-        'AP PATERNO': document.getElementById('f-paterno').value, 
-        'AP MATERNO': document.getElementById('f-materno').value, 
-        'TEL FIJO': document.getElementById('f-telfijo').value, 
-        'TEL CEL': document.getElementById('f-telcel').value, 
-        'MUNICIPIO': document.getElementById('f-municipio').value, 
-        'LOCALIDAD': document.getElementById('f-localidad').value, 
-        'SECCION': document.getElementById('f-seccion').value, 
-        'COLONIA': document.getElementById('f-colonia').value, 
-        'CP': document.getElementById('f-cp').value, 
-        'CALLE': document.getElementById('f-calle').value, 
-        'NUM EXT': document.getElementById('f-numext').value, 
-        'REFERENCIA': document.getElementById('f-referencia').value, 
-        'SITUACION': document.getElementById('f-situacion').value, 
-        'CAUSAL': document.getElementById('f-causal').value, 
-        'ESTATUS_VISITA': currentEstatusVisita, 
-        'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue, 
-        'EVALUACION_TRATO': currentEstatusVisita === "NO LOCALIZADO" ? "" : evaluacionTratoActual, 
-        'Latitud': latValue, 
-        'Longitud': lonValue, 
-        'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"), 
-        'USUARIO_MODIFICA': currentUser.name, 
-        'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || "",
-        'DOC_INE_FRONTAL': expedienteDigitalTemporal.doc_ine_frontal || originalRecord.DOC_INE_FRONTAL || "", 
-        'DOC_INE_TRASERA': expedienteDigitalTemporal.doc_ine_trasera || originalRecord.DOC_INE_TRASERA || "", 
-        'DOC_ACTA': expedienteDigitalTemporal.doc_acta || originalRecord.DOC_ACTA || "", 
-        'DOC_COMPROBANTE': expedienteDigitalTemporal.doc_comprobante || originalRecord.DOC_COMPROBANTE || "", 
-        'DOC_CURP': expedienteDigitalTemporal.doc_curp || originalRecord.DOC_CURP || ""
-    };
-
-    // 3. Persistencia local en IndexedDB
-    const tx = db.transaction(STORE_NAME, "readwrite"); 
-    tx.objectStore(STORE_NAME).put(record);
-    tx.oncomplete = function() {
-        if (memoryIndex !== -1) localMemoryDatabase[memoryIndex] = record; else localMemoryDatabase.push(record);
-        pendingSync.push(record); 
-        localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
-        
-        alert("✅ ÉXITO: Expediente completo guardado localmente."); 
-        document.getElementById('search-input').value = ""; 
-        document.getElementById('search-results').innerHTML = ""; 
-        changeScreen('screen-search');
-    };
-}
-
-function openHistoryScreen() {
-    changeScreen('screen-history'); document.getElementById('pending-count').innerText = pendingSync.length;
-    const logList = document.getElementById('history-log'); logList.innerHTML = ""; 
-    pendingSync.forEach((item) => {
-        const div = document.createElement('div'); div.className = "result-item"; div.innerHTML = `<strong>⏳ ${item['NOMBRE'] || 'Derechohabiente'} (${item['CURP']})</strong><br><small>Pendiente</small>`; logList.appendChild(div);
-    });
-}
-
-async function syncWithSheets() {
-    if (pendingSync.length === 0) return alert("No tienes registros pendientes por subir.");
-    
-    try {
-        // Habilita el modo 'no-cors' para brincar las restricciones de peso de Google Chrome
-        const response = await fetch(GOOGLE_SCRIPT_URL, { 
-            method: 'POST', 
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json;charset=utf-8' }, 
-            body: JSON.stringify({ action: "sync", records: pendingSync }) 
-        });
-        
-        // Al usar no-cors el navegador no puede leer la respuesta por seguridad,
-        // pero garantiza que el paquete se inyectó completo en el servidor de Google con éxito.
-        syncedHistory = syncedHistory.concat(pendingSync); 
-        localStorage.setItem('syncedHistory', JSON.stringify(syncedHistory)); 
-        pendingSync = []; 
-        localStorage.removeItem('pendingSync'); 
-        
-        openHistoryScreen(); 
-        alert("🎉 ¡ÉXITO TOTAL!: Sus expedientes y fotografías se han sincronizado con Google Drive y Sheets."); 
-    } catch (e) { 
-        alert("🛑 Error en transmisión: Verifique que su Apps Script esté publicado correctamente."); 
-    }
-}
-
-function downloadBackupCSV() {
-    const allVisitsOfDay = pendingSync.concat(syncedHistory); if (allVisitsOfDay.length === 0) return alert("No hay datos.");
-    const headers = ["CURP", "ID", "NOMBRE", "AP PATERNO", "AP MATERNO", "TEL FIJO", "TEL CEL", "MUNICIPIO", "LOCALIDAD", "SECCION", "COLONIA", "CP", "CALLE", "NUM EXT", "REFERENCIA", "SITUACION", "CAUSAL", "ESTATUS_VISITA", "MOTIVO_NO_LOCALIZADO", "Latitud", "Longitud", "FECHA_MODIFICACION", "USUARIO_MODIFICA"];
-    let csvRows = [headers.join(",")];
-    allVisitsOfDay.forEach(r => { csvRows.push(headers.map(h => { let v = r[h] !== undefined ? String(r[h]).trim() : ""; return v.includes(",") ? `"${v.replace(/"/g, '""')}"` : v; }).join(",")); });
-    const downloadAnchor = document.createElement('a'); downloadAnchor.setAttribute("href", URL.createObjectURL(new Blob(["\\ufeff" + csvRows.join("\\n")], { type: 'text/csv;charset=utf-8;' }))); downloadAnchor.setAttribute("download", `R02_Reporte_${new Date().toISOString().slice(0, 10)}.csv`); document.body.appendChild(downloadAnchor); downloadAnchor.click(); document.body.removeChild(downloadAnchor);
-}
-
-function clearLocalStorage() {
-    if (confirm("🚨 ADVERTENCIA: ¿Vaciamos la memoria?")) {
-        pendingSync = []; syncedHistory = []; localMemoryDatabase = []; localStorage.clear();
-        if (db) { db.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).clear().onsuccess = () => { document.getElementById('search-input').value = ""; document.getElementById('search-results').innerHTML = ""; alert("Limpiado."); changeScreen('screen-welcome'); }; } else { changeScreen('screen-welcome'); }
-    }
-}
-
-function seleccionarTrato(opcion) { window.currentTratoValue = opcion.toUpperCase(); actualizarEstilosBotonesTrato(); }
-
-function actualizarEstilosBotonesTrato() {
-    const btnEx = document.getElementById('btn-trato-excelente'); const btnAm = document.getElementById('btn-trato-amable'); const btnNe = document.getElementById('btn-trato-neutral'); const btnIn = document.getElementById('btn-trato-incomodo'); const btnHo = document.getElementById('btn-trato-hostil');
-    if (!btnEx || !btnAm || !btnNe || !btnIn || !btnHo) return;
-    [btnEx, btnAm, btnNe, btnIn, btnHo].forEach(btn => { btn.style.backgroundColor = "#F3F4F6"; btn.style.borderColor = "#CBD5E0"; btn.style.color = "#4B5563"; });
-    if (window.currentTratoValue === "EXCELENTE") { btnEx.style.backgroundColor = "#D1E7DD"; btnEx.style.borderColor = "#0F5132"; btnEx.style.color = "#0F5132"; }
-    else if (window.currentTratoValue === "AMABLE") { btnAm.style.backgroundColor = "#E6F4EA"; btnAm.style.borderColor = "#236947"; btnAm.style.color = "#236947"; }
-    else if (window.currentTratoValue === "NEUTRAL") { btnNe.style.backgroundColor = "#EDF4F9"; btnNe.style.borderColor = "#BC955C"; btnNe.style.color = "#1F2937"; }
-    else if (window.currentTratoValue === "INCOMODO") { btnIn.style.backgroundColor = "#FFF3CD"; btnIn.style.borderColor = "#664D03"; btnIn.style.color = "#664D03"; }
-    else if (window.currentTratoValue === "HOSTIL") { btnHo.style.backgroundColor = "#FCE8E6"; btnHo.style.borderColor = "#b91c1c"; btnHo.style.color = "#b91c1c"; }
 }
 
 function abrirFormularioVacioAltaNueva() {
@@ -515,6 +374,8 @@ function abrirFormularioVacioAltaNueva() {
     }
     const curpInputEl = document.getElementById('f-curp'); if (curpInputEl) { curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal); curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal); }
     changeScreen('screen-form');
+    
+    // CORRECCIÓN MULTIMEDIA: Inicializa el contenedor con las claves mapeadas de forma síncrona
     expedienteDigitalTemporal = { doc_ine_frontal: "", doc_ine_trasera: "", doc_acta: "", doc_comprobante: "", doc_curp: "" };
     const miniaturas = ['preview-ine-frontal', 'preview-ine-trasera', 'preview-acta', 'preview-comprobante', 'preview-curp'];
     miniaturas.forEach(id => { const img = document.getElementById(id); if (img) { img.src = ""; img.style.display = "none"; } });
@@ -529,16 +390,6 @@ function verificarCurpDuplicadaEnTiempoReal(e) {
             else { e.target.value = ''; e.target.focus(); alert("Ingrese una CURP no registrada."); }
         }
     }
-}
-function actualizarEstilosBotonesTrato() {
-    const btnEx = document.getElementById('btn-trato-excelente'); const btnAm = document.getElementById('btn-trato-amable'); const btnNe = document.getElementById('btn-trato-neutral'); const btnIn = document.getElementById('btn-trato-incomodo'); const btnHo = document.getElementById('btn-trato-hostil');
-    if (!btnEx || !btnAm || !btnNe || !btnIn || !btnHo) return;
-    [btnEx, btnAm, btnNe, btnIn, btnHo].forEach(btn => { btn.style.backgroundColor = "#F3F4F6"; btn.style.borderColor = "#CBD5E0"; btn.style.color = "#4B5563"; });
-    if (window.currentTratoValue === "EXCELENTE") { btnEx.style.backgroundColor = "#D1E7DD"; btnEx.style.borderColor = "#0F5132"; btnEx.style.color = "#0F5132"; }
-    else if (window.currentTratoValue === "AMABLE") { btnAm.style.backgroundColor = "#E6F4EA"; btnAm.style.borderColor = "#236947"; btnAm.style.color = "#236947"; }
-    else if (window.currentTratoValue === "NEUTRAL") { btnNe.style.backgroundColor = "#EDF4F9"; btnNe.style.borderColor = "#BC955C"; btnNe.style.color = "#1F2937"; }
-    else if (window.currentTratoValue === "INCOMODO") { btnIn.style.backgroundColor = "#FFF3CD"; btnIn.style.borderColor = "#664D03"; btnIn.style.color = "#664D03"; }
-    else if (window.currentTratoValue === "HOSTIL") { btnHo.style.backgroundColor = "#FCE8E6"; btnHo.style.borderColor = "#b91c1c"; btnHo.style.color = "#b91c1c"; }
 }
 
 if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)); }); }
