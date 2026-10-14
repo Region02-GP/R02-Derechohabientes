@@ -353,6 +353,80 @@ function procesarFotoEvidencia(inputElement, previewId, claveDocumento) {
         reader.readAsDataURL(file);
     }
 }
+function saveData(event) {
+    if (event) event.preventDefault();
+    
+    // 1. Validaciones directas en memoria RAM libres de bloqueos de pantalla
+    const fCurp = document.getElementById('f-curp');
+    const targetCurp = fCurp ? fCurp.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase().trim() : "";
+    if (!targetCurp || targetCurp.length !== 18) return alert("🛑 ERROR EN CAMPO: La CURP debe tener 18 caracteres obligatorios.");
+
+    const latValue = document.getElementById('f-lat').value; 
+    const lonValue = document.getElementById('f-lon').value;
+    if (latValue.includes("Buscando") || latValue === "" || latValue === "ERROR") return alert("🛑 Georreferencia incompleta: Espere a que el satélite asigne coordenadas GPS antes de guardar.");
+
+    const idValue = document.getElementById('f-id').value; 
+    const evaluacionTratoActual = window.currentTratoValue || "";
+    if (currentEstatusVisita === "LOCALIZADO" || idValue === "NUEVO") {
+        if (evaluacionTratoActual === "" || evaluacionTratoActual === "SIN_EVALUACION") {
+            alert("🛑 REGLA OBLIGATORIA: Debe seleccionar una de las 5 opciones de trato con emojis.");
+            changeScreen('screen-form');
+            return;
+        }
+    }
+
+    // 2. Vinculación síncrona con el registro de IndexedDB
+    const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp); 
+    const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
+    
+    // CORRECCIÓN CLAVE: Se amarran los Base64 de la cámara usando exactamente las mismas propiedades que lee Google Drive
+    const record = {
+        'CURP': targetCurp, 
+        'ID': idValue, 
+        'NOMBRE': document.getElementById('f-nombre').value, 
+        'AP PATERNO': document.getElementById('f-paterno').value, 
+        'AP MATERNO': document.getElementById('f-materno').value, 
+        'TEL FIJO': document.getElementById('f-telfijo').value, 
+        'TEL CEL': document.getElementById('f-telcel').value, 
+        'MUNICIPIO': document.getElementById('f-municipio').value, 
+        'LOCALIDAD': document.getElementById('f-localidad').value, 
+        'SECCION': document.getElementById('f-seccion').value, 
+        'COLONIA': document.getElementById('f-colonia').value, 
+        'CP': document.getElementById('f-cp').value, 
+        'CALLE': document.getElementById('f-calle').value, 
+        'NUM EXT': document.getElementById('f-numext').value, 
+        'REFERENCIA': document.getElementById('f-referencia').value, 
+        'SITUACION': document.getElementById('f-situacion').value, 
+        'CAUSAL': document.getElementById('f-causal').value, 
+        'ESTATUS_VISITA': currentEstatusVisita, 
+        'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue, 
+        'EVALUACION_TRATO': currentEstatusVisita === "NO LOCALIZADO" ? "" : evaluacionTratoActual, 
+        'Latitud': latValue, 
+        'Longitud': lonValue, 
+        'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"), 
+        'USUARIO_MODIFICA': currentUser.name, 
+        'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || "",
+        'DOC_INE_FRONTAL': expedienteDigitalTemporal.doc_ine_frontal || originalRecord.DOC_INE_FRONTAL || "", 
+        'DOC_INE_TRASERA': expedienteDigitalTemporal.doc_ine_trasera || originalRecord.DOC_INE_TRASERA || "", 
+        'DOC_ACTA': expedienteDigitalTemporal.doc_acta || originalRecord.DOC_ACTA || "", 
+        'DOC_COMPROBANTE': expedienteDigitalTemporal.doc_comprobante || originalRecord.DOC_COMPROBANTE || "", 
+        'DOC_CURP': expedienteDigitalTemporal.doc_curp || originalRecord.DOC_CURP || ""
+    };
+
+    // 3. Almacenamiento local en IndexedDB
+    const tx = db.transaction(STORE_NAME, "readwrite"); 
+    tx.objectStore(STORE_NAME).put(record);
+    tx.oncomplete = function() {
+        if (memoryIndex !== -1) localMemoryDatabase[memoryIndex] = record; else localMemoryDatabase.push(record);
+        pendingSync.push(record); 
+        localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
+        
+        alert("✅ ÉXITO: Expediente guardado localmente en el teléfono."); 
+        document.getElementById('search-input').value = ""; 
+        document.getElementById('search-results').innerHTML = ""; 
+        changeScreen('screen-search');
+    };
+}
 
 function abrirFormularioVacioAltaNueva() {
     if (!currentUser) { alert("🚨 ERROR OPERATIVO: Inicie sesión primero."); changeScreen('screen-login'); return; }
