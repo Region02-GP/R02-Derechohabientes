@@ -236,7 +236,8 @@ function seleccionarEstatusVisita(estatus) {
 }
 
 function actualizarEstilosBotonesFormulario() {
-    const btnLoc = document.getElementById('btn-status-localizado'); const btnNoLoc = document.getElementById('btn-status-nolocalizado');
+    const btnLoc = document.getElementById('btn-status-localizado'); 
+    const btnNoLoc = document.getElementById('btn-status-nolocalizado');
     if (!btnLoc || !btnNoLoc) return;
     if (currentEstatusVisita === "LOCALIZADO") {
         btnLoc.style.backgroundColor = "#E6F4EA"; btnLoc.style.borderColor = "#137333"; btnLoc.style.color = "#137333";
@@ -245,7 +246,9 @@ function actualizarEstilosBotonesFormulario() {
         btnNoLoc.style.backgroundColor = "#FCE8E6"; btnNoLoc.style.borderColor = "#C5221F"; btnNoLoc.style.color = "#C5221F";
         btnLoc.style.backgroundColor = "#F3F4F6"; btnLoc.style.borderColor = "#CBD5E0"; btnLoc.style.color = "#9CA3AF";
     }
-}
+} // <-- AQUÍ CIERRA CORRECTAMENTE LA FUNCIÓN DE ESTILOS
+
+// SEPARADA E INDEPENDIENTE EN EL ÁMBITO GLOBAL:
 function openForm(item) {
     if (!item) return;
     document.getElementById('f-curp').value = item['CURP'] || ''; 
@@ -312,6 +315,7 @@ function openForm(item) {
         }
     });
 }
+
 function procesarFotoEvidencia(inputElement, previewId, claveDocumento) {
     if (inputElement && inputElement.files && inputElement.files[0]) {
         const file = inputElement.files[0];
