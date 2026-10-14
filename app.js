@@ -379,7 +379,7 @@ function saveData(event) {
     const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp); 
     const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
     
-    // CORRECCIÓN CLAVE: Se amarran los Base64 de la cámara usando exactamente las mismas propiedades que lee Google Drive
+    // CORRECCIÓN CLAVE: Se amarran las propiedades en minúsculas de la cámara para que viajen con datos binarios reales
     const record = {
         'CURP': targetCurp, 
         'ID': idValue, 
@@ -406,11 +406,11 @@ function saveData(event) {
         'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"), 
         'USUARIO_MODIFICA': currentUser.name, 
         'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || "",
-        'DOC_INE_FRONTAL': expedienteDigitalTemporal.doc_ine_frontal || originalRecord.DOC_INE_FRONTAL || "", 
-        'DOC_INE_TRASERA': expedienteDigitalTemporal.doc_ine_trasera || originalRecord.DOC_INE_TRASERA || "", 
-        'DOC_ACTA': expedienteDigitalTemporal.doc_acta || originalRecord.DOC_ACTA || "", 
-        'DOC_COMPROBANTE': expedienteDigitalTemporal.doc_comprobante || originalRecord.DOC_COMPROBANTE || "", 
-        'DOC_CURP': expedienteDigitalTemporal.doc_curp || originalRecord.DOC_CURP || ""
+        'DOC_INE_FRONTAL': expedienteDigitalTemporal.doc_ine_frontal || originalRecord.doc_ine_frontal || originalRecord.DOC_INE_FRONTAL || "", 
+        'DOC_INE_TRASERA': expedienteDigitalTemporal.doc_ine_trasera || originalRecord.doc_ine_trasera || originalRecord.DOC_INE_TRASERA || "", 
+        'DOC_ACTA': expedienteDigitalTemporal.doc_acta || originalRecord.doc_acta || originalRecord.DOC_ACTA || "", 
+        'DOC_COMPROBANTE': expedienteDigitalTemporal.doc_comprobante || originalRecord.doc_comprobante || originalRecord.DOC_COMPROBANTE || "", 
+        'DOC_CURP': expedienteDigitalTemporal.doc_curp || originalRecord.doc_curp || originalRecord.DOC_CURP || ""
     };
 
     // 3. Almacenamiento local en IndexedDB
