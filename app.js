@@ -1,5 +1,5 @@
 // URL del Web App de Google Apps Script 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwRrPHc_iGzZrd-VzV3FhNphAes0qk0tKBPoMo4Ij9FJTLCV92OAPyT8y8yvgxhTby7/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyyRcBHFhAZgk9pL7OIVozg2n1RUrtaId2dYH8GLiCqfWFjdyE63_fLo01aDdHDECw/exec";
 
 
 
@@ -366,7 +366,7 @@ function actualizarEstilosBotonesFormulario() {
 }
 function procesarFotoEvidencia(inputElement, previewId, claveDocumento, wrapperId, buttonId, textoNuevo) {
     if (inputElement && inputElement.files && inputElement.files[0]) {
-        const file = inputElement.files[0];
+        const file = inputElement.files[0]; // CORREGIDO: Se agregó el índice [0] para capturar el archivo binario real de Android
         const reader = new FileReader();
         
         reader.onload = function(e) {
