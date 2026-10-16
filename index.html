@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+                                                                           <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -101,7 +101,7 @@
             <form id="edit-form" onsubmit="saveData(event)">
                 <div id="form-fields-wrapper">
                     
-                    <!-- Tarjeta 1: Datos de Identidad (BALANCEADA Y REPARADA) -->
+                    <!-- Tarjeta 1: Datos de Identidad -->
                     
                         <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; font-weight: 800; color: var(--primary-color); text-transform: uppercase; letter-spacing: 0.5px;">👤 Datos de Identidad</h3>
                         <div class="form-group" style="margin-bottom: 12px;">
@@ -128,10 +128,11 @@
                             <div class="form-group" style="margin-bottom: 0;"><label>Teléfono Celular:</label><input type="tel" id="f-telcel" pattern="[0-9]{10}" maxlength="10" placeholder="10 dígitos" class="js-calc-progress"></div>
                         </div>
                     </div>
-                    <!-- Tarjeta 3: Ubicación Territorial -->
+                    <!-- Tarjeta 3: Ubicación Territorial (CORREGIDA AL 100%) -->
                     <div class="form-block-card block-location" style="border-left: 5px solid var(--secondary-color); background-color: rgba(188, 149, 92, 0.02); padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #E5E7EB; border-left-width: 5px;">
                         <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; font-weight: 800; color: var(--secondary-dark); text-transform: uppercase; letter-spacing: 0.5px;">📍 Ubicación Territorial</h3>
                         
+                        <!-- 1. Municipio -->
                         <div class="form-group" style="margin-bottom: 12px;">
                             <label style="color: var(--primary-color);">Municipio *:</label>
                             <input type="text" id="f-municipio" readonly required style="background-color: #EDF2F7; font-weight: 700; margin-bottom: 6px;">
@@ -139,6 +140,7 @@
                             <div id="municipio-search-results" style="max-height: 120px; overflow-y: auto; border: 1px solid #E5E7EB; border-radius: 6px; background: #FFFFFF; display: none; margin-top: 5px;"></div>
                         </div>
 
+                        <!-- 2. Localidad -->
                         <div class="form-group" style="margin-bottom: 12px;">
                             <label style="color: var(--primary-color);">Localidad *:</label>
                             <input type="text" id="f-localidad" readonly required style="background-color: #EDF2F7; font-weight: 700; margin-bottom: 6px;">
@@ -148,6 +150,7 @@
 
                         <div class="form-group" style="margin-bottom: 12px;"><label>Sección *:</label><input type="number" id="f-seccion" max="9999" required class="js-calc-progress"></div>
 
+                        <!-- 3. Colonia -->
                         <div class="form-group" style="margin-bottom: 12px;">
                             <label style="color: var(--primary-color);">Colonia *:</label>
                             <input type="text" id="f-colonia" readonly required style="background-color: #EDF2F7; font-weight: 700; margin-bottom: 6px;">
@@ -287,6 +290,10 @@
     </main>
 
     <script src="brigadistas.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
+                                                                                                                                                                                 
     <script src="app.js"></script>
 </body>
 </html>
