@@ -375,7 +375,7 @@ function openForm(item) {
 
 function procesarFotoEvidencia(inputElement, previewId, claveDocumento, wrapperId, buttonId, textoNuevo) {
     if (inputElement && inputElement.files && inputElement.files[0]) {
-        const file = inputElement.files[0];
+        const file = inputElement.files[0]; // ✅ CORREGIDO: Se restauró el índice [0] para leer el archivo real
         const reader = new FileReader();
         
         reader.onload = function(e) {
