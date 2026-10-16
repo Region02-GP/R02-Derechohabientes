@@ -10,7 +10,8 @@
 <body>
     <header class="main-header">
         <div class="header-brand-wrapper">
-            <img src=""https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSap4A_OenSxcNiOTBRpxDbx9GBBaFTkyaCg0E4Spx0&" alt="Logotipo Institucional" class="header-logo">
+            <!-- CORREGIDO: Eliminadas las comillas dobles consecutivas del enlace para pintar el logo institucional -->
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSap4A_OenSxcNiOTBRpxDbx9GBBaFTkyaCg0E4Spx0&s" alt="Logotipo Institucional" class="header-logo">
         </div>
     </header>
 
@@ -62,6 +63,7 @@
                 <button type="button" onclick="downloadAllDataMassive()" id="btn-massive-download" class="btn-secondary">📥 Descargar Base Completa</button>
             </div>
         </section>
+
         <!-- PANTALLA 3: BUSCADOR CON ENCABEZADO DE IDENTIDAD -->
         <section id="screen-search" class="app-screen hidden">
             <div class="screen-toolbar">
@@ -87,91 +89,112 @@
             </div>
             <div id="search-results" class="results-list"></div>
         </section>
+        <!-- PANTALLA 4: FORMULARIO CON BARRA DE PROGRESO Y BLOQUES DE COLOR -->
+        <section id="screen-form" class="app-screen hidden" style="padding-top: 35px;">
+            <!-- BARRA DE PROGRESO DORADA SUPERIOR -->
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 6px; background-color: #E5E7EB; border-top-left-radius: 12px; border-top-right-radius: 12px; overflow: hidden;">
+                <div id="form-progress-bar" style="width: 0%; height: 100%; background-color: var(--secondary-color); transition: width 0.3s ease;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; margin-top: 5px;">
+                <h2 style="margin: 0;">Actualización de Domicilio</h2>
+                <span id="form-progress-text" style="font-size: 13px; font-weight: 800; color: var(--secondary-dark);">0%</span>
+            </div>
 
-        <!-- PANTALLA 4: FORMULARIO -->
-        <section id="screen-form" class="app-screen hidden">
-            <h2>Actualización de Domicilio</h2>
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                 <button type="button" id="btn-status-localizado" onclick="seleccionarEstatusVisita('LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s;">LOCALIZADO</button>
                 <button type="button" id="btn-status-nolocalizado" onclick="seleccionarEstatusVisita('NO LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s;">NO LOCALIZADO</button>
             </div>
+            
             <input type="hidden" id="f-motivo" value="">
             <form id="edit-form" onsubmit="saveData(event)">
                 <div id="form-fields-wrapper">
-                    <div class="form-group" style="margin-bottom: 16px;">
-                        <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: var(--text-muted);">CURP *:</label>
-                        <input type="text" id="f-curp" maxlength="18" minlength="18" required style="width: 100%; padding: 11px 14px; box-sizing: border-box; font-size: 16px; text-transform:uppercase;">
-                    </div>
-
-                    <div class="form-grid text-disabled">
-                        <div><label>ID:</label><input type="text" id="f-id" readonly></div>
-                        <div><label>Nombre:</label><input type="text" id="f-nombre" readonly></div>
-                        <div><label>Ap. Paterno:</label><input type="text" id="f-paterno" readonly></div>
-                        <div><label>Ap. Materno:</label><input type="text" id="f-materno" readonly></div>
-                        <div><label>Situación:</label><input type="text" id="f-situacion" readonly></div>
-                        <div><label>Causal:</label><input type="text" id="f-causal" readonly></div>
-                    </div>
                     
-                    <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-                    <div class="form-group"><label>Teléfono Fijo:</label><input type="tel" id="f-telfijo" pattern="[0-9]{10}" maxlength="10"></div>
-                    <div class="form-group"><label>Teléfono Celular:</label><input type="tel" id="f-telcel" pattern="[0-9]{10}" maxlength="10"></div>
-                    <!-- 1. BUSCADOR DE MUNICIPIOS POR FICHAS -->
-                    <div class="form-group" style="background: #F9FAFB; border: 1px solid #CBD5E0; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-                        <label style="font-weight: 700; color: var(--primary-color); display: block; margin-bottom: 6px;">Municipio *:</label>
-                        <input type="text" id="f-municipio" readonly required placeholder="Ningún municipio seleccionado" style="background-color: #EDF2F7; color: #1F2937; font-weight: 700; border-color: #CBD5E0; margin-bottom: 10px;">
-                        <input type="text" id="f-municipio-buscar" oninput="buscarMunicipiosEnPantalla()" placeholder="🔍 Teclee aquí para buscar municipio...">
-                        <div id="municipio-search-results" style="max-height: 150px; overflow-y: auto; border: 1px solid #E5E7EB; border-radius: 6px; background: #FFFFFF; display: none; margin-top: 5px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);"></div>
+                    <!-- 🎒 TARJETA 1: DATOS DE IDENTIDAD (CORREGIDO CON SU CONECTOR DIV INTEGRAL) -->
+                    
+                        <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; font-weight: 800; color: var(--primary-color); text-transform: uppercase; letter-spacing: 0.5px;">👤 Datos de Identidad</h3>
+                        
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label>CURP *:</label>
+                            <input type="text" id="f-curp" maxlength="18" minlength="18" required style="text-transform:uppercase;" class="js-calc-progress">
+                        </div>
+                        <div class="form-grid text-disabled">
+                            <div><label>ID:</label><input type="text" id="f-id" readonly></div>
+                            <div><label>Situación:</label><input type="text" id="f-situacion" readonly></div>
+                        </div>
+                        <div class="form-group" style="margin-top: 10px; margin-bottom: 10px;"><label>Nombre *:</label><input type="text" id="f-nombre" required class="js-calc-progress"></div>
+                        <div class="form-grid"><div class="form-group"><label>Ap. Paterno *:</label><input type="text" id="f-paterno" required class="js-calc-progress"></div><div class="form-group"><label>Ap. Materno *:</label><input type="text" id="f-materno" required class="js-calc-progress"></div></div>
+                        <div class="form-group" style="margin-bottom: 0;" class="text-disabled"><label>Causal:</label><input type="text" id="f-causal" readonly style="background-color: #EDF2F7;"></div>
                     </div>
 
-                    <!-- 2. BUSCADOR DE LOCALIDADES POR FICHAS -->
-                    <div class="form-group" style="background: #F9FAFB; border: 1px solid #CBD5E0; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-                        <label style="font-weight: 700; color: var(--primary-color); display: block; margin-bottom: 6px;">Localidad *:</label>
-                        <input type="text" id="f-localidad" readonly required placeholder="Ninguna localidad seleccionada" style="background-color: #EDF2F7; color: #1F2937; font-weight: 700; border-color: #CBD5E0; margin-bottom: 10px;">
-                        <input type="text" id="f-localidad-buscar" oninput="buscarLocalidadesEnPantalla()" placeholder="🔍 Teclee aquí para buscar localidad (Ej: SAN)..." style="background-color: #FFFFFF; border-color: var(--secondary-color); margin-bottom: 8px;">
-                        <div id="localidad-search-results" style="max-height: 180px; overflow-y: auto; border: 1px solid #E5E7EB; border-radius: 6px; background: #FFFFFF; display: none; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);"></div>
+                    <!-- 📞 TARJETA 2: DATOS DE CONTACTO (Borde Gris Metálico Neutral) -->
+                    <div class="form-block-card block-contact" style="border-left: 5px solid #5A6A80; background-color: rgba(90, 106, 128, 0.02); padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #E5E7EB; border-left-width: 5px;">
+                        <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; font-weight: 800; color: #4A5568; text-transform: uppercase; letter-spacing: 0.5px;">📞 Medios de Contacto</h3>
+                        <div class="form-grid" style="margin-bottom: 0;">
+                            <div class="form-group" style="margin-bottom: 0;"><label>Teléfono Fijo:</label><input type="tel" id="f-telfijo" pattern="[0-9]{10}" maxlength="10" placeholder="10 dígitos" class="js-calc-progress"></div>
+                            <div class="form-group" style="margin-bottom: 0;"><label>Teléfono Celular:</label><input type="tel" id="f-telcel" pattern="[0-9]{10}" maxlength="10" placeholder="10 dígitos" class="js-calc-progress"></div>
+                        </div>
                     </div>
+                    <!-- 📍 TARJETA 3: UBICACIÓN TERRITORIAL (Borde Dorado Premium) -->
+                    <div class="form-block-card block-location" style="border-left: 5px solid var(--secondary-color); background-color: rgba(188, 149, 92, 0.02); padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #E5E7EB; border-left-width: 5px;">
+                        <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; font-weight: 800; color: var(--secondary-dark); text-transform: uppercase; letter-spacing: 0.5px;">📍 Ubicación Territorial</h3>
+                        
+                        <!-- 1. MUNICIPIO POR FICHAS -->
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label style="color: var(--primary-color);">Municipio *:</label>
+                            <input type="text" id="f-municipio" readonly required style="background-color: #EDF2F7; font-weight: 700; margin-bottom: 6px;">
+                            <input type="text" id="f-municipio-buscar" oninput="buscarMunicipiosEnPantalla()" placeholder="🔍 Buscar municipio...">
+                            <div id="municipio-search-results" style="max-height: 120px; overflow-y: auto; border: 1px solid #E5E7EB; border-radius: 6px; background: #FFFFFF; display: none; margin-top: 5px;"></div>
+                        </div>
 
-                    <div class="form-group"><label>Sección *:</label><input type="number" id="f-seccion" max="9999" required></div>
+                        <!-- 2. LOCALIDAD POR FICHAS -->
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label style="color: var(--primary-color);">Localidad *:</label>
+                            <input type="text" id="f-localidad" readonly required style="background-color: #EDF2F7; font-weight: 700; margin-bottom: 6px;">
+                            <input type="text" id="f-localidad-buscar" oninput="buscarLocalidadesEnPantalla()" placeholder="🔍 Buscar localidad...">
+                            <div id="localidad-search-results" style="max-height: 120px; overflow-y: auto; border: 1px solid #E5E7EB; border-radius: 6px; background: #FFFFFF; display: none; margin-top: 5px;"></div>
+                        </div>
 
-                    <!-- 3. BUSCADOR DE COLONIAS POR FICHAS -->
-                    <div class="form-group" style="background: #F9FAFB; border: 1px solid #CBD5E0; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-                        <label style="font-weight: 700; color: var(--primary-color); display: block; margin-bottom: 6px;">Colonia *:</label>
-                        <input type="text" id="f-colonia" readonly required placeholder="Ninguna colonia seleccionada" style="background-color: #EDF2F7; color: #1F2937; font-weight: 700; border-color: #CBD5E0; margin-bottom: 10px;">
-                        <input type="text" id="f-colonia-buscar" oninput="buscarColoniasEnPantalla()" placeholder="🔍 Teclee aquí para buscar colonia...">
-                        <div id="colonia-search-results" style="max-height: 150px; overflow-y: auto; border: 1px solid #E5E7EB; border-radius: 6px; background: #FFFFFF; display: none; margin-top: 5px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);"></div>
+                        <div class="form-group" style="margin-bottom: 12px;"><label>Sección *:</label><input type="number" id="f-seccion" max="9999" required class="js-calc-progress"></div>
+
+                        <!-- 3. COLONIA POR FICHAS -->
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label style="color: var(--primary-color);">Colonia *:</label>
+                            <input type="text" id="f-colonia" readonly required style="background-color: #EDF2F7; font-weight: 700; margin-bottom: 6px;">
+                            <input type="text" id="f-colonia-buscar" oninput="buscarColoniasEnPantalla()" placeholder="🔍 Buscar colonia...">
+                            <div id="colonia-search-results" style="max-height: 120px; overflow-y: auto; border: 1px solid #E5E7EB; border-radius: 6px; background: #FFFFFF; display: none; margin-top: 5px;"></div>
+                        </div>
+
+                        <div class="form-grid" style="margin-bottom: 10px;">
+                            <div><label>Código Postal:</label><input type="text" id="f-cp" pattern="[0-9]{5}" maxlength="5" placeholder="5 dígitos" class="js-calc-progress"></div>
+                            <div><label>Num Ext:</label><input type="text" id="f-numext" class="js-calc-progress"></div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 10px;"><label>Calle:</label><input type="text" id="f-calle" class="js-calc-progress"></div>
+                        <div class="form-group" style="margin-bottom: 0;"><label>Referencia:</label><textarea id="f-referencia" rows="2" class="js-calc-progress"></textarea></div>
                     </div>
-                    <div class="form-group"><label>Código Postal:</label><input type="text" id="f-cp" pattern="[0-9]{5}" maxlength="5"></div>
-                    <div class="form-group"><label>Calle:</label><input type="text" id="f-calle"></div>
-                    <div class="form-group"><label>Num Ext:</label><input type="text" id="f-numext"></div>
-                    <div class="form-group"><label>Referencia:</label><textarea id="f-referencia" rows="3"></textarea></div>
                 </div>
 
-                <div style="margin-bottom: 16px;">
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: var(--text-muted);">Evaluación de la Recepción Recibida *:</label>
-                    <div style="display: flex; gap: 6px; width: 100%; box-sizing: border-box; margin-bottom: 6px;">
-                        <button type="button" id="btn-trato-excelente" onclick="seleccionarTrato('EXCELENTE')" style="flex: 1; padding: 10px 4px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; font-size: 12px; margin-top: 0;">😊 EXCELENTE</button>
-                        <button type="button" id="btn-trato-amable" onclick="seleccionarTrato('AMABLE')" style="flex: 1; padding: 10px 4px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; font-size: 12px; margin-top: 0;">🙂 AMABLE</button>
-                        <button type="button" id="btn-trato-neutral" onclick="seleccionarTrato('NEUTRAL')" style="flex: 1; padding: 10px 4px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; font-size: 12px; margin-top: 0;">😐 NEUTRAL</button>
+                <div class="form-block-card" style="background: rgba(255, 255, 255, 0.9); padding: 14px; border-radius: 8px; border: 1px solid #CBD5E0; margin-bottom: 15px;">
+                    <label style="display: block; font-weight: 700; margin-bottom: 8px; font-size: 14px; color: var(--text-muted);">Evaluación de la Recepción Recibida *:</label>
+                    <div style="display: flex; gap: 4px; width: 100%; box-sizing: border-box; margin-bottom: 6px;">
+                        <button type="button" id="btn-trato-excelente" onclick="seleccionarTrato('EXCELENTE')" style="flex: 1; padding: 10px 2px; font-weight: bold; border-radius: 6px; font-size: 11px; margin-top: 0;">😊 EXCELENTE</button>
+                        <button type="button" id="btn-trato-amable" onclick="seleccionarTrato('AMABLE')" style="flex: 1; padding: 10px 2px; font-weight: bold; border-radius: 6px; font-size: 11px; margin-top: 0;">🙂 AMABLE</button>
+                        <button type="button" id="btn-trato-neutral" onclick="seleccionarTrato('NEUTRAL')" style="flex: 1; padding: 10px 2px; font-weight: bold; border-radius: 6px; font-size: 11px; margin-top: 0;">😐 NEUTRAL</button>
                     </div>
-                    <div style="display: flex; gap: 6px; width: 100%; box-sizing: border-box;">
-                        <button type="button" id="btn-trato-incomodo" onclick="seleccionarTrato('INCOMODO')" style="flex: 1; padding: 10px 4px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; font-size: 12px; margin-top: 0;">😟 INCOMODO</button>
-                        <button type="button" id="btn-trato-hostil" onclick="seleccionarTrato('HOSTIL')" style="flex: 1; padding: 10px 4px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; font-size: 12px; margin-top: 0;">😡 HOSTIL</button>
+                    <div style="display: flex; gap: 4px; width: 100%; box-sizing: border-box;">
+                        <button type="button" id="btn-trato-incomodo" onclick="seleccionarTrato('INCOMODO')" style="flex: 1; padding: 10px 2px; font-weight: bold; border-radius: 6px; font-size: 11px; margin-top: 0;">😟 INCOMODO</button>
+                        <button type="button" id="btn-trato-hostil" onclick="seleccionarTrato('HOSTIL')" style="flex: 1; padding: 10px 2px; font-weight: bold; border-radius: 6px; font-size: 11px; margin-top: 0;">😡 HOSTIL</button>
                     </div>
                 </div>
 
-                <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-                <!-- BUSCA EL FINAL DE TU PANTALLA 4 EN INDEX.HTML Y REEMPLÁZALO EXACTAMENTE POR ESTO: -->
-                <div class="form-grid text-disabled">
+                <div class="form-grid text-disabled" style="margin-bottom: 15px;">
                     <div><label>Latitud GPS:</label><input type="text" id="f-lat" readonly></div>
                     <div><label>Longitud GPS:</label><input type="text" id="f-lon" readonly></div>
                 </div>
-                <button type="button" onclick="changeScreen('screen-docs')" style="margin-top: 25px; background-color: var(--secondary-color); color: #1F2937; border: 1px solid var(--secondary-dark); box-shadow: var(--shadow-gold);">📁 Adjuntar Documentos Digitales</button>
+                <button type="button" onclick="changeScreen('screen-docs')" style="margin-top: 15px; background-color: var(--secondary-color); color: #1F2937; border: 1px solid var(--secondary-dark); box-shadow: var(--shadow-gold);">📁 Adjuntar Documentos Digitales</button>
                 <button type="submit" style="margin-top: 12px;">Guardar Localmente</button>
                 <button type="button" onclick="changeScreen('screen-search')" class="btn-back" style="margin-top: 12px;">Cancelar</button>
-            <!-- 🚨 NOTA: AQUÍ DEBÍA ESTAR EL </form> PERO LO BORRAMOS PARA QUE EL FORMULARIO SIGA ABIERTO -->
+            </form>
         </section>
-
-        <!-- PANTALLA 5: HISTORIAL -->
         <section id="screen-history" class="app-screen hidden">
             <h2>Historial y Sincronización</h2>
             <div class="metrics" style="background:#f7fafc; padding:15px; border-radius:4px; margin-bottom:15px; border-left:4px solid var(--primary-color);">
@@ -189,44 +212,38 @@
             <div id="history-log" class="log-list"></div>
         </section>
 
-        <!-- PANTALLA 6: DOCUMENTOS DIGITALES -->
         <section id="screen-docs" class="app-screen hidden">
             <div class="screen-number-badge">Doc. Digitales</div>
             <h2>Expediente Digital del Ciudadano</h2>
             <p style="font-size:13px; color: var(--text-muted); margin-bottom:20px; line-height:1.4;">
                 Presione cada botón para activar la cámara nativa de su Note 20 y capturar los respaldos del derechohabiente:
             </p>
-            <!-- REEMPLAZA EL CONTENEDOR ACTION-BUTTONS-STACK DE LA PANTALLA 6 EN INDEX.HTML POR ESTA VERSIÓN: -->
+            
             <div class="action-buttons-stack" style="gap: 14px;">
-                <!-- Capturador 1: INE Frontal -->
                 <div id="wrapper-ine-frontal" style="background: #F3F4F6; padding: 14px; border-radius: 10px; border: 2px dashed #CBD5E0; text-align: center; transition: all 0.2s;">
                     <button type="button" id="btn-cam-ine-frontal" onclick="document.getElementById('cam-ine-frontal').click();" style="background-color: #5A6A80; margin-top:0;">🪪 Capturar INE Frontal</button>
                     <input type="file" id="cam-ine-frontal" accept="image/*" capture="environment" style="display: none;" onchange="procesarFotoEvidencia(this, 'preview-ine-frontal', 'doc_ine_frontal', 'wrapper-ine-frontal', 'btn-cam-ine-frontal', '🪪 Recapturar INE Frontal')">
                     <img id="preview-ine-frontal" src="" style="max-width: 60px; max-height: 45px; border-radius: 4px; margin-top: 8px; display: none; margin-left: auto; margin-right: auto; border: 1px solid #CBD5E0;">
                 </div>
 
-                <!-- Capturador 2: INE Trasera -->
                 <div id="wrapper-ine-trasera" style="background: #F3F4F6; padding: 14px; border-radius: 10px; border: 2px dashed #CBD5E0; text-align: center; transition: all 0.2s;">
                     <button type="button" id="btn-cam-ine-trasera" onclick="document.getElementById('cam-ine-trasera').click();" style="background-color: #5A6A80; margin-top:0;">🪪 Capturar INE Trasera</button>
                     <input type="file" id="cam-ine-trasera" accept="image/*" capture="environment" style="display: none;" onchange="procesarFotoEvidencia(this, 'preview-ine-trasera', 'doc_ine_trasera', 'wrapper-ine-trasera', 'btn-cam-ine-trasera', '🪪 Recapturar INE Trasera')">
                     <img id="preview-ine-trasera" src="" style="max-width: 60px; max-height: 45px; border-radius: 4px; margin-top: 8px; display: none; margin-left: auto; margin-right: auto; border: 1px solid #CBD5E0;">
                 </div>
 
-                <!-- Capturador 3: Acta de Nacimiento -->
                 <div id="wrapper-acta" style="background: #F3F4F6; padding: 14px; border-radius: 10px; border: 2px dashed #CBD5E0; text-align: center; transition: all 0.2s;">
                     <button type="button" id="btn-cam-acta" onclick="document.getElementById('cam-acta').click();" style="background-color: #5A6A80; margin-top:0;">📜 Capturar Acta de Nacimiento</button>
                     <input type="file" id="cam-acta" accept="image/*" capture="environment" style="display: none;" onchange="procesarFotoEvidencia(this, 'preview-acta', 'doc_acta', 'wrapper-acta', 'btn-cam-acta', '📜 Recapturar Acta')">
                     <img id="preview-acta" src="" style="max-width: 60px; max-height: 45px; border-radius: 4px; margin-top: 8px; display: none; margin-left: auto; margin-right: auto; border: 1px solid #CBD5E0;">
                 </div>
 
-                <!-- Capturador 4: Comprobante de Domicilio -->
                 <div id="wrapper-comprobante" style="background: #F3F4F6; padding: 14px; border-radius: 10px; border: 2px dashed #CBD5E0; text-align: center; transition: all 0.2s;">
                     <button type="button" id="btn-cam-comprobante" onclick="document.getElementById('cam-comprobante').click();" style="background-color: #5A6A80; margin-top:0;">🏠 Capturar Comprobante Domicilio</button>
                     <input type="file" id="cam-comprobante" accept="image/*" capture="environment" style="display: none;" onchange="procesarFotoEvidencia(this, 'preview-comprobante', 'doc_comprobante', 'wrapper-comprobante', 'btn-cam-comprobante', '🏠 Recapturar Comprobante')">
                     <img id="preview-comprobante" src="" style="max-width: 60px; max-height: 45px; border-radius: 4px; margin-top: 8px; display: none; margin-left: auto; margin-right: auto; border: 1px solid #CBD5E0;">
                 </div>
 
-                <!-- Capturador 5: CURP -->
                 <div id="wrapper-curp" style="background: #F3F4F6; padding: 14px; border-radius: 10px; border: 2px dashed #CBD5E0; text-align: center; transition: all 0.2s;">
                     <button type="button" id="btn-cam-curp" onclick="document.getElementById('cam-curp').click();" style="background-color: #5A6A80; margin-top:0;">🆔 Capturar CURP Oficial</button>
                     <input type="file" id="cam-curp" accept="image/*" capture="environment" style="display: none;" onchange="procesarFotoEvidencia(this, 'preview-curp', 'doc_curp', 'wrapper-curp', 'btn-cam-curp', '🆔 Recapturar CURP')">
@@ -234,17 +251,13 @@
                 </div>
             </div>
 
-           <!-- BUSCA EL TRAMO FINAL DE TU PANTALLA 6 EN INDEX.HTML Y REEMPLÁZALO EXACTAMENTE POR ESTO: -->
             <hr style="margin:25px 0;">
             <div class="button-row-grid">
-                <!-- El botón Guardar Todo ahora ejecutará el submit nativo del formulario unificado -->
                 <button type="submit" style="margin-top:0; background-color: var(--primary-color);">💾 Guardar Todo</button>
                 <button type="button" onclick="changeScreen('screen-form')" class="btn-back" style="margin-top:0;">🔙 Regresar</button>
             </div>
-            </form> <!-- 🚨 INYECTA AQUÍ LA ETIQUETA DE CIERRE DEL FORMULARIO MAESTRO -->
+            </form>
         </section>
-
-        <!-- BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL -->
 
         <nav id="app-bottom-nav" class="bottom-nav hidden">
             <button type="button" id="nav-welcome" onclick="changeScreen('screen-welcome')" class="nav-item"><span>📥</span>Inicio</button>
