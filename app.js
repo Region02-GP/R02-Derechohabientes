@@ -468,7 +468,11 @@ function saveData(event) {
 function abrirFormularioVacioAltaNueva() {
     if (!currentUser) { alert("🚨 ERROR OPERATIVO: Inicie sesión primero."); changeScreen('screen-login'); return; }
     document.getElementById('f-curp').removeAttribute('readonly'); document.getElementById('f-nombre').removeAttribute('readonly'); document.getElementById('f-paterno').removeAttribute('readonly'); document.getElementById('f-materno').removeAttribute('readonly');
-    const inputs = ['f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-telfijo', 'f-telcel', 'f-localidad', 'f-seccion', 'f-colonia', 'f-cp', 'f-calle', 'f-numext', 'f-referencia', 'f-causal'];
+    // ... dentro de abrirFormularioVacioAltaNueva() busca la lista de inputs y déjala así:
+const inputs = ['f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-telfijo', 'f-telcel', 'f-localidad', 'f-seccion', 'f-colonia', 'f-cp', 'f-calle', 'f-numext', 'f-referencia', 'f-causal', 'f-recibio-salud', 'f-cuantas-visitas', 'f-atencion-salud', 'f-motivo-no-visita', 'f-desea-visita-futura'];
+inputs.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+document.getElementById('wrapper-cuantas-visitas').style.display = "none";
+
     inputs.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     let municipioAsignado = 'GOMEZ PALACIO'; if (typeof AUTHORIZED_CURPS !== 'undefined' && AUTHORIZED_CURPS[currentUser.curp]) { municipioAsignado = AUTHORIZED_CURPS[currentUser.curp].municipio || 'GOMEZ PALACIO'; }
     const fMun = document.getElementById('f-municipio'); if (fMun) fMun.value = municipioAsignado.toUpperCase().trim();
