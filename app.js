@@ -99,6 +99,7 @@ function login() {
         changeScreen('screen-welcome');
     } else { alert("CURP no autorizada o inválida."); }
 }
+// BUSCA ESTE TRAMO EXACTO DENTRO DE downloadAllDataMassive() EN TU APP.JS Y DÉJALO ASÍ:
 async function downloadAllDataMassive() {
     const btn = document.getElementById('btn-massive-download');
     const progressContainer = document.getElementById('progress-container'); const progressBar = document.getElementById('progress-bar'); const progressText = document.getElementById('progress-text');
@@ -127,7 +128,12 @@ async function downloadAllDataMassive() {
             progressBar.style.width = `${Math.min(100, Math.round((offset / 25000) * 100))}%`;
         }
         progressText.innerText = `¡Descarga completa! ${totalCargados} registros listos.`;
-        preloadDatabaseToMemory(); updateLocalCounter(); alert(`Éxito: Se guardaron ${totalCargados} registros.`); changeScreen('screen-search');
+        
+        // CORRECCIÓN CLAVE: Restablece el pre-cargado asíncrono para liberar el ruteador de la lista
+        preloadDatabaseToMemory(); 
+        updateLocalCounter(); 
+        alert(`✅ ÉXITO TOTAL: Se descargaron y sincronizaron ${totalCargados} registros en tu teléfono.`); 
+        changeScreen('screen-search');
     } catch (error) { alert(`Error: ${error.message}`); } finally { btn.disabled = false; }
 }
 
@@ -462,6 +468,11 @@ function abrirFormularioVacioAltaNueva() {
     expedienteDigitalTemporal = { doc_ine_frontal: "", doc_ine_trasera: "", doc_acta: "", doc_comprobante: "", doc_curp: "" };
     const miniaturas = ['preview-ine-frontal', 'preview-ine-trasera', 'preview-acta', 'preview-comprobante', 'preview-curp'];
     miniaturas.forEach(id => { const img = document.getElementById(id); if (img) { img.src = ""; img.style.display = "none"; } });
+        // INYECTA ESTO AL FINAL ABSOLUTO DE abrirFormularioVacioAltaNueva():
+    vincularEventosProgresoFormulario();
+    calcularPorcentajeProgresoFormulario();
+}
+
 }
 
 function verificarCurpDuplicadaEnTiempoReal(e) {
@@ -556,4 +567,41 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => { 
         navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)); 
     }); 
+}
+// MOTOR INTERACTIVO: Enlaza los inputs del Note 20 al cálculo en tiempo real
+function vincularEventosProgresoFormulario() {
+    document.querySelectorAll('.js-calc-progress').forEach(input => {
+        input.removeEventListener('input', calcularPorcentajeProgresoFormulario);
+        input.addEventListener('input', calcularPorcentajeProgresoFormulario);
+    });
+    // Enlaza también los selectores de búsqueda por fichas automáticos
+    ['f-municipio', 'f-localidad', 'f-colonia'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            const observer = new MutationObserver(calcularPorcentajeProgresoFormulario);
+            observer.observe(el, { attributes: true, attributeFilter: ['value'] });
+        }
+    });
+}
+
+// FUNCIÓN MATEMÁTICA CORE: Evalúa qué campos tienen texto y pinta la barra dorada
+function calcularPorcentajeProgresoFormulario() {
+    const camposEvaluados = [
+        'f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-municipio', 
+        'f-localidad', 'f-seccion', 'f-colonia', 'f-cp', 'f-calle', 'f-numext'
+    ];
+    let llenados = 0;
+    camposEvaluados.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.value.trim() !== "" && el.value !== "Ningún municipio seleccionado" && el.value !== "Ninguna localidad seleccionada" && el.value !== "Ninguna colonia seleccionada") {
+            llenados++;
+        }
+    });
+    
+    const porcentaje = Math.round((llenados / camposEvaluados.length) * 100);
+    const barra = document.getElementById('form-progress-bar');
+    const texto = document.getElementById('form-progress-text');
+    
+    if (barra) barra.style.width = porcentaje + "%";
+    if (texto) texto.innerText = porcentaje + "%";
 }
