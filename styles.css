@@ -455,3 +455,48 @@ body {
     background: rgba(255, 255, 255, 0.85) !important;
     border: 1px solid #E5E7EB !important;
 }
+/* =========================================================================
+   ACTIVACIÓN DE TARJETAS POR BLOQUES DE COLOR (PANTALLA 4)
+   ========================================================================= */
+.form-block-card {
+    background: #FFFFFF !important;
+    padding: 16px !important;
+    border-radius: 10px !important;
+    margin-bottom: 20px !important;
+    border: 1px solid #E5E7EB !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+    box-sizing: border-box !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+/* 🎒 Tarjeta 1: Datos de Identidad - Borde Guinda Formal */
+.form-block-card.block-identity {
+    border-left: 6px solid #621132 !important;
+    background: linear-gradient(to right, rgba(98, 17, 50, 0.01), #FFFFFF) !important;
+}
+
+/* 📞 Tarjeta 2: Datos de Contacto - Borde Gris Metálico Neutral */
+.form-block-card.block-contact {
+    border-left: 6px solid #5A6A80 !important;
+    background: linear-gradient(to right, rgba(90, 106, 128, 0.01), #FFFFFF) !important;
+}
+
+/* 📍 Tarjeta 3: Ubicación Territorial - Borde Dorado Premium */
+.form-block-card.block-location {
+    border-left: 6px solid #BC955C !important;
+    background: linear-gradient(to right, rgba(188, 149, 92, 0.01), #FFFFFF) !important;
+}
+
+/* Realce Táctil al interactuar con las tarjetas en el Note 20 */
+.form-block-card:focus-within {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* =========================================================================
+   BARRA DE PROGRESO DORADA EN LA PARTE SUPERIOR DE LA PANTALLA
+   ========================================================================= */
+#form-progress-bar {
+    box-shadow: 0 1px 3px rgba(188, 149, 92, 0.4) !important;
+    background: linear-gradient(to right, #987242, #BC955C) !important;
+}
