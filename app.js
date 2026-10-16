@@ -234,6 +234,45 @@ function seleccionarEstatusVisita(estatus) {
     }
     actualizarEstilosBotonesFormulario();
 }
+function evaluarFlujoSalud() {
+    const recibio = document.getElementById('f-recibio-salud').value;
+    const wrapperVisitas = document.getElementById('wrapper-cuantas-visitas');
+    const selectCuantas = document.getElementById('f-cuantas-visitas');
+    
+    // Resetear valores previos ocultos
+    document.getElementById('f-atencion-salud').value = "";
+    document.getElementById('f-motivo-no-visita').value = "";
+    document.getElementById('f-desea-visita-futura').value = "";
+    selectCuantas.value = "";
+
+    if (recibio === "SI") {
+        wrapperVisitas.style.display = "block";
+        selectCuantas.setAttribute("required", "required");
+    } else if (recibio === "NO") {
+        wrapperVisitas.style.display = "none";
+        selectCuantas.removeAttribute("required");
+        
+        let desea = prompt("¿Le gustaría recibir la visita del personal de salud? (Escriba SÍ o NO):");
+        document.getElementById('f-desea-visita-futura').value = desea ? desea.trim().toUpperCase() : "NO ESPECIFICADO";
+    } else {
+        wrapperVisitas.style.display = "none";
+        selectCuantas.removeAttribute("required");
+    }
+}
+
+function evaluarCantidadVisitas() {
+    const cuantas = document.getElementById('f-cuantas-visitas').value;
+    document.getElementById('f-atencion-salud').value = "";
+    document.getElementById('f-motivo-no-visita').value = "";
+
+    if (cuantas === "1" || cuantas === "2" || cuantas === "3") {
+        let opinion = prompt("¿Qué le pareció la atención del servidor de la salud?:");
+        document.getElementById('f-atencion-salud').value = opinion ? opinion.trim() : "SIN COMENTARIOS";
+    } else if (cuantas === "NO_QUIERE") {
+        let motivo = prompt("¿Cuál es el motivo por el que no desea la visita del personal de salud?:");
+        document.getElementById('f-motivo-no-visita').value = motivo ? motivo.trim() : "SIN MOTIVO ESPECIFICADO";
+    }
+}
 
 function openForm(item) {
     if (!item) return;
