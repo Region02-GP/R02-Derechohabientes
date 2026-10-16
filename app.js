@@ -2,6 +2,7 @@
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwuULgLTTCG4BahNbN-DPMK-r4lvVYuEBmkAqnn8S4MwMgtQBxp6xmZfWYLgfhBln-p/exec";
 
 
+
 if (typeof window.AUTHORIZED_CURPS === 'undefined') { window.AUTHORIZED_CURPS = {}; }
 
 let pendingSync = JSON.parse(localStorage.getItem('pendingSync')) || [];
@@ -13,7 +14,6 @@ let motivoNoLocalizadoValue = "";
 window.currentTratoValue = ""; 
 
 let expedienteDigitalTemporal = { doc_ine_frontal: "", doc_ine_trasera: "", doc_acta: "", doc_comprobante: "", doc_curp: "" };
-
 const CATALOGO_MUNICIPIOS = [
     "GOMEZ PALACIO", "EL ORO", "MAPIMI", "INDE", "SAN BERNARDO", "HIDALGO", "TLAHUALILO", "GUANACEVI", "SAN PEDRO DEL GALLO", "OCAMPO"
 ];
@@ -32,11 +32,9 @@ const CATALOGO_COLONIAS = [
 const CATALOGO_LOCALIDADES = [
     "18 DE MARZO", "ACAPULCO", "ACAPULCO (PROPIEDAD PRIVADA)", "AMERICA UNO", "AMPARO (GRANJA)", "AMPLIACION BUCARELI", "AMPLIACION EL FENIX", "AMPLIACION EL VERGELITO SUR", "AMPLIACION VENECIA", "AMPUEROS", "ANDRES JIMENEZ", "ANTONIO TORRES", "AQUILES SERDAN", "ARCINAS", "ARREOLA HERNANDEZ", "ARTURO MARTINEZ ADAME", "ASCENSION CRUZ", "ASTILLERO", "AURELIO RODRIGUEZ", "AUTODROMO MARCO MAGAÑA (DE LA LAGUNA)", "AUTOTRANSPORTES TRANSBAP [TALLER]", "AVICOLA AURORA", "BELLA UNION", "BERLIN", "BETHEL", "BETHEL (GRANJA)", "BETHEL DOS", "BRITTINGHAM", "BUCARELI", "BUENDIA", "BUGAMBILIA (MARIA CRISTINA) (GRANJA)", "CAIRO DOS", "CALIFORNIA", "CALIFORNIA CRIANZA", "CAMILO CENICEROS", "CAMPO C", "CANTERAS NUEVA CARRARA [MARMOLERA]", "CARLOS GERARDO VALDES BOHIGAS", "CASA BLANCA", "CASETA KILOMETRO 11 MAS 458", "CASETA KILOMETRO 17 CANAL SACRAMENTO", "CEFERESO NUMERO 14", "CEMIX", "CENTRO DE ACOPIO (GRANJA BLANCA)", "CERDO REAL", "CHAPINGO", "CHAVEZ (GRANJA)", "CHIHUAHUITA (CHIHUAHUITA NUEVO)", "CHIHUAHUITA (CHIHUAHUITA VIEJO)", "COLONIA AGRICOLA BUENDIA", "COLONIA AGRICOLA LA POPULAR", "COLONIA ESTABLERA SAN FRANCISCO", "COLONIA SAN ANGEL", "COLONIA SEIS DE JULIO (NUEVO NOE)", "CONEJOS", "CONSUELO OROZCO", "CORDERO CASTRO", "COREA", "CORRALITOS", "CRUZ ARREOLA", "CUATRO DE DICIEMBRE (SAGUNDO)", "CUATRO DE JULIO", "CURVA DE CAMACHO", "DAGOBERTO RAMON ARELLANO", "DAVID GAUSIN", "DELGADO SANTA ROSA", "DESARROLLO DORADO DE MILAGROS AC [HOGAR DE ANCIANOS]", "DESARROLLO LACTEO (DESLAC)", "DINAMITA", "DOLORES", "DON MELY (GRANJA)", "DON RICARDO [QUINTA]", "DON ROBERTO", "DOS AMIGOS", "DULCE MARIA (LA LUZ)", "EJIDO BUENDIA (LA CASETA)", "EL AGUILA", "EL ALTO DEL CHIVO (ROMERO ROSAS)", "EL BARRO", "EL BARRO 33 (EL TREINTA Y TRES)", "EL BERCIAL", "EL BUEN PASTOR", "EL CAIRO DOS (GRANJA)", "EL CAIRO [DESPEPITE]", "EL CARIÑO", "EL CARMEN", "EL CASTILLO", "EL CELO", "EL CHAPARRAL", "EL CHIMAL", "EL CHORIZO (FAMILIA TORRES)", "EL COMPAS", "EL CONSUELO", "EL CONSUELO TRES [NORIA]", "EL CORONEL", "EL CORTIJO", "EL DURAZNITO", "EL DURAZNO", "EL EMPAQUE", "EL ERIAZO", "EL ESFUERZO (GRANJA)", "EL FENIX", "EL GARCES", "EL GATO", "EL HERMANO [AUTOPARTES]", "EL INDIO", "EL JUNCO", "EL LABRADOR", "EL LAGUNERO [RESTAURANTE]", "EL MANANTIAL", "EL MEZQUITE", "EL MEZQUITE (CANTU)", "EL NOGUERAL 555 (CAMPO REAL)", "EL OLIVO", "EL PARAISO", "EL PATO", "EL PILAR", "EL PITAYO", "EL POLVORON", "EL PROGRESO", "EL QUEMADO", "EL RECUERDO", "EL REFUGIO", "EL RETOÑO", "EL ROSARIO", "EL SOL (GRANJA)", "EL SOLITO", "EL TAJITO", "EL TREBOL", "EL TREINTA Y UNO", "EL TRIUNFILLO (EL TRIUNFITO)", "EL TRIUNFO", "EL TUANON", "EL VALLE DE EUREKA", "EL VEINTINUEVE DE AGOSTO", "EL VERGEL", "EL VERGELITO", "EL VOLADO", "EL VUELO DEL AGUILA", "ELIAF (EL CHORIZO)", "ENSENADA", "ESMERALDA", "ESTABLO BREMEN", "ESTABLO BRITINGHAM"
 ];
-
 CATALOGO_LOCALIDADES.push(
     "ESTABLO CHILCHOTA", "ESTABLO EL COMPAS", "ESTABLO EL PORVENIR", "ESTABLO EL VERGEL", "ESTABLO LA GALLEGA", "ESTABLO MADRID", "ESTACION NOE", "ESTACION VIÑEDO", "EUREKA DE MEDIA LUNA (EUREKA)", "FABRICACIONES ESPECIALIZADAS", "FAMILIA ALDAMA SANCHEZ", "FAMILIA BARBA GUTIERREZ", "FAMILIA CISNEROS CALZADA", "FAMILIA CORDERO FLORES", "FAMILIA CORDERO ROSALES", "FAMILIA COSIO CEPEDA", "FAMILIA ESQUIVEL", "FAMILIA GARCIA DELGADILLO", "FAMILIA GARCIA ESCOBEDO", "FAMILIA GUADARRAMA L", "FAMILIA GUTIERREZ PARRA", "FAMILIA LLANES ONTIVEROS", "FAMILIA LOPEZ ZAPATA", "FAMILIA MARTINEZ ANDRADE", "FAMILIA MARTINEZ LOPEZ", "FAMILIA MOTA ANDRADE", "FAMILIA RAMIREZ PEREZ", "FAMILIA RESENDIZ MONTOYA", "FAMILIA RODRIGUEZ CORDERO", "FAMILIA SANCHEZ AGUILAR", "FAMILIA SANCHEZ MACIAS", "FAMILIA SANCHEZ MONTALVO", "FAMILIA SANCHEZ RAMIREZ", "FAMILIA TORRES", "FAMILIA VALDEZ FAVELA", "FAMILIA VARGAS AGUILAR", "FAMILIA VAZQUEZ", "FAMILIA ZAPATA ROSALES", "FERNANDO TURRUBIATES", "FILADELFIA", "FLORENCIO CASAS", "FRANCISCO ESPARZA A", "FRANCISCO MERCADO", "FRANCISCO VILLA", "FRANCISCO VILLA (LOS SIERRA)", "FUENTE BELLA", "GABY (GRANJA)", "GANADERA GILIO", "GANADERA SOLORZANO", "GARCIA (GRANJA)", "GAUCIN ARAIZA", "GAUCIN LUJAN", "GEMA [ESTABLO]", "GLORIETA", "GOMEZ PALACIO", "GONZALEZ TOSCANO", "GRANJA ALBORADA", "GRANJA ANA", "GRANJA CLAUDIA LETICIA", "GRANJA EL CASTILLO", "GRANJA EL ROCIO", "GRANJA ELVIRA", "GRANJA GUADALUPE", "GRANJA LA CANTABRA", "GRANJA PORCINA NOE", "GRANJA PUERTO ARTURO", "GUADALUPE BERLANGA", "GUERRERO (GRANJA)", "GUTIERREZ PARRA", "HERMANOS QUEZADA", "HOREB", "HUERTO SOFIA", "HUITRON", "IDEAGEMA (GRANJA)", "IDEAL (GRANJA)", "ILHUICAMINA", "INDEPENDENCIA", "INDUSTRIAL GUAJARDO", "INDUSTRIAL MAFER", "ISIDRO MORALES", "J GUADALUPE RODRIGUEZ", "JACINTO CAMACHO", "JAIME ROMERO", "JERICO", "JERUSALEM", "JEZALA", "JIMENEZ (JIMENEZ UNO)", "JIMENEZ 2A", "JOLO", "JOSE ANTUNEZ", "JOSE GUADALUPE ANTUNEZ", "JOSE MARIA MORELOS Y PAVON", "JOSE ROBLES", "JOSE SALDAÑA", "JUAN CARLOS SILVA BERNAL", "JUAN LARRIÑAGA", "JUAN LLANES", "JUAN MANUEL", "JUAN RODRIGUEZ", "LA AMPLIACION", "LA AURORA", "LA BECERRA", "LA BILLETERA", "LA CABAÑA", "LA CAPILLA", "LA CASA ROSA", "LA CHILLA", "LA COMPETENCIA", "LA DOÑA", "LA EMPRESA", "LA ENCANTADA", "LA ESCONDIDA", "LA ESPERANZA", "LA ESTRELLA", "LA FE", "LA FLOR", "LA FORTUNA", "LA FOSA", "LA GAVIA", "LA HERMIDA", "LA HERRADURA", "LA ISLA", "LA JARITA", "LA LAGUNITA", "LA LUZ", "LA MAGDALENA", "LA NORIA DE JABONCILLO", "LA NORIA DEL GAVILAN", "LA PAZ", "LA PEQUEÑA SANTANA", "LA PLATA", "LA PLATILLA", "LA POPULAR", "LA PROVIDENCIA", "LA REVANCHA", "LA ROSITA", "LA RUMOROSA", "LA SOLEDAD", "LA TEHUA", "LA VEGA", "LA VEGA DEL PARAISO", "LAGUSOL", "LAS 3 MARIAS", "LAS CARMELAS", "LAS CARMELITAS", "LAS COYOTERAS", "LAS CRIBAS", "LAS CUATITAS", "LAS FLORES", "LAS LECHUZAS", "LAS MACITAS", "LAS MARGARITAS", "LAS MERCEDES F2", "LAS PALMAS", "LAS PLAYAS", "LAS TRES B", "LAS VIRGINIAS", "LAZARO CARDENAS", "LETICIA", "LOPEZ ZAPATA", "LOS 3 HERMANOS", "LOS ANDRADE", "LOS ANFIBIOS", "LOS ANGELES", "LOS CONTRERAS", "LOS DELGADO", "LOS DOS COMPADRES", "LOS DULCES NOMBRES", "LOS EUCALIPTOS", "LOS MARTINEZ", "LOS MIRASOLES", "LOS NOGALES", "LOS OLIVOS", "LOS ORGANOS", "LOS PAPIRINGOS", "LOS POTRILLOS", "LOS REYES", "LOS TREINTA", "LOS TRES CAMACHO", "LUPITA", "MANILA", "MAPIMI", "MAQUILAS Y MINERALES ALFERY", "MARIA ANTONIETA", "MARIA TERESA", "MARMARTHA", "MARTINEZ LEYVA", "MI TUMBA", "MIGUEL MONTAÑEZ MEZA", "MIGUEL SAMANIEGO", "MOISES LOPEZ", "MOLINO LOS ANTUNEZ", "NATO HERNANDEZ", "NAZAS", "NEXTLALPAN", "NICOLAS ROQUE", "NINGUNO", "NOE", "NOEL GAUSIN", "NOELIE (GRANJA)", "NORIA 1919", "NORIA 1926", "NORIA 1981", "NORIA 273", "NORIA DE JIMENEZ DOS", "NORIA DE LA TEHUA", "NORIA DE LA VIRGINIA", "NORIA DEL CONSUELO", "NORIA EL RECUERDO", "NORIA GREGORIO GARCIA", "NORIA LA CUATRO", "NORIA LA TRES", "NORIA LA UNA", "NORIA PARAISO", "NORIA SAN GONZALO", "NORIA SAN MARTIN", "NORIA SECTOR DOS", "NORIA SECTOR VEINTITRES", "NORIA VENECIA CINCO", "NUEVO AMANECER", "NUEVO BARRO", "NUEVO GOMEZ", "NUEVO JERICO", "NUMANCIA", "PABLO LARRIÑAGA", "PADILLA SALAS", "PALO BLANCO", "PALO HUECO", "PARAISO SECTOR 3", "PASTOR ROUAIX", "PATZCUARO", "PENJAMO", "PEQUEÑA BERLIN", "PIMENTEL", "POANAS", "PORVENIR", "POZO NUMERO DOS", "POZO PANCHO VILLA", "PREVEDEL", "PRODUCTOS AGROPECUARIOS 2 Y 2", "PROVIDENCIA", "PUEBLO NUEVO (EL SIETE)", "PUENTE DE LA TORREÑA", "PURISIMA", "QUINTA ALINA", "QUINTA ARMONIA", "QUINTA BAM BAM", "QUINTA EL CAPRICHO", "QUINTA EL RETIRO", "QUINTA ESPERANZA", "QUINTA LAS ILUSIONES", "QUINTA LILIAN", "QUINTA ROSY", "QUINTA SANTA MONICA", "RAMIRO CANALES", "RAMIRO ROJAS", "RAMONA HERMOSILLO", "RANCHO GORDO", "RANCHO GUADALUPE", "RANCHO LA HECTAREA", "RANCHO NUEVO", "RANCHO ROSALBA", "REAL DE SAN SEBASTIAN", "REFORMA", "REMIGIO CUEVAS GALINDO", "RESUMIDEROS", "REYES CASTRO", "REYES SANCHEZ", "RIGOBERTO BECERRA", "RINCON DE SANTA CRUZ", "RINCONADA", "RIOS (GRANJA)", "RIVERA_LLANES", "ROBERTO GARCIA", "ROBERTO RIOS", "RUTILIO GARCIA", "SAN AGUSTIN", "SAN ALBERTO", "SAN ANTONIO", "SAN AURELIO", "SAN CARLOS", "SAN FELIPE", "SAN FERNANDO", "SAN FRANCISCO", "SAN GABRIEL", "SAN GERARDO", "SAN ISIDRO", "SAN JOSE", "SAN JOSE DE VIÑEDO", "SAN JUAN", "SAN LORENZO", "SAN LUIS", "SAN LUISITO", "SAN MANUEL", "SAN MARTIN", "SAN MIGUEL", "SAN PEDRO", "SAN RAMIRO", "SAN RAMON", "SAN ROQUE", "SAN SEBASTIAN", "SAN SERGIO", "SAN VICENTE", "SANTA ANGELICA", "SANTA CLARA", "SANTA CRUZ", "SANTA CRUZ LUJAN", "SANTA FE", "SANTA GERTRUDIS", "SANTA HERMINIA", "SANTA INES", "SANTA JULIA", "SANTA LUCINA", "SANTA MARIA", "SANTA ROSA", "SANTA ROSITA", "SANTA SOFIA", "SANTA TERESA", "SANTIAGO", "SIERRA HERMOSA", "TRECE DE MARZO", "TRES ESTRELLAS", "TRES MARIAS", "TRES ROBLES", "TRES VICTORIAS", "VALDEZ", "VAZQUEZ", "VENECIA", "VENUSTIANO CARRANZA", "VIANEY", "VICENTE NAVA", "VICTOR CARRILLO HERNANDEZ", "VILLA GREGORIO GARCIA", "VILLAS URBI DEL CEDRO", "VILMA ALE DE HERRERA", "VIÑASOL", "YOLANDA (GRANJA)"
 );
-
 const DB_NAME = "R02_DB"; const DB_VERSION = 1; const STORE_NAME = "derechohabientes"; let db;
 const request = indexedDB.open(DB_NAME, DB_VERSION);
 request.onupgradeneeded = (e) => {
@@ -48,6 +46,7 @@ request.onupgradeneeded = (e) => {
 };
 request.onsuccess = (e) => { db = e.target.result; updateLocalCounter(); preloadDatabaseToMemory(); };
 request.onerror = (e) => { console.error("Error IndexedDB:", e.target.error); };
+
 function updateLocalCounter() {
     if (!db) return;
     const countRequest = db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).count();
@@ -60,7 +59,6 @@ function updateLocalCounter() {
     if (document.getElementById('metric-pendientes-visitas')) document.getElementById('metric-pendientes-visitas').innerText = pendientesPorSubir;
     if (document.getElementById('pending-count')) document.getElementById('pending-count').innerText = pendientesPorSubir;
 }
-
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
@@ -99,7 +97,6 @@ function login() {
         changeScreen('screen-welcome');
     } else { alert("CURP no autorizada o inválida."); }
 }
-// BUSCA ESTE TRAMO EXACTO DENTRO DE downloadAllDataMassive() EN TU APP.JS Y DÉJALO ASÍ:
 async function downloadAllDataMassive() {
     const btn = document.getElementById('btn-massive-download');
     const progressContainer = document.getElementById('progress-container'); const progressBar = document.getElementById('progress-bar'); const progressText = document.getElementById('progress-text');
@@ -129,7 +126,6 @@ async function downloadAllDataMassive() {
         }
         progressText.innerText = `¡Descarga completa! ${totalCargados} registros listos.`;
         
-        // CORRECCIÓN CLAVE: Restablece el pre-cargado asíncrono para liberar el ruteador de la lista
         preloadDatabaseToMemory(); 
         updateLocalCounter(); 
         alert(`✅ ÉXITO TOTAL: Se descargaron y sincronizaron ${totalCargados} registros en tu teléfono.`); 
@@ -142,7 +138,6 @@ function preloadDatabaseToMemory() {
     if (!db) return;
     db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).getAll().onsuccess = (e) => { localMemoryDatabase = e.target.result || []; };
 }
-
 function searchData() {
     const query = document.getElementById('search-input').value.toLowerCase().trim(); const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = ""; if (query.length < 3) return;
@@ -222,7 +217,6 @@ function buscarColoniasEnPantalla() {
         });
     } else { resultsContainer.style.display = "block"; resultsContainer.innerHTML = '<div style="padding:12px; color:#b91c1c; font-size:14px; font-weight:bold; text-align:center;">❌ Sin de coincidencia</div>'; }
 }
-
 function seleccionarEstatusVisita(estatus) {
     currentEstatusVisita = estatus.toUpperCase();
     if (currentEstatusVisita === "NO LOCALIZADO") {
@@ -241,20 +235,6 @@ function seleccionarEstatusVisita(estatus) {
     actualizarEstilosBotonesFormulario();
 }
 
-function actualizarEstilosBotonesFormulario() {
-    const btnLoc = document.getElementById('btn-status-localizado'); 
-    const btnNoLoc = document.getElementById('btn-status-nolocalizado');
-    if (!btnLoc || !btnNoLoc) return;
-    if (currentEstatusVisita === "LOCALIZADO") {
-        btnLoc.style.backgroundColor = "#E6F4EA"; btnLoc.style.borderColor = "#137333"; btnLoc.style.color = "#137333";
-        btnNoLoc.style.backgroundColor = "#F3F4F6"; btnNoLoc.style.borderColor = "#CBD5E0"; btnNoLoc.style.color = "#9CA3AF";
-    } else if (currentEstatusVisita === "NO LOCALIZADO") {
-        btnNoLoc.style.backgroundColor = "#FCE8E6"; btnNoLoc.style.borderColor = "#C5221F"; btnNoLoc.style.color = "#C5221F";
-        btnLoc.style.backgroundColor = "#F3F4F6"; btnLoc.style.borderColor = "#CBD5E0"; btnLoc.style.color = "#9CA3AF";
-    }
-} // <-- AQUÍ CIERRA CORRECTAMENTE LA FUNCIÓN DE ESTILOS
-
-// SEPARADA E INDEPENDIENTE EN EL ÁMBITO GLOBAL:
 function openForm(item) {
     if (!item) return;
     document.getElementById('f-curp').value = item['CURP'] || ''; 
@@ -322,7 +302,18 @@ function openForm(item) {
     });
 }
 
-// REEMPLAZA ÚNICAMENTE ESTA FUNCIÓN EN TU APP.JS POR ESTA VERSIÓN CON INDICADORES VISUALES:
+function actualizarEstilosBotonesFormulario() {
+    const btnLoc = document.getElementById('btn-status-localizado'); 
+    const btnNoLoc = document.getElementById('btn-status-nolocalizado');
+    if (!btnLoc || !btnNoLoc) return;
+    if (currentEstatusVisita === "LOCALIZADO") {
+        btnLoc.style.backgroundColor = "#E6F4EA"; btnLoc.style.borderColor = "#137333"; btnLoc.style.color = "#137333";
+        btnNoLoc.style.backgroundColor = "#F3F4F6"; btnNoLoc.style.borderColor = "#CBD5E0"; btnNoLoc.style.color = "#9CA3AF";
+    } else if (currentEstatusVisita === "NO LOCALIZADO") {
+        btnNoLoc.style.backgroundColor = "#FCE8E6"; btnNoLoc.style.borderColor = "#C5221F"; btnNoLoc.style.color = "#C5221F";
+        btnLoc.style.backgroundColor = "#F3F4F6"; btnLoc.style.borderColor = "#CBD5E0"; btnLoc.style.color = "#9CA3AF";
+    }
+}
 function procesarFotoEvidencia(inputElement, previewId, claveDocumento, wrapperId, buttonId, textoNuevo) {
     if (inputElement && inputElement.files && inputElement.files[0]) {
         const file = inputElement.files[0];
@@ -345,14 +336,11 @@ function procesarFotoEvidencia(inputElement, previewId, claveDocumento, wrapperI
                 
                 const imagenComprimidaBase64 = canvas.toDataURL('image/jpeg', 0.6);
                 
-                // 1. Muestra la miniatura de control estético
                 const imgPreview = document.getElementById(previewId);
                 if (imgPreview) { imgPreview.src = imagenComprimidaBase64; imgPreview.style.display = "block"; }
                 
-                // 2. Guarda en la RAM local offline
                 if (typeof expedienteDigitalTemporal !== 'undefined') { expedienteDigitalTemporal[claveDocumento] = imagenComprimidaBase64; }
                 
-                // 3. SEMÁFORO VISUAL: Pinta el contenedor de verde menta institucional y cambia el botón
                 const contenedor = document.getElementById(wrapperId);
                 const boton = document.getElementById(buttonId);
                 if (contenedor && boton) {
@@ -371,7 +359,6 @@ function procesarFotoEvidencia(inputElement, previewId, claveDocumento, wrapperI
 function saveData(event) {
     if (event) event.preventDefault();
     
-    // 1. Validaciones directas en memoria RAM libres de bloqueos de pantalla
     const fCurp = document.getElementById('f-curp');
     const targetCurp = fCurp ? fCurp.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase().trim() : "";
     if (!targetCurp || targetCurp.length !== 18) return alert("🛑 ERROR EN CAMPO: La CURP debe tener 18 caracteres obligatorios.");
@@ -390,11 +377,9 @@ function saveData(event) {
         }
     }
 
-    // 2. Vinculación síncrona con el registro de IndexedDB
     const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp); 
     const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
     
-    // CORRECCIÓN CLAVE: Se amarran las propiedades en minúsculas de la cámara para que viajen con datos binarios reales
     const record = {
         'CURP': targetCurp, 
         'ID': idValue, 
@@ -428,7 +413,6 @@ function saveData(event) {
         'DOC_CURP': expedienteDigitalTemporal.doc_curp || originalRecord.doc_curp || originalRecord.DOC_CURP || ""
     };
 
-    // 3. Almacenamiento local en IndexedDB
     const tx = db.transaction(STORE_NAME, "readwrite"); 
     tx.objectStore(STORE_NAME).put(record);
     tx.oncomplete = function() {
@@ -442,24 +426,33 @@ function saveData(event) {
         changeScreen('screen-search');
     };
 }
-
-// BUSCA EL TRAMO FINAL DE abrirFormularioVacioAltaNueva() EN TU APP.JS Y DÉJALO ASÍ:
+function abrirFormularioVacioAltaNueva() {
+    if (!currentUser) { alert("🚨 ERROR OPERATIVO: Inicie sesión primero."); changeScreen('screen-login'); return; }
+    document.getElementById('f-curp').removeAttribute('readonly'); document.getElementById('f-nombre').removeAttribute('readonly'); document.getElementById('f-paterno').removeAttribute('readonly'); document.getElementById('f-materno').removeAttribute('readonly');
+    const inputs = ['f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-telfijo', 'f-telcel', 'f-localidad', 'f-seccion', 'f-colonia', 'f-cp', 'f-calle', 'f-numext', 'f-referencia', 'f-causal'];
+    inputs.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    let municipioAsignado = 'GOMEZ PALACIO'; if (typeof AUTHORIZED_CURPS !== 'undefined' && AUTHORIZED_CURPS[currentUser.curp]) { municipioAsignado = AUTHORIZED_CURPS[currentUser.curp].municipio || 'GOMEZ PALACIO'; }
+    const fMun = document.getElementById('f-municipio'); if (fMun) fMun.value = municipioAsignado.toUpperCase().trim();
+    const fId = document.getElementById('f-id'); if (fId) fId.value = 'NUEVO';
+    const fSit = document.getElementById('f-situacion'); if (fSit) fSit.value = 'SIN_REGISTRO';
+    currentEstatusVisita = "LOCALIZADO"; motivoNoLocalizadoValue = ""; window.currentTratoValue = ""; actualizarEstilosBotonesFormulario(); actualizarEstilosBotonesTrato();
+    const fLat = document.getElementById('f-lat'); if (fLat) fLat.value = "Buscando satélite...";
+    const fLon = document.getElementById('f-lon'); if (fLon) fLon.value = "Buscando satélite...";
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => { 
+            if (fLat) fLat.value = String(position.coords.latitude.toFixed(6)).replace(",", "."); 
+            if (fLon) fLon.value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
+        }, () => { if (fLat) fLat.value = "ERROR"; if (fLon) fLon.value = "ERROR"; });
+    }
     const curpInputEl = document.getElementById('f-curp'); if (curpInputEl) { curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal); curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal); }
     changeScreen('screen-form');
     
     expedienteDigitalTemporal = { doc_ine_frontal: "", doc_ine_trasera: "", doc_acta: "", doc_comprobante: "", doc_curp: "" };
     const miniaturas = ['preview-ine-frontal', 'preview-ine-trasera', 'preview-acta', 'preview-comprobante', 'preview-curp'];
     miniaturas.forEach(id => { const img = document.getElementById(id); if (img) { img.src = ""; img.style.display = "none"; } });
-    
-    // ... código anterior de la función
     vincularEventosProgresoFormulario();
     calcularPorcentajeProgresoFormulario();
 }
-
-function verificarCurpDuplicadaEnTiempoReal(e) {
-    const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase(); 
-    e.target.value = valorLimpio; 
-// ... continúa el resto del código de forma normal
 
 function verificarCurpDuplicadaEnTiempoReal(e) {
     const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase(); e.target.value = valorLimpio; 
@@ -471,6 +464,7 @@ function verificarCurpDuplicadaEnTiempoReal(e) {
         }
     }
 }
+
 function openHistoryScreen() {
     changeScreen('screen-history'); 
     if (document.getElementById('pending-count')) document.getElementById('pending-count').innerText = pendingSync.length;
@@ -482,7 +476,6 @@ function openHistoryScreen() {
         });
     }
 }
-
 async function syncWithSheets() {
     if (pendingSync.length === 0) return alert("No tienes registros pendientes por subir.");
     try {
@@ -517,6 +510,7 @@ function clearLocalStorage() {
         if (db) { db.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).clear().onsuccess = () => { document.getElementById('search-input').value = ""; document.getElementById('search-results').innerHTML = ""; alert("Limpiado."); changeScreen('screen-welcome'); }; } else { changeScreen('screen-welcome'); }
     }
 }
+
 function seleccionarTrato(opcion) { 
     window.currentTratoValue = opcion.toUpperCase(); 
     actualizarEstilosBotonesTrato(); 
@@ -554,13 +548,12 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)); 
     }); 
 }
-// MOTOR INTERACTIVO: Enlaza los inputs del Note 20 al cálculo en tiempo real
+
 function vincularEventosProgresoFormulario() {
     document.querySelectorAll('.js-calc-progress').forEach(input => {
         input.removeEventListener('input', calcularPorcentajeProgresoFormulario);
         input.addEventListener('input', calcularPorcentajeProgresoFormulario);
     });
-    // Enlaza también los selectores de búsqueda por fichas automáticos
     ['f-municipio', 'f-localidad', 'f-colonia'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -570,7 +563,6 @@ function vincularEventosProgresoFormulario() {
     });
 }
 
-// FUNCIÓN MATEMÁTICA CORE: Evalúa qué campos tienen texto y pinta la barra dorada
 function calcularPorcentajeProgresoFormulario() {
     const camposEvaluados = [
         'f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-municipio', 
