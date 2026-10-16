@@ -443,38 +443,20 @@ function saveData(event) {
     };
 }
 
-function abrirFormularioVacioAltaNueva() {
-    if (!currentUser) { alert("🚨 ERROR OPERATIVO: Inicie sesión primero."); changeScreen('screen-login'); return; }
-    document.getElementById('f-curp').removeAttribute('readonly'); document.getElementById('f-nombre').removeAttribute('readonly'); document.getElementById('f-paterno').removeAttribute('readonly'); document.getElementById('f-materno').removeAttribute('readonly');
-    const inputs = ['f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-telfijo', 'f-telcel', 'f-localidad', 'f-seccion', 'f-colonia', 'f-cp', 'f-calle', 'f-numext', 'f-referencia', 'f-causal'];
-    inputs.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-    let municipioAsignado = 'GOMEZ PALACIO'; if (typeof AUTHORIZED_CURPS !== 'undefined' && AUTHORIZED_CURPS[currentUser.curp]) { municipioAsignado = AUTHORIZED_CURPS[currentUser.curp].municipio || 'GOMEZ PALACIO'; }
-    const fMun = document.getElementById('f-municipio'); if (fMun) fMun.value = municipioAsignado.toUpperCase().trim();
-    const fId = document.getElementById('f-id'); if (fId) fId.value = 'NUEVO';
-    const fSit = document.getElementById('f-situacion'); if (fSit) fSit.value = 'SIN_REGISTRO';
-    currentEstatusVisita = "LOCALIZADO"; motivoNoLocalizadoValue = ""; window.currentTratoValue = ""; actualizarEstilosBotonesFormulario(); actualizarEstilosBotonesTrato();
-    const fLat = document.getElementById('f-lat'); if (fLat) fLat.value = "Buscando satélite...";
-    const fLon = document.getElementById('f-lon'); if (fLon) fLon.value = "Buscando satélite...";
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((position) => { 
-            if (fLat) fLat.value = String(position.coords.latitude.toFixed(6)).replace(",", "."); 
-            if (fLon) fLon.value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
-        }, () => { if (fLat) fLat.value = "ERROR"; if (fLon) fLon.value = "ERROR"; });
-    }
+// BUSCA EL TRAMO FINAL DE abrirFormularioVacioAltaNueva() EN TU APP.JS Y DÉJALO ASÍ:
     const curpInputEl = document.getElementById('f-curp'); if (curpInputEl) { curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal); curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal); }
     changeScreen('screen-form');
     
-    // CORRECCIÓN MULTIMEDIA: Inicializa el contenedor con las claves mapeadas de forma síncrona
     expedienteDigitalTemporal = { doc_ine_frontal: "", doc_ine_trasera: "", doc_acta: "", doc_comprobante: "", doc_curp: "" };
     const miniaturas = ['preview-ine-frontal', 'preview-ine-trasera', 'preview-acta', 'preview-comprobante', 'preview-curp'];
     miniaturas.forEach(id => { const img = document.getElementById(id); if (img) { img.src = ""; img.style.display = "none"; } });
-        // INYECTA ESTO AL FINAL ABSOLUTO DE abrirFormularioVacioAltaNueva():
+    
     vincularEventosProgresoFormulario();
     calcularPorcentajeProgresoFormulario();
-}
+} // <-- SOLAMENTE DEBE QUEDAR ESTA LLAVE DE CIERRE. LA OTRA SE BORRA.
 
-}
-
+function verificarCurpDuplicadaEnTiempoReal(e) {
+// ... (Todo lo demás hacia abajo se queda exactamente igual)
 function verificarCurpDuplicadaEnTiempoReal(e) {
     const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase(); e.target.value = valorLimpio; 
     if (valorLimpio.length === 18 && typeof localMemoryDatabase !== 'undefined') {
