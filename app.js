@@ -419,7 +419,7 @@ function saveData(event) {
     const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp); 
     const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
     
-    const record = {
+        const record = {
         'CURP': targetCurp, 
         'ID': idValue, 
         'NOMBRE': document.getElementById('f-nombre').value, 
@@ -445,6 +445,14 @@ function saveData(event) {
         'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"), 
         'USUARIO_MODIFICA': currentUser.name, 
         'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || "",
+        
+        // NUEVOS CAMPOS DE SALUD ENVIADOS AL JSON SÍNCRONO
+        'RECIBIO_VISITA_SALUD': document.getElementById('f-recibio-salud').value,
+        'CUANTAS_VISITAS_SALUD': document.getElementById('f-cuantas-visitas').value,
+        'OPINION_ATENCION_SALUD': document.getElementById('f-atencion-salud').value,
+        'MOTIVO_NO_VISITA_SALUD': document.getElementById('f-motivo-no-visita').value,
+        'DESEA_VISITA_SALUD': document.getElementById('f-desea-visita-futura').value,
+
         'DOC_INE_FRONTAL': expedienteDigitalTemporal.doc_ine_frontal || originalRecord.doc_ine_frontal || originalRecord.DOC_INE_FRONTAL || "", 
         'DOC_INE_TRASERA': expedienteDigitalTemporal.doc_ine_trasera || originalRecord.doc_ine_trasera || originalRecord.DOC_INE_TRASERA || "", 
         'DOC_ACTA': expedienteDigitalTemporal.doc_acta || originalRecord.doc_acta || originalRecord.DOC_ACTA || "", 
