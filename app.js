@@ -316,7 +316,8 @@ function openForm(item) {
     });
 }
 
-function procesarFotoEvidencia(inputElement, previewId, claveDocumento) {
+// REEMPLAZA ÚNICAMENTE ESTA FUNCIÓN EN TU APP.JS POR ESTA VERSIÓN CON INDICADORES VISUALES:
+function procesarFotoEvidencia(inputElement, previewId, claveDocumento, wrapperId, buttonId, textoNuevo) {
     if (inputElement && inputElement.files && inputElement.files[0]) {
         const file = inputElement.files[0];
         const reader = new FileReader();
@@ -327,29 +328,32 @@ function procesarFotoEvidencia(inputElement, previewId, claveDocumento) {
                 const MAX_WIDTH = 800;
                 let width = imgHtml.width;
                 let height = imgHtml.height;
-                
                 if (width > MAX_WIDTH) {
                     height = Math.round((height * MAX_WIDTH) / width);
                     width = MAX_WIDTH;
                 }
-                
                 const canvas = document.createElement('canvas');
-                canvas.width = width;
-                canvas.height = height;
+                canvas.width = width; canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(imgHtml, 0, 0, width, height);
                 
                 const imagenComprimidaBase64 = canvas.toDataURL('image/jpeg', 0.6);
                 
+                // 1. Muestra la miniatura de control estético
                 const imgPreview = document.getElementById(previewId);
-                if (imgPreview) {
-                    imgPreview.src = imagenComprimidaBase64;
-                    imgPreview.style.display = "block";
-                }
+                if (imgPreview) { imgPreview.src = imagenComprimidaBase64; imgPreview.style.display = "block"; }
                 
-                // CORRECCIÓN MULTIMEDIA: Almacena en las mismas claves que Sheets para evitar quiebres
-                if (typeof expedienteDigitalTemporal !== 'undefined') {
-                    expedienteDigitalTemporal[claveDocumento] = imagenComprimidaBase64;
+                // 2. Guarda en la RAM local offline
+                if (typeof expedienteDigitalTemporal !== 'undefined') { expedienteDigitalTemporal[claveDocumento] = imagenComprimidaBase64; }
+                
+                // 3. SEMÁFORO VISUAL: Pinta el contenedor de verde menta institucional y cambia el botón
+                const contenedor = document.getElementById(wrapperId);
+                const boton = document.getElementById(buttonId);
+                if (contenedor && boton) {
+                    contenedor.style.backgroundColor = "#E6F4EA";
+                    contenedor.style.borderColor = "#236947";
+                    boton.style.backgroundColor = "#236947";
+                    boton.innerText = "✓ " + textoNuevo;
                 }
             };
             imgHtml.src = e.target.result;
@@ -357,6 +361,7 @@ function procesarFotoEvidencia(inputElement, previewId, claveDocumento) {
         reader.readAsDataURL(file);
     }
 }
+
 function saveData(event) {
     if (event) event.preventDefault();
     
