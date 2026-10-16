@@ -87,21 +87,12 @@
             <div id="search-results" class="results-list"></div>
         </section>
 
-                <!-- PANTALLA 4: FORMULARIO CON BARRA DE PROGRESO FIJA SUPERIOR -->
-        <section id="screen-form" class="app-screen hidden" style="padding-top: 65px;">
-            
-            <!-- CONTENEDOR FIJO DE PROGRESO (NUEVO) -->
-            <div class="form-progress-sticky">
-                <div class="progress-bar-container">
-                    <div id="form-progress-bar" style="width: 0%; height: 100%; background-color: var(--secondary-color); transition: width 0.3s ease;"></div>
-                </div>
-                <div class="progress-text-row">
-                    <h2 style="margin: 0; font-size: 16px;">Actualización de Domicilio</h2>
-                    <span id="form-progress-text" style="font-size: 14px; font-weight: 800; color: var(--secondary-dark);">0%</span>
-                </div>
+                       <!-- PANTALLA 4: FORMULARIO (SIN BARRA DE PROGRESO) -->
+        <section id="screen-form" class="app-screen hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; margin-top: 5px;">
+                <h2 style="margin: 0;">Actualización de Domicilio</h2>
             </div>
 
-            <!-- BOTONES DE ESTATUS -->
             <div style="display: flex; gap: 10px; margin-bottom: 15px; margin-top: 10px;">
                 <button type="button" id="btn-status-localizado" onclick="seleccionarEstatusVisita('LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s;">LOCALIZADO</button>
                 <button type="button" id="btn-status-nolocalizado" onclick="seleccionarEstatusVisita('NO LOCALIZADO')" style="flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border: 2px solid #CBD5E0; background-color: #F3F4F6; color: #4B5563; cursor: pointer; transition: all 0.2s;">NO LOCALIZADO</button>
@@ -109,6 +100,8 @@
             
             <input type="hidden" id="f-motivo" value="">
             <form id="edit-form" onsubmit="saveData(event)">
+                <!-- ... El resto de tus tarjetas de campos sigue exactamente igual ... -->
+
                 <!-- ... El resto de tus tarjetas de campos sigue exactamente igual ... -->
 
                 <div id="form-fields-wrapper">
