@@ -10,8 +10,7 @@
 <body>
     <header class="main-header">
         <div class="header-brand-wrapper">
-            <!-- CORREGIDO: Eliminadas las comillas dobles consecutivas del enlace para pintar el logo institucional -->
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSap4A_OenSxcNiOTBRpxDbx9GBBaFTkyaCg0E4Spx0&s" alt="Logotipo Institucional" class="header-logo">
+            <img src="https://gstatic.com" alt="Logotipo Institucional" class="header-logo">
         </div>
     </header>
 
@@ -28,8 +27,7 @@
             </div>
             <button type="button" onclick="login()">Ingresar</button>
         </section>
-
-        <!-- PANTALLA 2: BIENVENIDA CON RESUMEN HORIZONTAL -->
+        <!-- PANTALLA 2: BIENVENIDA -->
         <section id="screen-welcome" class="app-screen hidden">
             <div class="screen-toolbar">
                 <h2 id="welcome-message">Bienvenido</h2>
@@ -63,8 +61,7 @@
                 <button type="button" onclick="downloadAllDataMassive()" id="btn-massive-download" class="btn-secondary">📥 Descargar Base Completa</button>
             </div>
         </section>
-
-        <!-- PANTALLA 3: BUSCADOR CON ENCABEZADO DE IDENTIDAD -->
+        <!-- PANTALLA 3: BUSCADOR -->
         <section id="screen-search" class="app-screen hidden">
             <div class="screen-toolbar">
                 <h2 id="welcome-message-search">Bienvenido</h2>
@@ -89,9 +86,9 @@
             </div>
             <div id="search-results" class="results-list"></div>
         </section>
-        <!-- PANTALLA 4: FORMULARIO CON BARRA DE PROGRESO Y BLOQUES DE COLOR -->
+
+        <!-- PANTALLA 4: FORMULARIO -->
         <section id="screen-form" class="app-screen hidden" style="padding-top: 35px;">
-            <!-- BARRA DE PROGRESO DORADA SUPERIOR -->
             <div style="position: absolute; top: 0; left: 0; width: 100%; height: 6px; background-color: #E5E7EB; border-top-left-radius: 12px; border-top-right-radius: 12px; overflow: hidden;">
                 <div id="form-progress-bar" style="width: 0%; height: 100%; background-color: var(--secondary-color); transition: width 0.3s ease;"></div>
             </div>
@@ -108,13 +105,9 @@
             <input type="hidden" id="f-motivo" value="">
             <form id="edit-form" onsubmit="saveData(event)">
                 <div id="form-fields-wrapper">
+                    <!-- Tarjeta 1: Datos de Identidad -->
                     
-                  <!-- 🎒 TARJETA 1: DATOS DE IDENTIDAD (CORREGIDO) -->
-
-    <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; font-weight: 800; color: var(--primary-color); text-transform: uppercase; letter-spacing: 0.5px;">👤 Datos de Identidad</h3>
-    <!-- ... tus inputs de CURP, ID, Nombre, etc ... -->
-</div>
-
+                        <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; font-weight: 800; color: var(--primary-color); text-transform: uppercase; letter-spacing: 0.5px;">👤 Datos de Identidad</h3>
                         <div class="form-group" style="margin-bottom: 12px;">
                             <label>CURP *:</label>
                             <input type="text" id="f-curp" maxlength="18" minlength="18" required style="text-transform:uppercase;" class="js-calc-progress">
@@ -124,11 +117,14 @@
                             <div><label>Situación:</label><input type="text" id="f-situacion" readonly></div>
                         </div>
                         <div class="form-group" style="margin-top: 10px; margin-bottom: 10px;"><label>Nombre *:</label><input type="text" id="f-nombre" required class="js-calc-progress"></div>
-                        <div class="form-grid"><div class="form-group"><label>Ap. Paterno *:</label><input type="text" id="f-paterno" required class="js-calc-progress"></div><div class="form-group"><label>Ap. Materno *:</label><input type="text" id="f-materno" required class="js-calc-progress"></div></div>
+                        <div class="form-grid">
+                            <div class="form-group"><label>Ap. Paterno *:</label><input type="text" id="f-paterno" required class="js-calc-progress"></div>
+                            <div class="form-group"><label>Ap. Materno *:</label><input type="text" id="f-materno" required class="js-calc-progress"></div>
+                        </div>
                         <div class="form-group" style="margin-bottom: 0;" class="text-disabled"><label>Causal:</label><input type="text" id="f-causal" readonly style="background-color: #EDF2F7;"></div>
                     </div>
 
-                    <!-- 📞 TARJETA 2: DATOS DE CONTACTO (Borde Gris Metálico Neutral) -->
+                    <!-- Tarjeta 2: Datos de Contacto -->
                     <div class="form-block-card block-contact" style="border-left: 5px solid #5A6A80; background-color: rgba(90, 106, 128, 0.02); padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #E5E7EB; border-left-width: 5px;">
                         <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; font-weight: 800; color: #4A5568; text-transform: uppercase; letter-spacing: 0.5px;">📞 Medios de Contacto</h3>
                         <div class="form-grid" style="margin-bottom: 0;">
@@ -136,11 +132,11 @@
                             <div class="form-group" style="margin-bottom: 0;"><label>Teléfono Celular:</label><input type="tel" id="f-telcel" pattern="[0-9]{10}" maxlength="10" placeholder="10 dígitos" class="js-calc-progress"></div>
                         </div>
                     </div>
-                    <!-- 📍 TARJETA 3: UBICACIÓN TERRITORIAL (Borde Dorado Premium) -->
+
+                    <!-- Tarjeta 3: Ubicación Territorial -->
                     <div class="form-block-card block-location" style="border-left: 5px solid var(--secondary-color); background-color: rgba(188, 149, 92, 0.02); padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #E5E7EB; border-left-width: 5px;">
                         <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; font-weight: 800; color: var(--secondary-dark); text-transform: uppercase; letter-spacing: 0.5px;">📍 Ubicación Territorial</h3>
                         
-                        <!-- 1. MUNICIPIO POR FICHAS -->
                         <div class="form-group" style="margin-bottom: 12px;">
                             <label style="color: var(--primary-color);">Municipio *:</label>
                             <input type="text" id="f-municipio" readonly required style="background-color: #EDF2F7; font-weight: 700; margin-bottom: 6px;">
@@ -148,7 +144,6 @@
                             <div id="municipio-search-results" style="max-height: 120px; overflow-y: auto; border: 1px solid #E5E7EB; border-radius: 6px; background: #FFFFFF; display: none; margin-top: 5px;"></div>
                         </div>
 
-                        <!-- 2. LOCALIDAD POR FICHAS -->
                         <div class="form-group" style="margin-bottom: 12px;">
                             <label style="color: var(--primary-color);">Localidad *:</label>
                             <input type="text" id="f-localidad" readonly required style="background-color: #EDF2F7; font-weight: 700; margin-bottom: 6px;">
@@ -158,7 +153,6 @@
 
                         <div class="form-group" style="margin-bottom: 12px;"><label>Sección *:</label><input type="number" id="f-seccion" max="9999" required class="js-calc-progress"></div>
 
-                        <!-- 3. COLONIA POR FICHAS -->
                         <div class="form-group" style="margin-bottom: 12px;">
                             <label style="color: var(--primary-color);">Colonia *:</label>
                             <input type="text" id="f-colonia" readonly required style="background-color: #EDF2F7; font-weight: 700; margin-bottom: 6px;">
@@ -197,6 +191,7 @@
                 <button type="button" onclick="changeScreen('screen-search')" class="btn-back" style="margin-top: 12px;">Cancelar</button>
             </form>
         </section>
+        <!-- PANTALLA 5: HISTORIAL -->
         <section id="screen-history" class="app-screen hidden">
             <h2>Historial y Sincronización</h2>
             <div class="metrics" style="background:#f7fafc; padding:15px; border-radius:4px; margin-bottom:15px; border-left:4px solid var(--primary-color);">
@@ -214,6 +209,7 @@
             <div id="history-log" class="log-list"></div>
         </section>
 
+        <!-- PANTALLA 6: DOCUMENTOS DIGITALES -->
         <section id="screen-docs" class="app-screen hidden">
             <div class="screen-number-badge">Doc. Digitales</div>
             <h2>Expediente Digital del Ciudadano</h2>
@@ -255,12 +251,12 @@
 
             <hr style="margin:25px 0;">
             <div class="button-row-grid">
-                <button type="submit" style="margin-top:0; background-color: var(--primary-color);">💾 Guardar Todo</button>
+                <button type="button" onclick="document.getElementById('edit-form').requestSubmit();" style="margin-top:0; background-color: var(--primary-color);">💾 Guardar Todo</button>
                 <button type="button" onclick="changeScreen('screen-form')" class="btn-back" style="margin-top:0;">🔙 Regresar</button>
             </div>
-            </form>
         </section>
 
+        <!-- BARRA DE NAVEGACIÓN INFERIOR -->
         <nav id="app-bottom-nav" class="bottom-nav hidden">
             <button type="button" id="nav-welcome" onclick="changeScreen('screen-welcome')" class="nav-item"><span>📥</span>Inicio</button>
             <button type="button" id="nav-search" class="nav-item" onclick="changeScreen('screen-search')"><span>🔍</span>Búsqueda</button>
