@@ -515,7 +515,6 @@ function clearLocalStorage() {
         if (db) { db.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).clear().onsuccess = () => { document.getElementById('search-input').value = ""; document.getElementById('search-results').innerHTML = ""; alert("Limpiado."); changeScreen('screen-welcome'); }; } else { changeScreen('screen-welcome'); }
     }
 }
-// REEMPLAZA EL FINAL ABSOLUTO DE TU APP.JS PARA QUE QUEDE EXACTAMENTE ASÍ:
 function seleccionarTrato(opcion) { 
     window.currentTratoValue = opcion.toUpperCase(); 
     actualizarEstilosBotonesTrato(); 
