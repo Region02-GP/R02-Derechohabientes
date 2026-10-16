@@ -550,36 +550,9 @@ if ('serviceWorker' in navigator) {
 }
 
 function vincularEventosProgresoFormulario() {
-    document.querySelectorAll('.js-calc-progress').forEach(input => {
-        input.removeEventListener('input', calcularPorcentajeProgresoFormulario);
-        input.addEventListener('input', calcularPorcentajeProgresoFormulario);
-    });
-    ['f-municipio', 'f-localidad', 'f-colonia'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            const observer = new MutationObserver(calcularPorcentajeProgresoFormulario);
-            observer.observe(el, { attributes: true, attributeFilter: ['value'] });
-        }
-    });
+    // Función desactivada
 }
 
 function calcularPorcentajeProgresoFormulario() {
-    const camposEvaluados = [
-        'f-curp', 'f-nombre', 'f-paterno', 'f-materno', 'f-municipio', 
-        'f-localidad', 'f-seccion', 'f-colonia', 'f-cp', 'f-calle', 'f-numext'
-    ];
-    let llenados = 0;
-    camposEvaluados.forEach(id => {
-        const el = document.getElementById(id);
-        if (el && el.value.trim() !== "" && el.value !== "Ningún municipio seleccionado" && el.value !== "Ninguna localidad seleccionada" && el.value !== "Ninguna colonia seleccionada") {
-            llenados++;
-        }
-    });
-    
-    const porcentaje = Math.round((llenados / camposEvaluados.length) * 100);
-    const barra = document.getElementById('form-progress-bar');
-    const texto = document.getElementById('form-progress-text');
-    
-    if (barra) barra.style.width = porcentaje + "%";
-    if (texto) texto.innerText = porcentaje + "%";
+    // Función desactivada
 }
