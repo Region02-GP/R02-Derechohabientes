@@ -307,6 +307,17 @@ function openForm(item) {
             document.getElementById('f-lat').value = "ERROR"; 
             document.getElementById('f-lon').value = "ERROR"; 
         });
+         // ... dentro de openForm(item) añade estas líneas al final para que cargue los datos guardados:
+    document.getElementById('f-recibio-salud').value = item['RECIBIO_VISITA_SALUD'] || '';
+    if (item['RECIBIO_VISITA_SALUD'] === "SI") {
+        document.getElementById('wrapper-cuantas-visitas').style.display = "block";
+        document.getElementById('f-cuantas-visitas').value = item['CUANTAS_VISITAS_SALUD'] || '';
+    } else {
+        document.getElementById('wrapper-cuantas-visitas').style.display = "none";
+    }
+    document.getElementById('f-atencion-salud').value = item['OPINION_ATENCION_SALUD'] || '';
+    document.getElementById('f-motivo-no-visita').value = item['MOTIVO_NO_VISITA_SALUD'] || '';
+    document.getElementById('f-desea-visita-futura').value = item['DESEA_VISITA_SALUD'] || '';
     }
     
     changeScreen('screen-form');
