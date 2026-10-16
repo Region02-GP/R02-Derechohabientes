@@ -168,6 +168,37 @@
                         <div class="form-group" style="margin-bottom: 0;"><label>Referencia:</label><textarea id="f-referencia" rows="2" class="js-calc-progress"></textarea></div>
                     </div>
                 </div>
+                    <!-- 🩺 TARJETA 4: EVALUACIÓN DE PERSONAL DE SALUD (NUEVA) -->
+                    <div class="form-block-card block-health" style="border-left: 5px solid #0F5132; background-color: rgba(15, 81, 50, 0.02); padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #E5E7EB; border-left-width: 5px;">
+                        <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; font-weight: 800; color: #0F5132; text-transform: uppercase; letter-spacing: 0.5px;">🩺 Personal de Salud</h3>
+                        
+                        <!-- Pregunta 1 -->
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label>¿Ya recibió la visita de los servidores de la salud? *</label>
+                            <select id="f-recibio-salud" required style="width:100%; padding:11px 14px; border:1px solid #CBD5E0; border-radius:8px; font-size:16px;" onchange="evaluarFlujoSalud()">
+                                <option value="">-- Seleccione una opción --</option>
+                                <option value="SI">SÍ</option>
+                                <option value="NO">NO</option>
+                            </select>
+                        </div>
+
+                        <!-- Pregunta 2 (Oculta por defecto) -->
+                        <div class="form-group" id="wrapper-cuantas-visitas" style="margin-bottom: 12px; display: none;">
+                            <label>¿Cuántas visitas ha recibido? *</label>
+                            <select id="f-cuantas-visitas" style="width:100%; padding:11px 14px; border:1px solid #CBD5E0; border-radius:8px; font-size:16px;" onchange="evaluarCantidadVisitas()">
+                                <option value="">-- Seleccione una opción --</option>
+                                <option value="1">1 Visita</option>
+                                <option value="2">2 Visitas</option>
+                                <option value="3">3 Visitas</option>
+                                <option value="NO_QUIERE">No quiero las visitas</option>
+                            </select>
+                        </div>
+
+                        <!-- Campos ocultos para almacenar las respuestas de los cuadros de diálogo (prompts) -->
+                        <input type="hidden" id="f-atencion-salud" value="">
+                        <input type="hidden" id="f-motivo-no-visita" value="">
+                        <input type="hidden" id="f-desea-visita-futura" value="">
+                    </div>
 
                 <div class="form-block-card" style="background: rgba(255, 255, 255, 0.9); padding: 14px; border-radius: 8px; border: 1px solid #CBD5E0; margin-bottom: 15px;">
                     <label style="display: block; font-weight: 700; margin-bottom: 8px; font-size: 14px; color: var(--text-muted);">Evaluación de la Recepción Recibida *:</label>
