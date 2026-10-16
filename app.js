@@ -451,12 +451,16 @@ function saveData(event) {
     const miniaturas = ['preview-ine-frontal', 'preview-ine-trasera', 'preview-acta', 'preview-comprobante', 'preview-curp'];
     miniaturas.forEach(id => { const img = document.getElementById(id); if (img) { img.src = ""; img.style.display = "none"; } });
     
+    // ... código anterior de la función
     vincularEventosProgresoFormulario();
     calcularPorcentajeProgresoFormulario();
-} // <-- SOLAMENTE DEBE QUEDAR ESTA LLAVE DE CIERRE. LA OTRA SE BORRA.
+}
 
 function verificarCurpDuplicadaEnTiempoReal(e) {
-// ... (Todo lo demás hacia abajo se queda exactamente igual)
+    const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase(); 
+    e.target.value = valorLimpio; 
+// ... continúa el resto del código de forma normal
+
 function verificarCurpDuplicadaEnTiempoReal(e) {
     const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase(); e.target.value = valorLimpio; 
     if (valorLimpio.length === 18 && typeof localMemoryDatabase !== 'undefined') {
