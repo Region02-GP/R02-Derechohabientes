@@ -294,7 +294,7 @@ function actualizarEstilosBotonesFormulario() {
 function openForm(item) {
     if (!item) return;
     
-    // Al abrir una visita existente de la lista, limpiamos el color verde anterior de los botones de fotos
+    // Limpiamos los colores de los botones multimedia
     resetearContenedoresYBotonesFotografias();
 
     document.getElementById('f-curp').value = item['CURP'] || ''; 
@@ -330,6 +330,7 @@ function openForm(item) {
         });
     }
 
+    // ✅ CORREGIDO: Se extrajeron los campos de salud del bloque síncrono del GPS para evitar congelamiento
     document.getElementById('f-recibio-salud').value = item['RECIBIO_VISITA_SALUD'] || '';
     if (item['RECIBIO_VISITA_SALUD'] === "SI") {
         document.getElementById('wrapper-cuantas-visitas').style.display = "block";
@@ -372,6 +373,7 @@ function openForm(item) {
         }
     });
 }
+
 
 function procesarFotoEvidencia(inputElement, previewId, claveDocumento, wrapperId, buttonId, textoNuevo) {
     if (inputElement && inputElement.files && inputElement.files[0]) {
