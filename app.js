@@ -182,6 +182,21 @@ function buscarLocalidadesEnPantalla() {
         });
     } else { resultsContainer.style.display = "block"; resultsContainer.innerHTML = '<div style="padding:12px; color:#b91c1c; font-size:14px; font-weight:bold; text-align:center;">❌ Sin coincidencia</div>'; }
 }
+function mostrarCargando(mensaje) {
+    const loader = document.getElementById('global-loader');
+    const txt = document.getElementById('loader-text');
+    if (loader && txt) {
+        txt.innerText = mensaje;
+        loader.style.display = "flex";
+    }
+}
+
+function ocultarCargando() {
+    const loader = document.getElementById('global-loader');
+    if (loader) {
+        loader.style.display = "none";
+    }
+}
 
 function buscarMunicipiosEnPantalla() {
     const query = document.getElementById('f-municipio-buscar').value.toLowerCase().trim(); const resultsContainer = document.getElementById('municipio-search-results');
