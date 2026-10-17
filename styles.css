@@ -500,3 +500,10 @@ body {
     box-shadow: 0 1px 3px rgba(188, 149, 92, 0.4) !important;
     background: linear-gradient(to right, #987242, #BC955C) !important;
 }
+/* =========================================================================
+   ANIMACIÓN DEL INDICADOR DE CARGA GLOBAL
+   ========================================================================= */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
