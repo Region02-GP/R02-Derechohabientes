@@ -390,6 +390,9 @@ function procesarFotoEvidencia(inputElement, previewId, claveDocumento, wrapperI
         const file = inputElement.files[0];
         const reader = new FileReader();
         
+        // Enciende el indicador de inmediato al capturar la imagen
+        mostrarCargando("Comprimiendo y procesando fotografía digital... Espere un momento.");
+        
         reader.onload = function(e) {
             const imgHtml = new Image();
             imgHtml.onload = function() {
@@ -419,6 +422,9 @@ function procesarFotoEvidencia(inputElement, previewId, claveDocumento, wrapperI
                     boton.style.backgroundColor = "#236947";
                     boton.innerText = "✓ " + textoNuevo;
                 }
+                
+                // Apaga el indicador visual una vez guardado en la RAM local
+                setTimeout(ocultarCargando, 300);
             };
             imgHtml.src = e.target.result;
         };
