@@ -182,21 +182,6 @@ function buscarLocalidadesEnPantalla() {
         });
     } else { resultsContainer.style.display = "block"; resultsContainer.innerHTML = '<div style="padding:12px; color:#b91c1c; font-size:14px; font-weight:bold; text-align:center;">❌ Sin coincidencia</div>'; }
 }
-function mostrarCargando(mensaje) {
-    const loader = document.getElementById('global-loader');
-    const txt = document.getElementById('loader-text');
-    if (loader && txt) {
-        txt.innerText = mensaje;
-        loader.style.display = "flex";
-    }
-}
-
-function ocultarCargando() {
-    const loader = document.getElementById('global-loader');
-    if (loader) {
-        loader.style.display = "none";
-    }
-}
 
 function buscarMunicipiosEnPantalla() {
     const query = document.getElementById('f-municipio-buscar').value.toLowerCase().trim(); const resultsContainer = document.getElementById('municipio-search-results');
@@ -328,7 +313,7 @@ function openForm(item) {
     motivoNoLocalizadoValue = item['MOTIVO_NO_LOCALIZADO'] || ""; 
     actualizarEstilosBotonesFormulario(); 
     window.currentTratoValue = item['EVALUACION_TRATO'] || ""; 
-    actualizarStylesBotonesTrato();
+    actualizarEstilosBotonesTrato(); // ✅ CORREGIDO: Alineado a español
 
     document.getElementById('f-recibio-salud').value = item['RECIBIO_VISITA_SALUD'] || '';
     if (item['RECIBIO_VISITA_SALUD'] === "SI") {
@@ -389,9 +374,7 @@ function procesarFotoEvidencia(inputElement, previewId, claveDocumento, wrapperI
     if (inputElement && inputElement.files && inputElement.files[0]) {
         const file = inputElement.files[0];
         const reader = new FileReader();
-        
-        // Enciende el indicador de inmediato al capturar la imagen
-        mostrarCargando("Comprimiendo y procesando fotografía digital... Espere un momento.");
+        mostrarCargando("Procesando y optimizando fotografía digital...");
         
         reader.onload = function(e) {
             const imgHtml = new Image();
@@ -422,8 +405,6 @@ function procesarFotoEvidencia(inputElement, previewId, claveDocumento, wrapperI
                     boton.style.backgroundColor = "#236947";
                     boton.innerText = "✓ " + textoNuevo;
                 }
-                
-                // Apaga el indicador visual una vez guardado en la RAM local
                 setTimeout(ocultarCargando, 300);
             };
             imgHtml.src = e.target.result;
@@ -447,6 +428,17 @@ function resetearContenedoresYBotonesFotografias() {
             b.style.backgroundColor = "#5A6A80"; b.innerText = item.txt;
         }
     });
+}
+
+function mostrarCargando(mensaje) {
+    const loader = document.getElementById('global-loader');
+    const txt = document.getElementById('loader-text');
+    if (loader && txt) { txt.innerText = mensaje; loader.style.display = "flex"; }
+}
+
+function ocultarCargando() {
+    const loader = document.getElementById('global-loader');
+    if (loader) { loader.style.display = "none"; }
 }
 function saveData(event) {
     if (event) event.preventDefault();
@@ -539,7 +531,7 @@ function abrirFormularioVacioAltaNueva() {
     const fMun = document.getElementById('f-municipio'); if (fMun) fMun.value = municipioAsignado.toUpperCase().trim();
     const fId = document.getElementById('f-id'); if (fId) fId.value = 'NUEVO';
     const fSit = document.getElementById('f-situacion'); if (fSit) fSit.value = 'SIN_REGISTRO';
-    currentEstatusVisita = "LOCALIZADO"; motivoNoLocalizadoValue = ""; window.currentTratoValue = ""; actualizarEstilosBotonesFormulario(); actualizarStylesBotonesTrato();
+    currentEstatusVisita = "LOCALIZADO"; motivoNoLocalizadoValue = ""; window.currentTratoValue = ""; actualizarEstilosBotonesFormulario(); actualizarEstilosBotonesTrato();
     
     const fLat = document.getElementById('f-lat'); if (fLat) fLat.value = "Buscando satélite...";
     const fLon = document.getElementById('f-lon'); if (fLon) fLon.value = "Buscando satélite...";
@@ -551,7 +543,7 @@ function abrirFormularioVacioAltaNueva() {
     }
     const curpInputEl = document.getElementById('f-curp'); if (curpInputEl) { curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal); curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal); }
     
-    // CAMBIO CLAVE: Se eliminaron por completo las invocaciones rotas que causaban el "TypeError" en Android
+    // Cambiar de pantalla directamente (aquí se limpió la llamada que bloqueaba la interfaz)
     changeScreen('screen-form');
     
     expedienteDigitalTemporal = { doc_ine_frontal: "", doc_ine_trasera: "", doc_acta: "", doc_comprobante: "", doc_curp: "" };
@@ -583,12 +575,10 @@ function openHistoryScreen() {
 
 async function syncWithSheets() {
     if (pendingSync.length === 0) return alert("No tienes registros pendientes por subir.");
-    
-    const confirmarSincronizacion = confirm(`🔄 TRANSMISIÓN EN CURSO: Se van a sincronizar ${pendingSync.length} registros y fotos con Google Drive.\n\n¿Deseas iniciar la carga ahora?`);
+    const confirmarSincronizacion = confirm(`🔄 TRANSMISIÓN EN CURSO: Se van a sincronizar ${pendingSync.length} registros y fotos con Google Drive.\n\nPor favor, no bloquees la pantalla durante el envío.`);
     if(!confirmarSincronizacion) return;
-
-    // Enciende el indicador visual de inmediato
-    mostrarCargando(`Sincronizando ${pendingSync.length} expedientes y fotografías en la nube... Por favor, no bloquees la pantalla.`);
+    
+    mostrarCargando(`Sincronizando ${pendingSync.length} expedientes en la nube...`);
 
     try {
         const response = await fetch(GOOGLE_SCRIPT_URL, { 
@@ -597,26 +587,23 @@ async function syncWithSheets() {
             headers: { 'Content-Type': 'application/json;charset=utf-8' }, 
             body: JSON.stringify({ action: "sync", records: pendingSync }) 
         });
-        
         syncedHistory = syncedHistory.concat(pendingSync); 
         localStorage.setItem('syncedHistory', JSON.stringify(syncedHistory)); 
         pendingSync = []; 
         localStorage.removeItem('pendingSync'); 
-        
-        ocultarCargando(); // Apaga el indicador visual con éxito
+        ocultarCargando();
         openHistoryScreen(); 
         alert("🎉 ¡ÉXITO TOTAL!: Sus expedientes y fotografías se han sincronizado con Google Drive y Sheets."); 
     } catch (e) { 
-        ocultarCargando(); // Apaga el indicador si hay falla de red
+        ocultarCargando();
         alert("🛑 Error en transmisión: Verifique que su Apps Script esté publicado correctamente."); 
     }
 }
 
 function downloadBackupCSV() {
     const allVisitsOfDay = pendingSync.concat(syncedHistory); 
-    if (allVisitsOfDay.length === 0) return alert("No hay datos guardados para exportar en este momento.");
+    if (allVisitsOfDay.length === 0) return alert("No hay datos.");
     
-    // 📊 ENCABEZADOS ACTUALIZADOS (Incluyen de forma síncrona el bloque de salud y georreferencia)
     const headers = [
         "CURP", "ID", "NOMBRE", "AP PATERNO", "AP MATERNO", "TEL FIJO", "TEL CEL", 
         "MUNICIPIO", "LOCALIDAD", "SECCION", "COLONIA", "CP", "CALLE", "NUM EXT", 
@@ -625,42 +612,37 @@ function downloadBackupCSV() {
         "RECIBIO_VISITA_SALUD", "CUANTAS_VISITAS_SALUD", "OPINION_ATENCION_SALUD", "MOTIVO_NO_VISITA_SALUD", "DESEA_VISITA_SALUD"
     ];
     
-    let csvRows = [];
-    // Agregar la fila de títulos al inicio
-    csvRows.push(headers.join(","));
-    
-    // Procesar cada registro y limpiar comas internas para evitar desfases de celdas
+    let csvRows = [headers.join(",")];
     allVisitsOfDay.forEach(r => { 
         const rowValues = headers.map(h => { 
             let v = r[h] !== undefined ? String(r[h]).trim() : ""; 
-            // Si el texto contiene comas o saltos de línea, lo envolvemos en comillas dobles y escapamos comillas previas
-            if (v.includes(",") || v.includes("\n") || v.includes("\(\r\)")) {
-                v = `"${v.replace(/"/g, '""')}"`;
-            }
+            if (v.includes(",") || v.includes("\n")) { v = `"${v.replace(/"/g, '""')}"`; }
             return v; 
         });
         csvRows.push(rowValues.join(",")); 
     });
     
-    // CORRECCIÓN CRÍTICA: Uso de salto de línea real (\n) y codificación universal BOM (\ufeff) para Excel en español
     const csvContent = "\ufeff" + csvRows.join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    
     const downloadAnchor = document.createElement('a'); 
     downloadAnchor.setAttribute("href", URL.createObjectURL(blob)); 
     downloadAnchor.setAttribute("download", `R02_Reporte_Visitas_${new Date().toISOString().slice(0, 10)}.csv`); 
-    
-    document.body.appendChild(downloadAnchor); 
-    downloadAnchor.click(); 
-    document.body.removeChild(downloadAnchor);
+    document.body.appendChild(downloadAnchor); downloadAnchor.click(); document.body.removeChild(downloadAnchor);
+}
+
+function clearLocalStorage() {
+    if (confirm("🚨 ADVERTENCIA: ¿Vaciamos la memoria?")) {
+        pendingSync = []; syncedHistory = []; localMemoryDatabase = []; localStorage.clear();
+        if (db) { db.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).clear().onsuccess = () => { document.getElementById('search-input').value = ""; document.getElementById('search-results').innerHTML = ""; alert("Limpiado."); changeScreen('screen-welcome'); }; } else { changeScreen('screen-welcome'); }
+    }
 }
 
 function seleccionarTrato(opcion) { 
     window.currentTratoValue = opcion.toUpperCase(); 
-    actualizarEstilosBotonesTrato(); // ✅ CORREGIDO: Alineado al nombre real en español
+    actualizarEstilosBotonesTrato(); 
 }
 
-function actualizarEstilosBotonesTrato() { // ✅ CORREGIDO: Restaurado nombre original en español
+function actualizarEstilosBotonesTrato() {
     const btnEx = document.getElementById('btn-trato-excelente'); 
     const btnAm = document.getElementById('btn-trato-amable'); 
     const btnNe = document.getElementById('btn-trato-neutral'); 
@@ -686,7 +668,6 @@ function actualizarEstilosBotonesTrato() { // ✅ CORREGIDO: Restaurado nombre o
         btnHo.style.backgroundColor = "#FCE8E6"; btnHo.style.borderColor = "#b91c1c"; btnHo.style.color = "#b91c1c"; 
     }
 }
-
 
 function vincularEventosProgresoFormulario() {
     // Función desactivada de forma segura
