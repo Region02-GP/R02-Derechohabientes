@@ -655,7 +655,12 @@ function downloadBackupCSV() {
     document.body.removeChild(downloadAnchor);
 }
 
-function actualizarStylesBotonesTrato() {
+function seleccionarTrato(opcion) { 
+    window.currentTratoValue = opcion.toUpperCase(); 
+    actualizarEstilosBotonesTrato(); // ✅ CORREGIDO: Alineado al nombre real en español
+}
+
+function actualizarEstilosBotonesTrato() { // ✅ CORREGIDO: Restaurado nombre original en español
     const btnEx = document.getElementById('btn-trato-excelente'); 
     const btnAm = document.getElementById('btn-trato-amable'); 
     const btnNe = document.getElementById('btn-trato-neutral'); 
@@ -681,6 +686,7 @@ function actualizarStylesBotonesTrato() {
         btnHo.style.backgroundColor = "#FCE8E6"; btnHo.style.borderColor = "#b91c1c"; btnHo.style.color = "#b91c1c"; 
     }
 }
+
 
 function vincularEventosProgresoFormulario() {
     // Función desactivada de forma segura
