@@ -577,8 +577,12 @@ function openHistoryScreen() {
 
 async function syncWithSheets() {
     if (pendingSync.length === 0) return alert("No tienes registros pendientes por subir.");
-    const confirmarSincronizacion = confirm(`🔄 TRANSMISIÓN EN CURSO: Se van a sincronizar ${pendingSync.length} registros y fotos con Google Drive.\n\nPor favor, no bloquees la pantalla durante el envío.`);
+    
+    const confirmarSincronizacion = confirm(`🔄 TRANSMISIÓN EN CURSO: Se van a sincronizar ${pendingSync.length} registros y fotos con Google Drive.\n\n¿Deseas iniciar la carga ahora?`);
     if(!confirmarSincronizacion) return;
+
+    // Enciende el indicador visual de inmediato
+    mostrarCargando(`Sincronizando ${pendingSync.length} expedientes y fotografías en la nube... Por favor, no bloquees la pantalla.`);
 
     try {
         const response = await fetch(GOOGLE_SCRIPT_URL, { 
@@ -587,13 +591,17 @@ async function syncWithSheets() {
             headers: { 'Content-Type': 'application/json;charset=utf-8' }, 
             body: JSON.stringify({ action: "sync", records: pendingSync }) 
         });
+        
         syncedHistory = syncedHistory.concat(pendingSync); 
         localStorage.setItem('syncedHistory', JSON.stringify(syncedHistory)); 
         pendingSync = []; 
         localStorage.removeItem('pendingSync'); 
+        
+        ocultarCargando(); // Apaga el indicador visual con éxito
         openHistoryScreen(); 
         alert("🎉 ¡ÉXITO TOTAL!: Sus expedientes y fotografías se han sincronizado con Google Drive y Sheets."); 
     } catch (e) { 
+        ocultarCargando(); // Apaga el indicador si hay falla de red
         alert("🛑 Error en transmisión: Verifique que su Apps Script esté publicado correctamente."); 
     }
 }
