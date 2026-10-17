@@ -313,7 +313,7 @@ function openForm(item) {
     motivoNoLocalizadoValue = item['MOTIVO_NO_LOCALIZADO'] || ""; 
     actualizarEstilosBotonesFormulario(); 
     window.currentTratoValue = item['EVALUACION_TRATO'] || ""; 
-    actualizarEstilosBotonesTrato();
+    actualizarStylesBotonesTrato();
 
     document.getElementById('f-recibio-salud').value = item['RECIBIO_VISITA_SALUD'] || '';
     if (item['RECIBIO_VISITA_SALUD'] === "SI") {
@@ -504,7 +504,6 @@ function saveData(event) {
         changeScreen('screen-search');
     };
 }
-
 function abrirFormularioVacioAltaNueva() {
     if (!currentUser) { alert("🚨 ERROR OPERATIVO: Inicie sesión primero."); changeScreen('screen-login'); return; }
     document.getElementById('f-curp').removeAttribute('readonly'); document.getElementById('f-nombre').removeAttribute('readonly'); document.getElementById('f-paterno').removeAttribute('readonly'); document.getElementById('f-materno').removeAttribute('readonly');
@@ -519,7 +518,7 @@ function abrirFormularioVacioAltaNueva() {
     const fMun = document.getElementById('f-municipio'); if (fMun) fMun.value = municipioAsignado.toUpperCase().trim();
     const fId = document.getElementById('f-id'); if (fId) fId.value = 'NUEVO';
     const fSit = document.getElementById('f-situacion'); if (fSit) fSit.value = 'SIN_REGISTRO';
-    currentEstatusVisita = "LOCALIZADO"; motivoNoLocalizadoValue = ""; window.currentTratoValue = ""; actualizarEstilosBotonesFormulario(); actualizarEstilosBotonesTrato();
+    currentEstatusVisita = "LOCALIZADO"; motivoNoLocalizadoValue = ""; window.currentTratoValue = ""; actualizarEstilosBotonesFormulario(); actualizarStylesBotonesTrato();
     
     const fLat = document.getElementById('f-lat'); if (fLat) fLat.value = "Buscando satélite...";
     const fLon = document.getElementById('f-lon'); if (fLon) fLon.value = "Buscando satélite...";
@@ -530,14 +529,15 @@ function abrirFormularioVacioAltaNueva() {
         }, () => { if (fLat) fLat.value = "ERROR"; if (fLon) fLon.value = "ERROR"; });
     }
     const curpInputEl = document.getElementById('f-curp'); if (curpInputEl) { curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal); curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal); }
+    
+    // CAMBIO CLAVE: Se eliminaron por completo las invocaciones rotas que causaban el "TypeError" en Android
     changeScreen('screen-form');
     
     expedienteDigitalTemporal = { doc_ine_frontal: "", doc_ine_trasera: "", doc_acta: "", doc_comprobante: "", doc_curp: "" };
     const miniaturas = ['preview-ine-frontal', 'preview-ine-trasera', 'preview-acta', 'preview-comprobante', 'preview-curp'];
     miniaturas.forEach(id => { const img = document.getElementById(id); if (img) { img.src = ""; img.style.display = "none"; } });
-    vincularEventosProgresoFormulario();
-    calcularPorcentajeProgresoFormulario();
 }
+
 function verificarCurpDuplicadaEnTiempoReal(e) {
     const valorLimpio = e.target.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase(); e.target.value = valorLimpio; 
     if (valorLimpio.length === 18 && typeof localMemoryDatabase !== 'undefined') {
@@ -548,7 +548,6 @@ function verificarCurpDuplicadaEnTiempoReal(e) {
         }
     }
 }
-
 function openHistoryScreen() {
     changeScreen('screen-history'); 
     if (document.getElementById('pending-count')) document.getElementById('pending-count').innerText = pendingSync.length;
@@ -632,9 +631,9 @@ function actualizarStylesBotonesTrato() {
 }
 
 function vincularEventosProgresoFormulario() {
-    // Función desactivada
+    // Función desactivada de forma segura
 }
 
 function calcularPorcentajeProgresoFormulario() {
-    // Función desactivada
+    // Función desactivada de forma segura
 }
