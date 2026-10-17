@@ -584,23 +584,46 @@ async function syncWithSheets() {
 }
 
 function downloadBackupCSV() {
-    const allVisitsOfDay = pendingSync.concat(syncedHistory); if (allVisitsOfDay.length === 0) return alert("No hay datos.");
-    const headers = ["CURP", "ID", "NOMBRE", "AP PATERNO", "AP MATERNO", "TEL FIJO", "TEL CEL", "MUNICIPIO", "LOCALIDAD", "SECCION", "COLONIA", "CP", "CALLE", "NUM EXT", "REFERENCIA", "SITUACION", "CAUSAL", "ESTATUS_VISITA", "MOTIVO_NO_LOCALIZADO", "Latitud", "Longitud", "FECHA_MODIFICACION", "USUARIO_MODIFICA"];
-    let csvRows = [headers.join(",")];
-    allVisitsOfDay.forEach(r => { csvRows.push(headers.map(h => { let v = r[h] !== undefined ? String(r[h]).trim() : ""; return v.includes(",") ? `"${v.replace(/"/g, '""')}"` : v; }).join(",")); });
-    const downloadAnchor = document.createElement('a'); downloadAnchor.setAttribute("href", URL.createObjectURL(new Blob(["\\ufeff" + csvRows.join("\\n")], { type: 'text/csv;charset=utf-8;' }))); downloadAnchor.setAttribute("download", `R02_Reporte_${new Date().toISOString().slice(0, 10)}.csv`); document.body.appendChild(downloadAnchor); downloadAnchor.click(); document.body.removeChild(downloadAnchor);
-}
-
-function clearLocalStorage() {
-    if (confirm("🚨 ADVERTENCIA: ¿Vaciamos la memoria?")) {
-        pendingSync = []; syncedHistory = []; localMemoryDatabase = []; localStorage.clear();
-        if (db) { db.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).clear().onsuccess = () => { document.getElementById('search-input').value = ""; document.getElementById('search-results').innerHTML = ""; alert("Limpiado."); changeScreen('screen-welcome'); }; } else { changeScreen('screen-welcome'); }
-    }
-}
-
-function seleccionarTrato(opcion) { 
-    window.currentTratoValue = opcion.toUpperCase(); 
-    actualizarStylesBotonesTrato(); 
+    const allVisitsOfDay = pendingSync.concat(syncedHistory); 
+    if (allVisitsOfDay.length === 0) return alert("No hay datos guardados para exportar en este momento.");
+    
+    // 📊 ENCABEZADOS ACTUALIZADOS (Incluyen de forma síncrona el bloque de salud y georreferencia)
+    const headers = [
+        "CURP", "ID", "NOMBRE", "AP PATERNO", "AP MATERNO", "TEL FIJO", "TEL CEL", 
+        "MUNICIPIO", "LOCALIDAD", "SECCION", "COLONIA", "CP", "CALLE", "NUM EXT", 
+        "REFERENCIA", "SITUACION", "CAUSAL", "ESTATUS_VISITA", "MOTIVO_NO_LOCALIZADO", "EVALUACION_TRATO",
+        "Latitud", "Longitud", "FECHA_MODIFICACION", "USUARIO_MODIFICA",
+        "RECIBIO_VISITA_SALUD", "CUANTAS_VISITAS_SALUD", "OPINION_ATENCION_SALUD", "MOTIVO_NO_VISITA_SALUD", "DESEA_VISITA_SALUD"
+    ];
+    
+    let csvRows = [];
+    // Agregar la fila de títulos al inicio
+    csvRows.push(headers.join(","));
+    
+    // Procesar cada registro y limpiar comas internas para evitar desfases de celdas
+    allVisitsOfDay.forEach(r => { 
+        const rowValues = headers.map(h => { 
+            let v = r[h] !== undefined ? String(r[h]).trim() : ""; 
+            // Si el texto contiene comas o saltos de línea, lo envolvemos en comillas dobles y escapamos comillas previas
+            if (v.includes(",") || v.includes("\n") || v.includes("\(\r\)")) {
+                v = `"${v.replace(/"/g, '""')}"`;
+            }
+            return v; 
+        });
+        csvRows.push(rowValues.join(",")); 
+    });
+    
+    // CORRECCIÓN CRÍTICA: Uso de salto de línea real (\n) y codificación universal BOM (\ufeff) para Excel en español
+    const csvContent = "\ufeff" + csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+    const downloadAnchor = document.createElement('a'); 
+    downloadAnchor.setAttribute("href", URL.createObjectURL(blob)); 
+    downloadAnchor.setAttribute("download", `R02_Reporte_Visitas_${new Date().toISOString().slice(0, 10)}.csv`); 
+    
+    document.body.appendChild(downloadAnchor); 
+    downloadAnchor.click(); 
+    document.body.removeChild(downloadAnchor);
 }
 
 function actualizarStylesBotonesTrato() {
