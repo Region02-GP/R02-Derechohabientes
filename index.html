@@ -110,26 +110,25 @@
             <form id="edit-form" onsubmit="saveData(event)">
                 <div id="form-fields-wrapper">
                     
-                    <!-- Tarjeta 1: Datos de Identidad -->
-                    <div class="form-block-card block-location" style="border-left: 5px solid var(--secondary-color); background-color: rgba(188, 149, 92, 0.02); padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #E5E7EB; border-left-width: 5px;">
+                    <!-- Tarjeta 1: Datos de Identidad (CORREGIDO) -->
 
-                        <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; font-weight: 800; color: var(--primary-color); text-transform: uppercase; letter-spacing: 0.5px;">👤 Datos de Identidad</h3>
-                        <div class="form-group" style="margin-bottom: 12px;">
-                            <label>CURP *:</label>
-                            <input type="text" id="f-curp" maxlength="18" minlength="18" required style="text-transform:uppercase;" class="js-calc-progress">
-                        </div>
-                        <div class="form-grid text-disabled">
-                            <div><label>ID:</label><input type="text" id="f-id" readonly></div>
-                            <div><label>Situación:</label><input type="text" id="f-situacion" readonly></div>
-                        </div>
-                        <div class="form-group" style="margin-top: 10px; margin-bottom: 10px;"><label>Nombre *:</label><input type="text" id="f-nombre" required class="js-calc-progress"></div>
-                        <div class="form-grid">
-                            <div class="form-group"><label>Ap. Paterno *:</label><input type="text" id="f-paterno" required class="js-calc-progress"></div>
-                            <div class="form-group"><label>Ap. Materno *:</label><input type="text" id="f-materno" required class="js-calc-progress"></div>
-                        </div>
-                        <div class="form-group" style="margin-bottom: 0;" class="text-disabled"><label>Causal:</label><input type="text" id="f-causal" readonly style="background-color: #EDF2F7;"></div>
-                    </div>
-      </div>
+    <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; font-weight: 800; color: var(--primary-color); text-transform: uppercase; letter-spacing: 0.5px;">👤 Datos de Identidad</h3>
+    <div class="form-group" style="margin-bottom: 12px;">
+        <label>CURP *:</label>
+        <input type="text" id="f-curp" maxlength="18" minlength="18" required style="text-transform:uppercase;" class="js-calc-progress">
+    </div>
+    <div class="form-grid text-disabled">
+        <div><label>ID:</label><input type="text" id="f-id" readonly></div>
+        <div><label>Situación:</label><input type="text" id="f-situacion" readonly></div>
+    </div>
+    <div class="form-group" style="margin-top: 10px; margin-bottom: 10px;"><label>Nombre *:</label><input type="text" id="f-nombre" required class="js-calc-progress"></div>
+    <div class="form-grid">
+        <div class="form-group"><label>Ap. Paterno *:</label><input type="text" id="f-paterno" required class="js-calc-progress"></div>
+        <div class="form-group"><label>Ap. Materno *:</label><input type="text" id="f-materno" required class="js-calc-progress"></div>
+    </div>
+    <div class="form-group" style="margin-bottom: 0;" class="text-disabled"><label>Causal:</label><input type="text" id="f-causal" readonly style="background-color: #EDF2F7;"></div>
+</div> <!-- Cierre único y exclusivo de la tarjeta de identidad -->
+
                     <!-- Tarjeta 2: Datos de Contacto -->
                     <div class="form-block-card block-contact" style="border-left: 5px solid #5A6A80; background-color: rgba(90, 106, 128, 0.02); padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #E5E7EB; border-left-width: 5px;">
                         <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; font-weight: 800; color: #4A5568; text-transform: uppercase; letter-spacing: 0.5px;">📞 Medios de Contacto</h3>
