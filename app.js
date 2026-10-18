@@ -563,6 +563,7 @@ function verificarCurpDuplicadaEnTiempoReal(e) {
 }
 function openHistoryScreen() {
     changeScreen('screen-history'); 
+    
     if (document.getElementById('pending-count')) {
         document.getElementById('pending-count').innerText = pendingSync.length;
     }
@@ -571,21 +572,29 @@ function openHistoryScreen() {
     if (!logList) return;
     logList.innerHTML = ""; 
 
-    // MÁXIMO RENDIMIENTO: Mapea la base de datos en memoria para que no se borren al sincronizar
-    if (!localMemoryDatabase || localMemoryDatabase.length === 0) {
-        logList.innerHTML = '<div style="padding:16px; text-align:center; color:#718096; font-weight:600;">📋 No hay registros de visitas capturados en este dispositivo.</div>';
+    // 1. FILTRADO ESTRICTO: Creamos un array que combina SOLO las CURPs guardadas por ti hoy
+    const curpsGuardadasHoy = [
+        ...pendingSync.map(p => p.CURP),
+        ...syncedHistory.map(s => s.CURP)
+    ];
+
+    // Extraemos los registros reales de la memoria RAM local que coincidan con lo capturado hoy
+    let visitasTuyo = localMemoryDatabase.filter(item => curpsGuardadasHoy.includes(item.CURP));
+
+    if (visitasTuyo.length === 0) {
+        logList.innerHTML = '<div style="padding:16px; text-align:center; color:#718096; font-weight:600;">📋 No tienes visitas capturadas en la memoria de este teléfono hoy.</div>';
         return;
     }
 
-    // Ordenar de forma idéntica a la pantalla de búsqueda
-    const registrosOrdenados = [...localMemoryDatabase].sort((a, b) => String(a['NUM EXT']).localeCompare(String(b['NUM EXT'])));
+    // 2. ORDENACIÓN CRÓNICA DESCENDENTE: Invertimos el array para que aparezca del ÚLTIMO guardado al PRIMERO
+    visitasTuyo.reverse();
 
-    registrosOrdenados.forEach((item) => {
+    // 3. RENDERIZADO CON SEMÁFORO IDÉNTICO AL BUSCADOR
+    visitasTuyo.forEach((item) => {
         const estatusActual = item['ESTATUS_VISITA'] || "";
-        
-        // Evaluar si está en cola pendiente o ya sincronizado para pintar el indicador visual correcto
         const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']);
         
+        // Asignación de colores del semáforo blando
         let claseColor = "result-item";
         if (estatusActual === "LOCALIZADO") claseColor = "result-item status-localizado";
         if (estatusActual === "NO LOCALIZADO") claseColor = "result-item status-nolocalizado";
@@ -597,7 +606,7 @@ function openHistoryScreen() {
             textoIndicador = ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
         }
 
-        // Agregar distintivo de red (Pendiente de subir o Sincronizado en la nube)
+        // Insignia de Red flotante a la derecha
         let distintivoSincronizacion = estaEnColaPendiente 
             ? '<span style="float:right; background-color:#FFF3CD; color:#664D03; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:700;">⏳ Pendiente</span>' 
             : '<span style="float:right; background-color:#E6F4EA; color:#137333; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:700;">☁️ Sincronizado</span>';
@@ -617,12 +626,11 @@ function openHistoryScreen() {
             </div>
         `;
         
-        // MOTOR DE EDICIÓN: Permite abrir el formulario de la pantalla 4 al hacer clic desde el historial
+        // ENLACE DE EDICIÓN: Abre el formulario de la Pantalla 4 al dar clic
         div.onclick = () => openForm(item); 
         logList.appendChild(div);
     });
 }
-
 
 async function syncWithSheets() {
     if (pendingSync.length === 0) return alert("No tienes registros pendientes por subir en este momento.");
