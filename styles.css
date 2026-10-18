@@ -62,14 +62,15 @@ body {
     box-sizing: border-box;
 }
 
-.app-screen {
-    background: var(--surface-color);
-    padding: 22px;
-    border-radius: 12px;
-    box-shadow: var(--shadow-screen);
-    border: 1px solid #E5E7EB;
-    position: relative;
+.app-container {
+  width: 100vw;
+  min-height: 100vh;
+  margin: 0;
+  padding: 10px;
+  padding-bottom: 90px !important;
+  box-sizing: border-box;
 }
+
 
 .hidden { display: none !important; opacity: 0 !important; visibility: hidden !important; }
 
