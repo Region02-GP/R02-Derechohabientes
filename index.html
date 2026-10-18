@@ -75,7 +75,7 @@
             <div class="screen-toolbar">
                 <h2 id="welcome-message-search">Bienvenido</h2>
             </div>
-                  <div class="form-block-card block-contact" style="border-left: 5px solid #5A6A80; background-color: rgba(90, 106, 128, 0.02); padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #E5E7EB; border-left-width: 5px;">
+             <div class="form-block-card block-location" style="border-left: 5px solid var(--secondary-color); background-color: rgba(188, 149, 92, 0.02); padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #E5E7EB; border-left-width: 5px;">
             <div class="screen-toolbar" style="margin-bottom: 12px;">
                 <h3>Buscar Derechohabientes:</h3>
             </div>
@@ -223,12 +223,15 @@
         </section>
         <!-- PANTALLA 5: HISTORIAL -->
         <section id="screen-history" class="app-screen hidden">
-            <h2>Historial y Sincronización</h2>
+            <h1>Historial y Sincronización</h1>
+          <div class="form-block-card block-location" style="border-left: 5px solid var(--secondary-color); background-color: rgba(188, 149, 92, 0.02); padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #E5E7EB; border-left-width: 5px;">
             <div class="metrics" style="background:#f7fafc; padding:15px; border-radius:4px; margin-bottom:15px; border-left:4px solid var(--primary-color);">
                 <p style="margin:0; font-size:15px;">Cambios pendientes por subir: <strong id="pending-count">0</strong></p>
             </div>
+            <button type="button" onclick="syncWithSheets()" class="btn-primary-guinda">🔄 Sincronizar con Google Sheets</button>
+          </div>
             <div class="action-buttons-stack">
-                <button type="button" onclick="syncWithSheets()" class="btn-primary-guinda">🔄 Sincronizar con Google Sheets</button>
+
                 <div class="button-row-grid">
                     <button type="button" onclick="downloadBackupCSV()" class="btn-excel-gold" style="margin-top:0;">📊 Descargar Avance</button>
                     <button type="button" onclick="clearLocalStorage()" class="btn-excel-gold" style="margin-top:0;">🗑️ Borrar Datos</button>
