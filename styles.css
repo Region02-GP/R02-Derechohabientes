@@ -41,7 +41,7 @@ body {
     color: var(--white);
     text-align: center;
     padding: 1px;
-    border-bottom: 4px solid var(--primary-color); /* Línea dorada */
+    border-bottom: 4px solid var(--secondary-dark); /* Línea dorada */
     box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
 
