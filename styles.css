@@ -54,13 +54,6 @@ body {
 }
 
 /* Margen de seguridad inferior para evitar que la barra tape contenido */
-.app-container {
-    max-width: 480px;
-    margin: 15px auto;
-    padding: 10px;
-    padding-bottom: 90px !important; 
-    box-sizing: border-box;
-}
 
 .app-container {
   width: 100vw;
