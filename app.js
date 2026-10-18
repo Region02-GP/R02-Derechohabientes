@@ -639,7 +639,7 @@ function clearLocalStorage() {
 
 function seleccionarTrato(opcion) { 
     window.currentTratoValue = opcion.toUpperCase(); 
-    actualizarEstilosBotonesTrato(); 
+    actualizarEstilosBotonesTrato(); // Cambiado a "Estilos" en español
 }
 
 function actualizarEstilosBotonesTrato() {
@@ -651,9 +651,7 @@ function actualizarEstilosBotonesTrato() {
     if (!btnEx || !btnAm || !btnNe || !btnIn || !btnHo) return;
 
     [btnEx, btnAm, btnNe, btnIn, btnHo].forEach(btn => { 
-        btn.style.backgroundColor = "#F3F4F6"; 
-        btn.style.borderColor = "#CBD5E0"; 
-        btn.style.color = "#4B5563"; 
+        btn.style.backgroundColor = "#F3F4F6"; btn.style.borderColor = "#CBD5E0"; btn.style.color = "#4B5563"; 
     });
 
     if (window.currentTratoValue === "EXCELENTE") { 
