@@ -251,7 +251,7 @@
             <p style="font-size:15px; color: var(--text-muted); margin-bottom:20px; line-height:1.4;">
                 Presione cada botón para activar la cámara y capturar los documentos del derechohabiente:
             </p>
-            
+            <div class="form-block-card block-location" style="border-left: 5px solid var(--secondary-color); background-color: rgba(188, 149, 92, 0.02); padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #E5E7EB; border-left-width: 5px;">
             <div class="action-buttons-stack" style="gap: 14px;">
                 <div id="wrapper-ine-frontal" style="background: #F3F4F6; padding: 14px; border-radius: 10px; border: 2px dashed #CBD5E0; text-align: center; transition: all 0.2s;">
                     <button type="button" id="btn-cam-ine-frontal" onclick="document.getElementById('cam-ine-frontal').click();" style="background-color: #5A6A80; margin-top:0;">🪪 Capturar INE Frontal</button>
@@ -283,7 +283,8 @@
                     <img id="preview-curp" src="" style="max-width: 60px; max-height: 45px; border-radius: 4px; margin-top: 8px; display: none; margin-left: auto; margin-right: auto; border: 1px solid #CBD5E0;">
                 </div>
             </div>
-
+            </div>
+         
             <hr style="margin:25px 0;">
             <div class="button-row-grid">
                 <button type="button" onclick="document.getElementById('edit-form').requestSubmit();" style="margin-top:0; background-color: var(--primary-color);">💾 Guardar Todo</button>
