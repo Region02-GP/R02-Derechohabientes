@@ -37,11 +37,11 @@ body {
 }
 
 .main-header {
-    background-color: var(--primary-color);
+    background-color: var(--secondary-color);
     color: var(--white);
     text-align: center;
     padding: 18px;
-    border-bottom: 4px solid var(--secondary-color); /* Línea dorada */
+    border-bottom: 4px solid var(--primary-color); /* Línea dorada */
     box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
 
