@@ -241,6 +241,7 @@ function evaluarFlujoSalud() {
     const wrapperVisitas = document.getElementById('wrapper-cuantas-visitas');
     const selectCuantas = document.getElementById('f-cuantas-visitas');
     
+    // Resetear valores de control ocultos previos
     document.getElementById('f-atencion-salud').value = "";
     document.getElementById('f-motivo-no-visita').value = "";
     document.getElementById('f-desea-visita-futura').value = "";
@@ -255,8 +256,25 @@ function evaluarFlujoSalud() {
         wrapperVisitas.style.display = "none";
         selectCuantas.removeAttribute("required");
         
-        let desea = prompt("¿Le gustaría recibir la visita del personal de salud? (Escriba SÍ o NO):");
-        document.getElementById('f-desea-visita-futura').value = desea ? desea.trim().toUpperCase() : "NO ESPECIFICADO";
+        // 🔲 CUADRO DE DIÁLOGO CON OPCIONES DIRECTAS SÍ / NO (confirm)
+        let deseaVisita = confirm("¿Le gustaría recibir la visita del personal de salud de manera futura?\n\n[Aceptar = SÍ]  /  [Cancelar = NO]");
+        
+        if (deseaVisita) {
+            // Si selecciona SÍ
+            document.getElementById('f-desea-visita-futura').value = "SI";
+        } else {
+            // Si selecciona NO
+            document.getElementById('f-desea-visita-futura').value = "NO";
+            
+            // 🔄 AUTOMATIZACIÓN: Guarda "No quiero las visitas" en la columna de cantidad
+            selectCuantas.value = "NO_QUIERE";
+            
+            // Hacemos visible el contenedor temporalmente para que se ejecute la lógica de guardado visual
+            wrapperVisitas.style.display = "block";
+            
+            // Invoca de forma inmediata la pregunta del motivo del rechazo
+            evaluarCantidadVisitas();
+        }
     } else {
         wrapperVisitas.style.display = "none";
         selectCuantas.removeAttribute("required");
@@ -265,8 +283,10 @@ function evaluarFlujoSalud() {
 
 function evaluarCantidadVisitas() {
     const cuantas = document.getElementById('f-cuantas-visitas').value;
-    document.getElementById('f-atencion-salud').value = "";
-    document.getElementById('f-motivo-no-visita').value = "";
+    
+    // Mantener limpios los campos si cambia de opinión en el select manual
+    if (cuantas !== "NO_QUIERE") document.getElementById('f-motivo-no-visita').value = "";
+    if (cuantas !== "1" && cuantas !== "2" && cuantas !== "3") document.getElementById('f-atencion-salud').value = "";
 
     if (cuantas === "1" || cuantas === "2" || cuantas === "3") {
         let opinion = prompt("¿Qué le pareció la atención del servidor de la salud?:");
