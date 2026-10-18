@@ -45,14 +45,15 @@ body {
     box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
 
-.main-header h1 {
-    margin: 0;
-    font-size: 22px;
-    letter-spacing: 0.5px;
-    font-weight: 700;
+.main-header {
+    background-color: var(--primary-color); /* Cambiado de surface a guinda */
     color: var(--white);
-    text-align: center; /* 👈 Esto centra el texto perfectamente */
+    text-align: center;
+    padding: 12px;
+    border-bottom: 4px solid var(--secondary-color);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
+
 
 
 /* Margen de seguridad inferior para evitar que la barra tape contenido */
