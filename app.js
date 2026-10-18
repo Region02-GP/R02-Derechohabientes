@@ -158,28 +158,39 @@ function searchData() {
         const div = document.createElement('div'); 
         const estatusActual = item['ESTATUS_VISITA'] || "";
         
-        // Evaluar si el registro tiene la marca de rechazo en la cola pendiente o en la RAM histórica
-        const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']); 
+        // Identificar si la CURP fue guardada/modificada en este teléfono durante el día actual
+        const fueVisitadoHoy = pendingSync.some(p => p['CURP'] === item['CURP']) || syncedHistory.some(s => s['CURP'] === item['CURP']);
         const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
         
-        const valorVisitasSalud = estaEnColaPendiente && recordEnCola ? recordEnCola['CUANTAS_VISITAS_SALUD'] : (item['CUANTAS_VISITAS_SALUD'] || "");
-        const estatusFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['ESTATUS_VISITA'] : estatusActual;
+        // Determinar el valor de visitas de salud (priorizando los cambios en caliente del Note 20)
+        const valorVisitasSalud = recordEnCola ? recordEnCola['CUANTAS_VISITAS_SALUD'] : (item['CUANTAS_VISITAS_SALUD'] || "");
+        const estatusFinal = recordEnCola ? recordEnCola['ESTATUS_VISITA'] : estatusActual;
 
-        // 🧬 REGLA CORE PRIORITARIA: Si dice NO_QUIERE, se pinta de guinda oscuro de forma inmediata
         let claseColor = "result-item";
         let textoIndicador = "";
 
+        // 🧬 EVALUACIÓN MATRICIAL DE RECHAZO DE SALUD
         if (valorVisitasSalud === "NO_QUIERE") {
-            claseColor = "result-item status-rechazo-salud";
-            textoIndicador = ' <span style="color:#BC955C; font-weight:bold; font-size:12px; margin-left:5px;">⚠️ Rechazó Servicio de Salud</span>';
+            if (fueVisitadoHoy) {
+                // CASO 1: Ya fue visitado por ti hoy y rechazó -> Fondo Guinda Oscuro completo
+                claseColor = "result-item status-rechazo-salud";
+                textoIndicador = ' <span style="color:#BC955C; font-weight:bold; font-size:12px; margin-left:5px;">⚠️ Rechazó Servicio de Salud (Visitado)</span>';
+            } else {
+                // CASO 2: Aún no lo visitas tú hoy, pero ya tiene registro de rechazo en la base -> Fondo Azul / Línea Guinda
+                claseColor = "result-item status-pendiente-rechazo";
+                textoIndicador = ' <span style="color:#621132; font-weight:bold; font-size:12px; margin-left:5px;">⚠️ Rechazó Servicio (Pendiente Visitar)</span>';
+            }
         } else {
-            // Si no ha rechazado salud, mantiene el semáforo ordinario de visitas
+            // Semáforo ordinario de visitas para derechohabientes sin rechazo de salud
             if (estatusFinal === "LOCALIZADO") {
                 claseColor = "result-item status-localizado";
                 textoIndicador = ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>';
             } else if (estatusFinal === "NO LOCALIZADO") {
                 claseColor = "result-item status-nolocalizado";
                 textoIndicador = ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
+            } else {
+                // Pendiente ordinario sin estatus de salud
+                claseColor = "result-item";
             }
         }
 
