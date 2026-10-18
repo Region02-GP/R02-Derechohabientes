@@ -61,7 +61,7 @@ function updateLocalCounter() {
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
-    if (screenId === 'screen-welcome') updateLocalCounter(); 
+    if (screenId === 'screen-') updateLocalCounter(); 
     
     if (screenId === 'screen-search' && currentUser) {
         const datosBrigadistaActivo = AUTHORIZED_CURPS[currentUser.curp];
@@ -92,7 +92,7 @@ function login() {
         const brigadistaEncontrado = AUTHORIZED_CURPS[curpInput];
         currentUser = { curp: curpInput, name: brigadistaEncontrado.name };
         if (document.getElementById('welcome-message')) document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
-        if (document.getElementById('welcome-message-search')) document.getElementById('welcome-message-search').innerText = `Bienvenido(a), ${currentUser.name}`;
+        if (document.getElementById('welcome-message-search')) document.getElementById('welcome-message-search').innerText = `${currentUser.name}`;
         changeScreen('screen-welcome');
     } else { alert("CURP no autorizada o inválida."); }
 }
