@@ -297,6 +297,19 @@ button:active {
 .result-item.status-nolocalizado:hover {
     background-color: #FAD2CF !important;
 }
+/* 4. RECHAZO DE SALUD: Guinda Oscuro / Borde Dorado de Advertencia */
+.result-item.status-rechazo-salud {
+    border-left: 5px solid var(--secondary-color) !important;
+    background-color: #4A0E25 !important; /* Guinda muy oscuro antirreflejo */
+    color: #FFFFFF !important; /* Texto blanco para máxima legibilidad */
+}
+.result-item.status-rechazo-salud:hover {
+    background-color: #380A1C !important;
+}
+.result-item.status-rechazo-salud div, 
+.result-item.status-rechazo-salud span {
+    color: #FFFFFF !important; /* Forzar que los textos internos brillen en blanco */
+}
 
 /* =========================================================================
    BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL (PANTALLAS 2, 3 Y 5)
