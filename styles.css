@@ -37,7 +37,7 @@ body {
 }
 
 .main-header {
-    background-color: var(--secondary-color);
+    background-color: var(--surface-color);
     color: var(--white);
     text-align: center;
     padding: 18px;
