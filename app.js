@@ -520,7 +520,7 @@ function saveData(event) {
     const evaluacionTratoActual = window.currentTratoValue || "";
     if (currentEstatusVisita === "LOCALIZADO") {
         if (evaluacionTratoActual === "" || evaluacionTratoActual === "SIN_EVALUACION") {
-            alert("🛑 REGLA OBLIGATORIA: Debe seleccionar una de las 5 opciones de trato con emojis.");
+            alert("🛑 REGLA OBLIGATORIA: Debe seleccionar una de las 5 opciones de trato.");
             changeScreen('screen-form');
             return;
         }
@@ -702,7 +702,7 @@ async function syncWithSheets() {
     const confirmarSincronizacion = confirm(`🔄 TRANSMISIÓN EN CURSO: Se van a sincronizar ${pendingSync.length} registros y fotos.\n\nPor favor, no bloquees la pantalla durante el envío.`);
     if(!confirmarSincronizacion) return;
     
-    mostrarCargando(`Sincronizando ${pendingSync.length} expedientes sincronizados...`);
+    mostrarCargando(`Sincronizando ${pendingSync.length} expedientes...`);
 
     try {
         const response = await fetch(GOOGLE_SCRIPT_URL, { 
