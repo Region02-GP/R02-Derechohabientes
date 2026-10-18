@@ -40,7 +40,7 @@ body {
     background-color: var(--surface-color);
     color: var(--white);
     text-align: center;
-    padding: 5px;
+    padding: 1px;
     border-bottom: 4px solid var(--primary-color); /* Línea dorada */
     box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
