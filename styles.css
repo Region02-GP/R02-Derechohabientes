@@ -310,6 +310,15 @@ button:active {
 .result-item.status-rechazo-salud span {
     color: #FFFFFF !important; /* Forzar que los textos internos brillen en blanco */
 }
+/* 5. PENDIENTES CON RECHAZO PREVIO: Fondo Azul Pastel / Borde Lateral Guinda */
+.result-item.status-pendiente-rechazo {
+    border-left: 5px solid var(--primary-color) !important; /* Línea lateral Guinda Oscuro */
+    background-color: #EDF4F9 !important; /* Mismo fondo azul de los pendientes */
+    color: var(--text-main) !important;
+}
+.result-item.status-pendiente-rechazo:hover {
+    background-color: #DEEBF4 !important;
+}
 
 /* =========================================================================
    BARRA DE NAVEGACIÓN INFERIOR HORIZONTAL (PANTALLAS 2, 3 Y 5)
