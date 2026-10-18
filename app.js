@@ -155,17 +155,52 @@ function searchData() {
 
     matchedRecords.sort((a, b) => String(a['NUM EXT']).localeCompare(String(b['NUM EXT'])));
     matchedRecords.slice(0, 30).forEach(item => {
-        const div = document.createElement('div'); const estatusActual = item['ESTATUS_VISITA'] || "";
-        const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']); const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
+        const div = document.createElement('div'); 
+        const estatusActual = item['ESTATUS_VISITA'] || "";
+        
+        // Evaluar si el registro tiene la marca de rechazo en la cola pendiente o en la RAM histórica
+        const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']); 
+        const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
+        
+        const valorVisitasSalud = estaEnColaPendiente && recordEnCola ? recordEnCola['CUANTAS_VISITAS_SALUD'] : (item['CUANTAS_VISITAS_SALUD'] || "");
         const estatusFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['ESTATUS_VISITA'] : estatusActual;
-        let claseColor = estatusFinal === "LOCALIZADO" ? "result-item status-localizado" : (estatusFinal === "NO LOCALIZADO" ? "result-item status-nolocalizado" : "result-item");
-        let textoIndicador = estatusFinal === "LOCALIZADO" ? ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>' : (estatusFinal === "NO LOCALIZADO" ? ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>' : "");
+
+        // 🧬 REGLA CORE PRIORITARIA: Si dice NO_QUIERE, se pinta de guinda oscuro de forma inmediata
+        let claseColor = "result-item";
+        let textoIndicador = "";
+
+        if (valorVisitasSalud === "NO_QUIERE") {
+            claseColor = "result-item status-rechazo-salud";
+            textoIndicador = ' <span style="color:#BC955C; font-weight:bold; font-size:12px; margin-left:5px;">⚠️ Rechazó Servicio de Salud</span>';
+        } else {
+            // Si no ha rechazado salud, mantiene el semáforo ordinario de visitas
+            if (estatusFinal === "LOCALIZADO") {
+                claseColor = "result-item status-localizado";
+                textoIndicador = ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>';
+            } else if (estatusFinal === "NO LOCALIZADO") {
+                claseColor = "result-item status-nolocalizado";
+                textoIndicador = ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
+            }
+        }
 
         div.className = claseColor;
-        div.innerHTML = `<div style="font-size:16px; font-weight:700; color:var(--dark-color); margin-bottom:2px;">${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}</div><div style="font-size:13px; font-weight:600; color:var(--primary-color); margin-bottom:4px; letter-spacing:0.3px;">CURP: ${item['CURP'] || 'SIN CURP'}</div><div style="font-size:13px; color:#555555;">📍 Calle: ${item['CALLE'] || 'S/C'}, No. Ext: ${item['NUM EXT'] || 'S/N'}, Col. ${item['COLONIA'] || 'S/C'}</div>`;
-        div.onclick = () => openForm(item); resultsContainer.appendChild(div);
+        div.innerHTML = `
+            <div style="font-size:16px; font-weight:700; margin-bottom:2px;">
+                ${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}
+            </div>
+            <div style="font-size:13px; font-weight:600; margin-bottom:4px; letter-spacing:0.3px;">
+                CURP: ${item['CURP'] || 'SIN CURP'}
+            </div>
+            <div style="font-size:13px; opacity:0.9;">
+                📍 Calle: ${item['CALLE'] || 'S/C'}, No. Ext: ${item['NUM EXT'] || 'S/N'}, Col. ${item['COLONIA'] || 'S/C'}
+            </div>
+        `;
+        
+        div.onclick = () => openForm(item); 
+        resultsContainer.appendChild(div);
     });
 }
+
 function buscarLocalidadesEnPantalla() {
     const query = document.getElementById('f-localidad-buscar').value.toLowerCase().trim(); const resultsContainer = document.getElementById('localidad-search-results');
     resultsContainer.innerHTML = ""; if (query.length < 2) { resultsContainer.style.display = "none"; return; }
