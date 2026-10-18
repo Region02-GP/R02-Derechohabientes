@@ -563,15 +563,66 @@ function verificarCurpDuplicadaEnTiempoReal(e) {
 }
 function openHistoryScreen() {
     changeScreen('screen-history'); 
-    if (document.getElementById('pending-count')) document.getElementById('pending-count').innerText = pendingSync.length;
-    const logList = document.getElementById('history-log'); 
-    if (logList) {
-        logList.innerHTML = ""; 
-        pendingSync.forEach((item) => {
-            const div = document.createElement('div'); div.className = "result-item"; div.innerHTML = `<strong>⏳ ${item['NOMBRE'] || 'Derechohabiente'} (${item['CURP']})</strong><br><small>Pendiente</small>`; logList.appendChild(div);
-        });
+    if (document.getElementById('pending-count')) {
+        document.getElementById('pending-count').innerText = pendingSync.length;
     }
+    
+    const logList = document.getElementById('history-log'); 
+    if (!logList) return;
+    logList.innerHTML = ""; 
+
+    // MÁXIMO RENDIMIENTO: Mapea la base de datos en memoria para que no se borren al sincronizar
+    if (!localMemoryDatabase || localMemoryDatabase.length === 0) {
+        logList.innerHTML = '<div style="padding:16px; text-align:center; color:#718096; font-weight:600;">📋 No hay registros de visitas capturados en este dispositivo.</div>';
+        return;
+    }
+
+    // Ordenar de forma idéntica a la pantalla de búsqueda
+    const registrosOrdenados = [...localMemoryDatabase].sort((a, b) => String(a['NUM EXT']).localeCompare(String(b['NUM EXT'])));
+
+    registrosOrdenados.forEach((item) => {
+        const estatusActual = item['ESTATUS_VISITA'] || "";
+        
+        // Evaluar si está en cola pendiente o ya sincronizado para pintar el indicador visual correcto
+        const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']);
+        
+        let claseColor = "result-item";
+        if (estatusActual === "LOCALIZADO") claseColor = "result-item status-localizado";
+        if (estatusActual === "NO LOCALIZADO") claseColor = "result-item status-nolocalizado";
+
+        let textoIndicador = "";
+        if (estatusActual === "LOCALIZADO") {
+            textoIndicador = ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>';
+        } else if (estatusActual === "NO LOCALIZADO") {
+            textoIndicador = ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
+        }
+
+        // Agregar distintivo de red (Pendiente de subir o Sincronizado en la nube)
+        let distintivoSincronizacion = estaEnColaPendiente 
+            ? '<span style="float:right; background-color:#FFF3CD; color:#664D03; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:700;">⏳ Pendiente</span>' 
+            : '<span style="float:right; background-color:#E6F4EA; color:#137333; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:700;">☁️ Sincronizado</span>';
+
+        const div = document.createElement('div'); 
+        div.className = claseColor;
+        div.innerHTML = `
+            ${distintivoSincronizacion}
+            <div style="font-size:16px; font-weight:700; color:var(--dark-color); margin-bottom:2px;">
+                ${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}
+            </div>
+            <div style="font-size:13px; font-weight:600; color:var(--primary-color); margin-bottom:4px; letter-spacing:0.3px;">
+                CURP: ${item['CURP'] || 'SIN CURP'}
+            </div>
+            <div style="font-size:13px; color:#555555;">
+                📍 Calle: ${item['CALLE'] || 'S/C'}, No. Ext: ${item['NUM EXT'] || 'S/N'}, Col. ${item['COLONIA'] || 'S/C'}
+            </div>
+        `;
+        
+        // MOTOR DE EDICIÓN: Permite abrir el formulario de la pantalla 4 al hacer clic desde el historial
+        div.onclick = () => openForm(item); 
+        logList.appendChild(div);
+    });
 }
+
 
 async function syncWithSheets() {
     if (pendingSync.length === 0) return alert("No tienes registros pendientes por subir.");
