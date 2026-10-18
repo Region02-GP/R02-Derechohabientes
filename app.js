@@ -625,7 +625,7 @@ function openHistoryScreen() {
 
 
 async function syncWithSheets() {
-    if (pendingSync.length === 0) return alert("No tienes registros pendientes por subir.");
+    if (pendingSync.length === 0) return alert("No tienes registros pendientes por subir en este momento.");
     const confirmarSincronizacion = confirm(`🔄 TRANSMISIÓN EN CURSO: Se van a sincronizar ${pendingSync.length} registros y fotos con Google Drive.\n\nPor favor, no bloquees la pantalla durante el envío.`);
     if(!confirmarSincronizacion) return;
     
@@ -638,18 +638,28 @@ async function syncWithSheets() {
             headers: { 'Content-Type': 'application/json;charset=utf-8' }, 
             body: JSON.stringify({ action: "sync", records: pendingSync }) 
         });
+        
+        // Pasar la cola temporal al historial permanente de sesión
         syncedHistory = syncedHistory.concat(pendingSync); 
         localStorage.setItem('syncedHistory', JSON.stringify(syncedHistory)); 
+        
+        // Vaciar la cola de pendientes sin alterar IndexedDB ni la RAM local
         pendingSync = []; 
         localStorage.removeItem('pendingSync'); 
+        
+        // Actualizar contadores métricos de la pantalla de bienvenida
+        updateLocalCounter();
         ocultarCargando();
+        
+        // RE-RENDERIZADO SÍNCRONO: Redibuja el historial manteniendo los registros intactos para edición
         openHistoryScreen(); 
-        alert("🎉 ¡ÉXITO TOTAL!: Sus expedientes y fotografías se han sincronizado con Google Drive y Sheets."); 
+        alert("🎉 ¡ÉXITO TOTAL!: Sus expedientes y fotografías se han sincronizado con Google Drive y Sheets de forma correcta."); 
     } catch (e) { 
         ocultarCargando();
-        alert("🛑 Error en transmisión: Verifique que su Apps Script esté publicado correctamente."); 
+        alert("🛑 Error en transmisión: Verifique que su Apps Script esté publicado correctamente o revise su conexión a internet."); 
     }
 }
+
 
 function downloadBackupCSV() {
     const allVisitsOfDay = pendingSync.concat(syncedHistory); 
