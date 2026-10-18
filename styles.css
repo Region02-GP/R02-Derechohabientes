@@ -36,25 +36,25 @@ body {
     line-height: 1.5;
 }
 
-.main-header {
-    background-color: var(--surface-color);
-    color: var(--white);
-    text-align: center;
-    padding: 1px;
-    border-bottom: 4px solid var(--secondary-dark); /* Línea dorada */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-}
 
 .main-header {
     background-color: var(--primary-color); /* Cambiado de surface a guinda */
     color: var(--white);
     text-align: center;
     padding: 2px;
-    
     box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
 
-
+h1 { 
+    color: var(--primary-color); 
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+   text-align: center;
+   
+}
 
 /* Margen de seguridad inferior para evitar que la barra tape contenido */
  .app-container { max-width: 480px; margin: 15px auto; padding: 10px; padding-bottom: 90px !important; box-sizing: border-box; }
