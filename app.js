@@ -91,7 +91,7 @@ function login() {
     if (typeof AUTHORIZED_CURPS !== 'undefined' && AUTHORIZED_CURPS[curpInput]) {
         const brigadistaEncontrado = AUTHORIZED_CURPS[curpInput];
         currentUser = { curp: curpInput, name: brigadistaEncontrado.name };
-        if (document.getElementById('-message')) document.getElementById('-message').innerText = `Bienvenido(a), ${currentUser.name}`;
+        if (document.getElementById('welcome-message')) document.getElementById('welcome-message').innerText = `Bienvenido(a), ${currentUser.name}`;
         if (document.getElementById('welcome-message-search')) document.getElementById('welcome-message-search').innerText = `Bienvenido(a), ${currentUser.name}`;
         changeScreen('screen-welcome');
     } else { alert("CURP no autorizada o inválida."); }
