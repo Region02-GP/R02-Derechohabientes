@@ -127,7 +127,7 @@ async function downloadAllDataMassive() {
         
         preloadDatabaseToMemory(); 
         updateLocalCounter(); 
-        alert(`✅ ÉXITO TOTAL: Se descargaron y sincronizaron ${totalCargados} registros en tu teléfono.`); 
+        alert(`✅ ÉXITO: Se descargaron ${totalCargados} registros en tu teléfono.`); 
         changeScreen('screen-search');
     } catch (error) { alert(`Error: ${error.message}`); } finally { btn.disabled = false; }
 }
@@ -177,7 +177,7 @@ function searchData() {
             } else {
                 // Si dice NO_QUIERE pero no está Localizado (ej. Pendiente o No Localizado) -> Color Azul con franja Guinda
                 claseColor = "result-item status-pendiente-rechazo";
-                textoIndicador = ' <span style="color:#621132; font-weight:bold; font-size:12px; margin-left:5px;">⚠️ Rechazó Servicio (Validar Estatus)</span>';
+                textoIndicador = ' <span style="color:#621132; font-weight:bold; font-size:12px; margin-left:5px;">⚠️ Rechazó Servicio de Salud (Validar Estatus)</span>';
             }
         } else {
             // Semáforo ordinario para derechohabientes que NO han rechazado salud
@@ -439,7 +439,7 @@ function procesarFotoEvidencia(inputElement, previewId, claveDocumento, wrapperI
     if (inputElement && inputElement.files && inputElement.files[0]) {
         const file = inputElement.files[0];
         const reader = new FileReader();
-        mostrarCargando("Procesando y optimizando fotografía digital...");
+        mostrarCargando("Procesando fotografía digital...");
         
         reader.onload = function(e) {
             const imgHtml = new Image();
@@ -576,7 +576,7 @@ function saveData(event) {
         pendingSync.push(record); 
         localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
         
-        alert("✅ ÉXITO: Expediente guardado localmente en el teléfono."); 
+        alert("✅ ÉXITO: Expediente guardado en el teléfono."); 
         document.getElementById('search-input').value = ""; 
         document.getElementById('search-results').innerHTML = ""; 
         changeScreen('screen-search');
@@ -647,7 +647,7 @@ function openHistoryScreen() {
     let visitasTuyo = localMemoryDatabase.filter(item => curpsGuardadasHoy.includes(item.CURP));
 
     if (visitasTuyo.length === 0) {
-        logList.innerHTML = '<div style="padding:16px; text-align:center; color:#718096; font-weight:600;">📋 No tienes visitas capturadas en la memoria de este teléfono hoy.</div>';
+        logList.innerHTML = '<div style="padding:16px; text-align:center; color:#718096; font-weight:600;">📋 No tienes visitas capturadas en la memoria del teléfono hoy.</div>';
         return;
     }
 
@@ -698,11 +698,11 @@ function openHistoryScreen() {
 }
 
 async function syncWithSheets() {
-    if (pendingSync.length === 0) return alert("No tienes registros pendientes por subir en este momento.");
-    const confirmarSincronizacion = confirm(`🔄 TRANSMISIÓN EN CURSO: Se van a sincronizar ${pendingSync.length} registros y fotos con Google Drive.\n\nPor favor, no bloquees la pantalla durante el envío.`);
+    if (pendingSync.length === 0) return alert("No tienes registros pendientes de sincronizar en este momento.");
+    const confirmarSincronizacion = confirm(`🔄 TRANSMISIÓN EN CURSO: Se van a sincronizar ${pendingSync.length} registros y fotos.\n\nPor favor, no bloquees la pantalla durante el envío.`);
     if(!confirmarSincronizacion) return;
     
-    mostrarCargando(`Sincronizando ${pendingSync.length} expedientes en la nube...`);
+    mostrarCargando(`Sincronizando ${pendingSync.length} expedientes sincronizados...`);
 
     try {
         const response = await fetch(GOOGLE_SCRIPT_URL, { 
@@ -726,7 +726,7 @@ async function syncWithSheets() {
         
         // RE-RENDERIZADO SÍNCRONO: Redibuja el historial manteniendo los registros intactos para edición
         openHistoryScreen(); 
-        alert("🎉 ¡ÉXITO TOTAL!: Sus expedientes y fotografías se han sincronizado con Google Drive y Sheets de forma correcta."); 
+        alert("🎉 ¡ÉXITO!: Sus expedientes se han sincronizado de forma correcta."); 
     } catch (e) { 
         ocultarCargando();
         alert("🛑 Error en transmisión: Verifique que su Apps Script esté publicado correctamente o revise su conexión a internet."); 
