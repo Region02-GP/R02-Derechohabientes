@@ -1100,68 +1100,30 @@ function searchData() {
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''}`.toLowerCase();
+        // MEJORA REMOTA: Se inyecta la SECCIÓN dentro de la cadena combinada para habilitar su filtrado dinámico
+        const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''} ${item['SECCION'] || ''}`.toLowerCase();
         if (searchTokens.every(t => combinedText.includes(t))) matchedRecords.push(item);
     }
 
-    matchedRecords.sort((a, b) => String(a['NUM EXT']).localeCompare(String(b['NUM EXT'])));
+    // MEJORA REMOTA DE ORDENAMIENTO: Limpia guiones, letras o diagonales y ordena numéricamente de menor a mayor por NUM EXT
+    matchedRecords.sort((a, b) => {
+        const numA = parseInt(String(a['NUM EXT']).replace(/\D/g, ""), 10) || 0;
+        const numB = parseInt(String(b['NUM EXT']).replace(/\D/g, ""), 10) || 0;
+        return numA - numB;
+    });
+
     matchedRecords.slice(0, 30).forEach(item => {
-        const div = document.createElement('div'); 
-        const estatusActual = item['ESTATUS_VISITA'] || "";
-        
-        // Identificar si el registro tiene modificaciones en caliente en la cola pendiente
-        const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
-        
-        // Extraer los estatus finales dándole prioridad a lo guardado en el Note 20 hoy
-        const estatusFinal = recordEnCola ? recordEnCola['ESTATUS_VISITA'] : estatusActual;
-        const valorVisitasSalud = recordEnCola ? recordEnCola['CUANTAS_VISITAS_SALUD'] : (item['CUANTAS_VISITAS_SALUD'] || "");
-
-        let claseColor = "result-item";
-        let textoIndicador = "";
-
-        // 🧬 EVALUACIÓN MATRICIAL FILTRADA POR VISITA DE SALUD Y ESTATUS
-        if (valorVisitasSalud === "NO_QUIERE") {
-            if (estatusFinal === "LOCALIZADO") {
-                // CONDICIÓN SOLICITADA: Si es LOCALIZADO y dice NO_QUIERE -> Color Guinda Oscuro Completo
-                claseColor = "result-item status-rechazo-salud";
-                textoIndicador = ' <span style="color:#BC955C; font-weight:bold; font-size:12px; margin-left:5px;">⚠️ Localizado - Rechazó Servicio de Salud</span>';
-            } else {
-                // Si dice NO_QUIERE pero no está Localizado (ej. Pendiente o No Localizado) -> Color Azul con franja Guinda
-                claseColor = "result-item status-pendiente-rechazo";
-                textoIndicador = ' <span style="color:#621132; font-weight:bold; font-size:12px; margin-left:5px;">⚠️ Rechazó Servicio de Salud (Validar Estatus)</span>';
-            }
-        } else {
-            // Semáforo ordinario para derechohabientes que NO han rechazado salud
-            if (estatusFinal === "LOCALIZADO") {
-                claseColor = "result-item status-localizado";
-                textoIndicador = ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>';
-            } else if (estatusFinal === "NO LOCALIZADO") {
-                claseColor = "result-item status-nolocalizado";
-                textoIndicador = ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
-            } else {
-                // Registro pendiente ordinario
-                claseColor = "result-item";
-            }
-        }
+        const div = document.createElement('div'); const estatusActual = item['ESTATUS_VISITA'] || "";
+        const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']); const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
+        const estatusFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['ESTATUS_VISITA'] : estatusActual;
+        let claseColor = estatusFinal === "LOCALIZADO" ? "result-item status-localizado" : (estatusFinal === "NO LOCALIZADO" ? "result-item status-nolocalizado" : "result-item");
+        let textoIndicador = estatusFinal === "LOCALIZADO" ? ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>' : (estatusFinal === "NO LOCALIZADO" ? ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>' : "");
 
         div.className = claseColor;
-        div.innerHTML = `
-            <div style="font-size:16px; font-weight:700; margin-bottom:2px;">
-                ${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}
-            </div>
-            <div style="font-size:13px; font-weight:600; margin-bottom:4px; letter-spacing:0.3px;">
-                CURP: ${item['CURP'] || 'SIN CURP'}
-            </div>
-            <div style="font-size:13px; opacity:0.9;">
-                📍 Calle: ${item['CALLE'] || 'S/C'}, No. Ext: ${item['NUM EXT'] || 'S/N'}, Col. ${item['COLONIA'] || 'S/C'}
-            </div>
-        `;
-        
-        div.onclick = () => openForm(item); 
-        resultsContainer.appendChild(div);
+        div.innerHTML = `<div style="font-size:16px; font-weight:700; color:var(--dark-color); margin-bottom:2px;">${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}</div><div style="font-size:13px; font-weight:600; color:var(--primary-color); margin-bottom:4px; letter-spacing:0.3px;">CURP: ${item['CURP'] || 'SIN CURP'} | Secc: ${item['SECCION'] || 'S/S'}</div><div style="font-size:13px; color:#555555;">📍 Calle: ${item['CALLE'] || 'S/C'}, No. Ext: ${item['NUM EXT'] || 'S/N'}, Col. ${item['COLONIA'] || 'S/C'}</div>`;
+        div.onclick = () => openForm(item); resultsContainer.appendChild(div);
     });
 }
-
 function buscarLocalidadesEnPantalla() {
     const query = document.getElementById('f-localidad-buscar').value.toLowerCase().trim(); const resultsContainer = document.getElementById('localidad-search-results');
     resultsContainer.innerHTML = ""; if (query.length < 2) { resultsContainer.style.display = "none"; return; }
