@@ -1100,31 +1100,38 @@ function searchData() {
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // Mantiene la búsqueda combinada por texto + sección
-        const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''} ${item['SECCION'] || ''}`.toLowerCase();
-        if (searchTokens.every(t => combinedText.includes(t))) matchedRecords.push(item);
+        // DETECTOR TOLERANTE: Recupera el valor de la sección ignorando si tiene espacios ocultos al final
+        const seccionValor = item['SECCION'] || item['SECCION '] || item['Seccion'] || '';
+
+        const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''} ${seccionValor}`.toLowerCase();
+        if (searchTokens.every(t => combinedText.includes(t))) {
+            // Guarda temporalmente el valor limpio para usarlo en el renderizado de la tarjeta
+            item['SECCION_LIMPIA'] = seccionValor;
+            matchedRecords.push(item);
+        }
     }
 
-    // Ordenamiento numérico estricto por número exterior de menor a mayor
+    // Ordenamiento numérico estricto de menor a mayor por número de casa
     matchedRecords.sort((a, b) => {
         const numA = parseInt(String(a['NUM EXT']).replace(/\D/g, ""), 10) || 0;
         const numB = parseInt(String(b['NUM EXT']).replace(/\D/g, ""), 10) || 0;
         return numA - numB;
     });
 
+    resultsContainer.innerHTML = "";
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div'); const estatusActual = item['ESTATUS_VISITA'] || "";
         const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']); const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
-        const estatusFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['ESTATS_VISITA'] || recordEnCola['ESTATUS_VISITA'] : estatusActual;
+        const estatusFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['ESTATUS_VISITA'] : estatusActual;
         let claseColor = estatusFinal === "LOCALIZADO" ? "result-item status-localizado" : (estatusFinal === "NO LOCALIZADO" ? "result-item status-nolocalizado" : "result-item");
         let textoIndicador = estatusFinal === "LOCALIZADO" ? ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>' : (estatusFinal === "NO LOCALIZADO" ? ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>' : "");
 
         div.className = claseColor;
         
-        // 🚨 MODIFICADO AQUÍ: Se inyecta visualmente la SECCIÓN con un formato destacado dentro de la tarjeta de color
-        div.innerHTML = `<div style="font-size:16px; font-weight:700; color:var(--dark-color); margin-bottom:2px;">${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}</div>
-                         <div style="font-size:13px; font-weight:600; color:var(--primary-color); margin-bottom:4px; letter-spacing:0.3px;">
-                             CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color: var(--secondary-color); color: #1F2937; padding: 1px 6px; border-radius: 4px; font-weight: 800; font-size: 11px;">SECCIÓN: ${item['SECCION'] || 'S/S'}</span>
+        // CORRECCIÓN VISUAL: Inyecta la insignia con fondo dorado y texto de contraste negro antracita
+        div.innerHTML = `<div style="font-size:16px; font-weight:700; color:#1F2937; margin-bottom:2px;">${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}</div>
+                         <div style="font-size:13px; font-weight:600; color:#621132; margin-bottom:4px; letter-spacing:0.3px;">
+                             CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_LIMPIA'] || 'S/S'}</span>
                          </div>
                          <div style="font-size:13px; color:#555555;">📍 Calle: ${item['CALLE'] || 'S/C'}, No. Ext: ${item['NUM EXT'] || 'S/N'}, Col. ${item['COLONIA'] || 'S/C'}</div>`;
                          
