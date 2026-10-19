@@ -1292,7 +1292,9 @@ function actualizarEstilosBotonesFormulario() {
 function openForm(item) {
     if (!item) return;
     
-    resetearContenedoresYBotonesFotografias();
+    if (typeof resetearContenedoresYBotonesFotografias === 'function') {
+        resetearContenedoresYBotonesFotografias();
+    }
 
     document.getElementById('f-curp').value = item['CURP'] || ''; 
     document.getElementById('f-id').value = item['ID'] || ''; 
@@ -1313,18 +1315,22 @@ function openForm(item) {
     motivoNoLocalizadoValue = item['MOTIVO_NO_LOCALIZADO'] || ""; 
     actualizarEstilosBotonesFormulario(); 
     window.currentTratoValue = item['EVALUACION_TRATO'] || ""; 
-    actualizarEstilosBotonesTrato(); // ✅ CORREGIDO: Alineado a español
+    
+    // CORREGIDO SÍNCRONAMENTE: Nombre unificado para evitar excepciones de referencia
+    actualizarEstilosBotonesTrato(); 
 
-    document.getElementById('f-recibio-salud').value = item['RECIBIO_VISITA_SALUD'] || '';
-    if (item['RECIBIO_VISITA_SALUD'] === "SI") {
+    if (document.getElementById('f-recibio-salud')) {
+        document.getElementById('f-recibio-salud').value = item['RECIBIO_VISITA_SALUD'] || '';
+    }
+    if (item['RECIBIO_VISITA_SALUD'] === "SI" && document.getElementById('wrapper-cuantas-visitas')) {
         document.getElementById('wrapper-cuantas-visitas').style.display = "block";
         document.getElementById('f-cuantas-visitas').value = item['CUANTAS_VISITAS_SALUD'] || '';
-    } else {
+    } else if (document.getElementById('wrapper-cuantas-visitas')) {
         document.getElementById('wrapper-cuantas-visitas').style.display = "none";
     }
-    document.getElementById('f-atencion-salud').value = item['OPINION_ATENCION_SALUD'] || '';
-    document.getElementById('f-motivo-no-visita').value = item['MOTIVO_NO_VISITA_SALUD'] || '';
-    document.getElementById('f-desea-visita-futura').value = item['DESEA_VISITA_SALUD'] || '';
+    if (document.getElementById('f-atencion-salud')) document.getElementById('f-atencion-salud').value = item['OPINION_ATENCION_SALUD'] || '';
+    if (document.getElementById('f-motivo-no-visita')) document.getElementById('f-motivo-no-visita').value = item['MOTIVO_NO_VISITA_SALUD'] || '';
+    if (document.getElementById('f-desea-visita-futura')) document.getElementById('f-desea-visita-futura').value = item['DESEA_VISITA_SALUD'] || '';
 
     document.getElementById('f-lat').value = "Buscando satélite..."; 
     document.getElementById('f-lon').value = "Buscando satélite...";
@@ -1369,7 +1375,6 @@ function openForm(item) {
         }
     });
 }
-
 function procesarFotoEvidencia(inputElement, previewId, claveDocumento, wrapperId, buttonId, textoNuevo) {
     if (inputElement && inputElement.files && inputElement.files[0]) {
         const file = inputElement.files[0];
