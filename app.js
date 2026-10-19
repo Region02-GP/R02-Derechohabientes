@@ -1012,7 +1012,7 @@ function updateLocalCounter() {
 function changeScreen(screenId) {
     if (screenId !== 'screen-history') previousScreen = screenId;
     if (screenId === 'screen-search') preloadDatabaseToMemory();
-    if (screenId === 'screen-') updateLocalCounter(); 
+    if (screenId === 'screen-welcome') updateLocalCounter(); // CORREGIDO
     
     if (screenId === 'screen-search' && currentUser) {
         const datosBrigadistaActivo = AUTHORIZED_CURPS[currentUser.curp];
@@ -1031,12 +1031,19 @@ function changeScreen(screenId) {
     } else {
         bottomNav.style.setProperty('display', 'flex', 'important'); bottomNav.classList.remove('hidden');
         document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => btn.classList.remove('active'));
-        if (screenId === 'screen-') document.getElementById('nav-').classList.add('active');
-        if (screenId === 'screen-search') document.getElementById('nav-search').classList.add('active');
-        if (screenId === 'screen-history') document.getElementById('nav-history').classList.add('active');
+        
+        // CORREGIDO: Enlaces síncronos con los IDs reales de tu index.html para evitar que truene el hilo táctil
+        if (screenId === 'screen-welcome') {
+            const btnWel = document.getElementById('nav-welcome'); if (btnWel) btnWel.classList.add('active');
+        }
+        if (screenId === 'screen-search') {
+            const btnSea = document.getElementById('nav-search'); if (btnSea) btnSea.classList.add('active');
+        }
+        if (screenId === 'screen-history') {
+            const btnHis = document.getElementById('nav-history'); if (btnHis) btnHis.classList.add('active');
+        }
     }
 }
-
 function login() {
     const curpInput = document.getElementById('login-curp').value.trim().toUpperCase();
     if (typeof AUTHORIZED_CURPS !== 'undefined' && AUTHORIZED_CURPS[curpInput]) {
