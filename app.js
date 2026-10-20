@@ -1160,9 +1160,11 @@ function searchData() {
         let colorSubtextos = "#555555";     // Gris oscuro
         let textoIndicador = "";
 
-        // VALIDADORES DE REGLAS ESTRICTOS
-        const esSaludVacioOVisitas = (saludLimpia === "" || saludLimpia === "1" || saludLimpia === "2" || saludLimpia === "3");
+        // 🔥 DETECTOR TOLERANTE POR INCLUSIÓN: Captura "NO_QUIERE" incluso si tiene espacios extras
+        const tieneRechazoSalud = saludLimpia.includes("NO_QUIERE") || saludLimpia.includes("NO QUIERE");
+        const esSaludVacioOVisitas = (!tieneRechazoSalud && (saludLimpia === "" || saludLimpia === "1" || saludLimpia === "2" || saludLimpia === "3"));
 
+        // EVALUACIÓN DE LAS 5 REGLAS EXACTAS
         if ((estatusLimpio === "" || estatusLimpio === "LOCALIZADO") && esSaludVacioOVisitas) {
             // 🟦 REGLA 1 y 2: PENDIENTES / LOCALIZADOS CON VISITAS (Azul Glaciar Pastel / Borde Dorado)
             fondoTarjeta = "#EDF4F9";
@@ -1171,13 +1173,13 @@ function searchData() {
                 ? ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>'
                 : ' <span style="color:#718096; font-weight:bold; font-size:12px; margin-left:5px;">⏳ No Tocado</span>';
         } 
-        else if (estatusLimpio === "NO LOCALIZADO" && saludLimpia !== "NO_QUIERE") {
+        else if (estatusLimpio === "NO LOCALIZADO" && !tieneRechazoSalud) {
             // 🟥 REGLA 3: NO LOCALIZADOS (Rojo Rosáceo / Borde Carmesí)
             fondoTarjeta = "#FCE8E6";
             bordeIzquierdo = "5px solid #b91c1c";
             textoIndicador = ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
         } 
-        else if (estatusLimpio === "LOCALIZADO" && saludLimpia === "NO_QUIERE") {
+        else if (estatusLimpio === "LOCALIZADO" && tieneRechazoSalud) {
             // 🟫 REGLA 4: RECHAZO DE SALUD (Guinda Oscuro / Borde Dorado de Advertencia)
             fondoTarjeta = "#4A0E25";
             bordeIzquierdo = "5px solid #BC955C";
@@ -1185,7 +1187,7 @@ function searchData() {
             colorSubtextos = "#E5E7EB";
             textoIndicador = ' <span style="color:#BC955C; font-weight:bold; font-size:12px; margin-left:5px;">✓ Rechazo Salud</span>';
         } 
-        else if (estatusLimpio === "" && saludLimpia === "NO_QUIERE") {
+        else if (estatusLimpio === "" && tieneRechazoSalud) {
             // 🟪 REGLA 5: PENDIENTES CON RECHAZO PREVIO (Fondo Azul Pastel / Borde Lateral Guinda)
             fondoTarjeta = "#EDF4F9";
             bordeIzquierdo = "5px solid #621132"; // Borde Guinda
