@@ -1112,19 +1112,36 @@ function searchData() {
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 1. EXTRAER LA SECCIÓN COMO TEXTO SIN IMPORTAR EL NOMBRE DE LA PROPIEDAD
-        let seccionOriginal = item['SECCION'] !== undefined && item['SECCION'] !== null ? String(item['SECCION']) : "";
-        if (!seccionOriginal) seccionOriginal = item['SECCION '] !== undefined && item['SECCION '] !== null ? String(item['SECCION ']) : "";
-        if (!seccionOriginal) seccionOriginal = item['Seccion'] !== undefined && item['Seccion'] !== null ? String(item['Seccion']) : "";
+        // 1. OBTENER EL VALOR DE LA SECCIÓN DE FORMA TOLERANTE
+        let seccionCruda = item['SECCION'] !== undefined && item['SECCION'] !== null ? item['SECCION'] : "";
+        if (!seccionCruda) seccionCruda = item['SECCION '] !== undefined && item['SECCION '] !== null ? item['SECCION '] : "";
+        if (!seccionCruda) seccionCruda = item['Seccion'] !== undefined && item['Seccion'] !== null ? item['Seccion'] : "";
         
-        // 2. SOLUCIÓN DEFINITIVA: Remover decimales flotantes .0 de Excel y espacios ocultos de forma segura
-        let seccionLimpia = seccionOriginal.replace(/\.0+\$/, "").replace(/[\s\u200B-\u200D\uFEFF]/g, "").trim();
+        // 2. EL TRUCO DEFINITIVO: Convertir a número entero para matar el ".0" de Excel limpiamente
+        let seccionNumero = parseInt(seccionCruda, 10);
+        let seccionLimpia = isNaN(seccionNumero) ? "" : String(seccionNumero);
 
-        // 3. CONSOLIDAR TEXTO DE BÚSQUEDA INDEXABLE (Incluyendo la Sección en el maestro)
-        const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''} ${seccionLimpia}`.toLowerCase();
+        // 3. CONSOLIDAR TEXTO MAESTRO DE BÚSQUEDA (Incluyendo la sección limpia al final)
+        const nombre = String(item['NOMBRE'] || '').toLowerCase();
+        const paterno = String(item['AP PATERNO'] || '').toLowerCase();
+        const materno = String(item['AP MATERNO'] || '').toLowerCase();
+        const curp = String(item['CURP'] || '').toLowerCase();
+        const calle = String(item['CALLE'] || '').toLowerCase();
+        const colonia = String(item['COLONIA'] || '').toLowerCase();
 
-        // 4. VALIDAR SI CADA TOKEN COINCIDE CON EL REGISTRO
-        if (searchTokens.every(t => combinedText.includes(t))) {
+        // 4. VALIDACIÓN INDIVIDUAL POR CAMPO (Más seguro que un solo string gigante)
+        const matchAllTokens = searchTokens.every(token => {
+            return nombre.includes(token) || 
+                   paterno.includes(token) || 
+                   materno.includes(token) || 
+                   curp.includes(token) || 
+                   calle.includes(token) || 
+                   colonia.includes(token) || 
+                   seccionLimpia === token ||          // Coincidencia exacta de sección (Ej: "1234")
+                   seccionLimpia.includes(token);      // Coincidencia parcial (Ej: escribir "12")
+        });
+
+        if (matchAllTokens) {
             item['SECCION_LIMPIA'] = seccionLimpia || 'S/S';
             matchedRecords.push(item);
         }
@@ -1192,7 +1209,6 @@ function searchData() {
         resultsContainer.appendChild(div);
     });
 }
-
 
 function buscarLocalidadesEnPantalla() {
     const query = document.getElementById('f-localidad-buscar').value.toLowerCase().trim(); const resultsContainer = document.getElementById('localidad-search-results');
