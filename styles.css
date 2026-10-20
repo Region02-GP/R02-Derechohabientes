@@ -472,13 +472,14 @@ body {
    ========================================================================= */
 .form-block-card {
     background: #FFFFFF !important;
-    padding: 6px !important;
+    padding: 16px !important;
     border-radius: 10px !important;
-    margin-bottom: 20px !important;
+    margin-bottom: 10px !important;
     border: 1px solid #E5E7EB !important;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
     box-sizing: border-box !important;
     transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+   background-image: url('https://i.postimg.cc/LXkqg9Dk/fondo.png');
 }
 
 /* 🎒 Tarjeta 1: Datos de Identidad - Borde Guinda Formal */
