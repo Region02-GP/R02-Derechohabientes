@@ -1523,10 +1523,14 @@ function ocultarCargando() {
     if (loader) { loader.style.display = "none"; }
 }
 function saveData(event) {
-    if (event) event.preventDefault();
+    // Evita errores si la función se invoca manualmente con null
+    if (event && typeof event.preventDefault === 'function') {
+        event.preventDefault();
+    }
     
     const fCurp = document.getElementById('f-curp');
     const targetCurp = fCurp ? fCurp.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase().trim() : "";
+
     
     // 🆔 VALIDACIÓN OFICIAL DE CURP (Expresión Regular de SEGOB)
     const regexCurpOficial = /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z\d]\d$/;
