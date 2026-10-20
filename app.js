@@ -1213,15 +1213,23 @@ function seleccionarEstatusVisita(estatus) {
         }
         motivoNoLocalizadoValue = mot.trim();
         document.getElementById('f-recibio-salud').removeAttribute('required');
-        
-        // 🔄 AUTOMATIZACIÓN DEFINITIVA:
-        // Actualiza los estilos visuales de los botones e invoca inmediatamente la función de guardado
         actualizarEstilosBotonesFormulario();
-        saveData(null); 
+
+        // 🛰️ VALIDACIÓN INTELIGENTE DE COORDENADAS
+        const latValue = document.getElementById('f-lat').value;
+        if (latValue.includes("Buscando") || latValue === "" || latValue === "ERROR") {
+            // Si el satélite aún no responde, mostramos un aviso sutil y dejamos que el GPS guarde al conectar
+            mostrarCargando("Esperando señal de satélite para georreferencia obligatoria...");
+            window.pendienteGuardarNoLocalizado = true; 
+        } else {
+            // Si el GPS ya estaba listo desde antes, guarda de inmediato
+            saveData(null); 
+        }
         return;
     } else { 
         motivoNoLocalizadoValue = ""; 
         document.getElementById('f-recibio-salud').setAttribute('required', 'required');
+        window.pendienteGuardarNoLocalizado = false;
     }
     actualizarEstilosBotonesFormulario();
 }
