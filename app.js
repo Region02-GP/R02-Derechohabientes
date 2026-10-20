@@ -1109,19 +1109,22 @@ function searchData() {
     for (let i = 0; i < localMemoryDatabase.length; i++) {
         const item = localMemoryDatabase[i]; 
         if (!item) continue;
+        
+        // RESTRICCIÓN DE MUNICIPIO ORIGINAL (INTACTA)
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 1. OBTENER EL VALOR DE LA SECCIÓN DE FORMA TOLERANTE
-        let seccionCruda = item['SECCION'] !== undefined && item['SECCION'] !== null ? item['SECCION'] : "";
-        if (!seccionCruda) seccionCruda = item['SECCION '] !== undefined && item['SECCION '] !== null ? item['SECCION '] : "";
-        if (!seccionCruda) seccionCruda = item['Seccion'] !== undefined && item['Seccion'] !== null ? item['Seccion'] : "";
+        // 1. EXTRAER EL VALOR DE LA SECCIÓN DE FORMA ULTRA SEGURA
+        let seccionCruda = "";
+        if (item['SECCION'] !== undefined && item['SECCION'] !== null) seccionCruda = String(item['SECCION']);
+        else if (item['SECCION '] !== undefined && item['SECCION '] !== null) seccionCruda = String(item['SECCION ']);
+        else if (item['Seccion'] !== undefined && item['Seccion'] !== null) seccionCruda = String(item['Seccion']);
         
-        // 2. EL TRUCO DEFINITIVO: Convertir a número entero para matar el ".0" de Excel limpiamente
+        // 2. EXTRAER SOLO EL NÚMERO ENTERO (Quita el .0 de Excel y espacios ocultos)
         let seccionNumero = parseInt(seccionCruda, 10);
-        let seccionLimpia = isNaN(seccionNumero) ? "" : String(seccionNumero);
+        let seccionLimpiaCadena = isNaN(seccionNumero) ? "" : String(seccionNumero);
 
-        // 3. CONSOLIDAR TEXTO MAESTRO DE BÚSQUEDA (Incluyendo la sección limpia al final)
+        // 3. CONCATENAR CAMPOS PARA LA BÚSQUEDA SIN ALTERAR EL OBJETO ITEM
         const nombre = String(item['NOMBRE'] || '').toLowerCase();
         const paterno = String(item['AP PATERNO'] || '').toLowerCase();
         const materno = String(item['AP MATERNO'] || '').toLowerCase();
@@ -1129,7 +1132,7 @@ function searchData() {
         const calle = String(item['CALLE'] || '').toLowerCase();
         const colonia = String(item['COLONIA'] || '').toLowerCase();
 
-        // 4. VALIDACIÓN INDIVIDUAL POR CAMPO (Más seguro que un solo string gigante)
+        // 4. VERIFICAR SI CADA TOKEN COINCIDE CON ALGÚN CAMPO O CON LA SECCIÓN LIMPIA
         const matchAllTokens = searchTokens.every(token => {
             return nombre.includes(token) || 
                    paterno.includes(token) || 
@@ -1137,13 +1140,15 @@ function searchData() {
                    curp.includes(token) || 
                    calle.includes(token) || 
                    colonia.includes(token) || 
-                   seccionLimpia === token ||          // Coincidencia exacta de sección (Ej: "1234")
-                   seccionLimpia.includes(token);      // Coincidencia parcial (Ej: escribir "12")
+                   seccionLimpiaCadena === token || 
+                   seccionLimpiaCadena.includes(token);
         });
 
         if (matchAllTokens) {
-            item['SECCION_LIMPIA'] = seccionLimpia || 'S/S';
-            matchedRecords.push(item);
+            // Creamos un nuevo objeto clonado para el renderizado, protegiendo los datos puros de la RAM
+            let clonRecord = Object.assign({}, item);
+            clonRecord['SECCION_DISPLAY'] = seccionLimpiaCadena || 'S/S';
+            matchedRecords.push(clonRecord);
         }
     }
 
@@ -1201,7 +1206,7 @@ function searchData() {
         
         div.innerHTML = `<div style="font-size:16px; font-weight:700; margin-bottom:2px;">${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}</div>
                          <div style="font-size:13px; font-weight:600; margin-bottom:4px; letter-spacing:0.3px;">
-                             CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_LIMPIA']}</span>
+                             CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_DISPLAY']}</span>
                          </div>
                          <div style="font-size:13px; opacity:0.85;">📍 Calle: ${item['CALLE'] || 'S/C'}, No. Ext: ${item['NUM EXT'] || 'S/N'}, Col. ${item['COLONIA'] || 'S/C'}</div>`;
                          
