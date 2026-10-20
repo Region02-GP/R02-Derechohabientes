@@ -1100,7 +1100,7 @@ function preloadDatabaseToMemory() {
 
 function searchData() {
     const query = document.getElementById('search-input').value.toLowerCase().trim(); const resultsContainer = document.getElementById('search-results');
-    resultsContainer.innerHTML = ""; if (query.length < 3) return;
+    resultsContainer.innerHTML = ""; if (query.length < 2) return;
 
     const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; const municipioBrigadista = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : "";
     const searchTokens = query.split(/\s+/); let matchedRecords = [];
@@ -1113,7 +1113,7 @@ function searchData() {
         // DETECTOR TOLERANTE: Recupera el valor de la sección ignorando si tiene espacios ocultos al final
         const seccionValor = item['SECCION'] || item['SECCION '] || item['Seccion'] || '';
 
-        const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''} ${seccionValor}`.toLowerCase();
+        const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''} ${item['SECCION'] || ''} ${seccionValor}`.toLowerCase();
         if (searchTokens.every(t => combinedText.includes(t))) {
             // Guarda temporalmente el valor limpio para usarlo en el renderizado de la tarjeta
             item['SECCION_LIMPIA'] = seccionValor;
