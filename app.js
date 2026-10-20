@@ -1099,7 +1099,7 @@ function searchData() {
     const query = document.getElementById('search-input').value.toLowerCase().trim(); 
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = ""; 
-    if (query.length < 1) return; // Permitimos búsquedas desde 1 dígito o letra por si buscan secciones cortas
+    if (query.length < 1) return; 
 
     const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; 
     const municipioBrigadista = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : "";
@@ -1112,15 +1112,37 @@ function searchData() {
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // DETECTOR TOLERANTE: Recupera el valor de la sección eliminando espacios ocultos
-        const seccionValor = String(item['SECCION'] || item['SECCION '] || item['Seccion'] || '').trim();
-
-        // CONCATENACIÓN DE TEXTO: Se incluye la sección explícitamente en el bloque de búsqueda indexable
-        const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''} ${seccionValor}`.toLowerCase();
+        // EXTRAEDOR ULTRA-TOLERANTE DE SECCIÓN:
+        // Fuerza la conversión a texto, limpia decimales (.0) que agrega Excel y quita espacios.
+        let seccionValor = item['SECCION'] !== undefined && item['SECCION'] !== null ? String(item['SECCION']) : "";
+        if (!seccionValor) seccionValor = item['SECCION '] !== undefined && item['SECCION '] !== null ? String(item['SECCION ']) : "";
+        if (!seccionValor) seccionValor = item['Seccion'] !== undefined && item['Seccion'] !== null ? String(item['Seccion']) : "";
         
-        // El registro califica si todos los términos del input del usuario se encuentran en el bloque consolidado
-        if (searchTokens.every(t => combinedText.includes(t))) {
-            item['SECCION_LIMPIA'] = seccionValor;
+        seccionValor = seccionValor.split('.')[0].replace(/\s+/g, "").trim(); 
+
+        // Variables de identidad estándar convertidas a texto limpio
+        const nombre = String(item['NOMBRE'] || '').toLowerCase();
+        const paterno = String(item['AP PATERNO'] || '').toLowerCase();
+        const materno = String(item['AP MATERNO'] || '').toLowerCase();
+        const curp = String(item['CURP'] || '').toLowerCase();
+        const calle = String(item['CALLE'] || '').toLowerCase();
+        const colonia = String(item['COLONIA'] || '').toLowerCase();
+        const seccionLimpiaLower = seccionValor.toLowerCase();
+
+        // El registro califica si CADA token escrito por el usuario coincide con alguna de las propiedades
+        const matchAllTokens = searchTokens.every(token => {
+            return nombre.includes(token) || 
+                   paterno.includes(token) || 
+                   materno.includes(token) || 
+                   curp.includes(token) || 
+                   calle.includes(token) || 
+                   colonia.includes(token) || 
+                   seccionLimpiaLower === token || // Coincidencia exacta de sección (Ej: usuario escribe "1234")
+                   seccionLimpiaLower.includes(token); // Coincidencia parcial de sección
+        });
+
+        if (matchAllTokens) {
+            item['SECCION_LIMPIA'] = seccionValor || 'S/S';
             matchedRecords.push(item);
         }
     }
@@ -1179,7 +1201,7 @@ function searchData() {
         
         div.innerHTML = `<div style="font-size:16px; font-weight:700; margin-bottom:2px;">${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}</div>
                          <div style="font-size:13px; font-weight:600; margin-bottom:4px; letter-spacing:0.3px;">
-                             CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_LIMPIA'] || 'S/S'}</span>
+                             CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_LIMPIA']}</span>
                          </div>
                          <div style="font-size:13px; opacity:0.85;">📍 Calle: ${item['CALLE'] || 'S/C'}, No. Ext: ${item['NUM EXT'] || 'S/N'}, Col. ${item['COLONIA'] || 'S/C'}</div>`;
                          
