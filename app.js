@@ -1100,7 +1100,7 @@ function searchData() {
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = ""; 
     
-    // Si el usuario no ha escrito nada, limpiamos y salimos
+    // Permitir búsquedas desde un dígito para capturar secciones cortas
     if (query.length < 1) return; 
 
     const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; 
@@ -1112,28 +1112,40 @@ function searchData() {
         const item = localMemoryDatabase[i]; 
         if (!item) continue;
         
-        // RESTRICCIÓN DE MUNICIPIO ORIGINAL ESTRICTA (INTACTA)
+        // RESTRICCIÓN DE MUNICIPIO ORIGINAL (INTACTA)
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // DETECTOR TOLERANTE DE SECCIÓN:
-        // Obtiene la propiedad sin importar espacios en la clave, extrae la parte entera (elimina .0)
-        let seccionCruda = item['SECCION'] || item['SECCION '] || item['Seccion'] || '';
-        let seccionLimpia = String(seccionCruda).split('.')[0].trim();
-
-        // Guardamos temporalmente el valor limpio para usarlo en el renderizado de la tarjeta sin alterar IndexedDB
-        item['SECCION_LIMPIA'] = seccionLimpia || 'S/S';
-
-        // CONSOLIDACIÓN IDÉNTICA A TU LOGÍSTICA ORIGINAL (Añadiendo la sección limpia al final)
-        const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''} ${seccionLimpia}`.toLowerCase();
+        // 1. EXTRAER LA SECCIÓN DE FORMA TOLERANTE
+        let seccionCruda = item['SECCION'] !== undefined && item['SECCION'] !== null ? String(item['SECCION']) : "";
+        if (!seccionCruda) seccionCruda = item['SECCION '] !== undefined && item['SECCION '] !== null ? String(item['SECCION ']) : "";
+        if (!seccionCruda) seccionCruda = item['Seccion'] !== undefined && item['Seccion'] !== null ? String(item['Seccion']) : "";
         
-        // Verifica si todos los tokens del input están incluidos en el texto consolidado
-        if (searchTokens.every(t => combinedText.includes(t))) {
+        // 2. EXTRAER EL ENTERO (Elimina el .0 de Excel de forma segura dividiendo por el punto)
+        let seccionLimpia = seccionCruda.split('.')[0].trim();
+
+        // 3. LA VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA
+        // Une todas las propiedades en una sola cadena de texto plano en minúsculas
+        const variableVirtualBusqueda = (
+            String(item['NOMBRE'] || '') + " " +
+            String(item['AP PATERNO'] || '') + " " +
+            String(item['AP MATERNO'] || '') + " " +
+            String(item['CURP'] || '') + " " +
+            String(item['CALLE'] || '') + " " +
+            String(item['NUM EXT'] || '') + " " +
+            String(item['COLONIA'] || '') + " " +
+            seccionLimpia
+        ).toLowerCase();
+
+        // 4. COMPARACIÓN DIRECTA CONTRA LA VARIABLE VIRTUAL
+        if (searchTokens.every(token => variableVirtualBusqueda.includes(token))) {
+            // Guardamos temporalmente el valor limpio para el renderizado
+            item['SECCION_DISPLAY'] = seccionLimpia || 'S/S';
             matchedRecords.push(item);
         }
     }
 
-    // Ordenamiento numérico estricto de menor a mayor por número de casa
+    // Ordenamiento numérico de menor a mayor por número de casa
     matchedRecords.sort((a, b) => {
         const numA = parseInt(String(a['NUM EXT']).replace(/\D/g, ""), 10) || 0;
         const numB = parseInt(String(b['NUM EXT']).replace(/\D/g, ""), 10) || 0;
@@ -1147,6 +1159,7 @@ function searchData() {
         return;
     }
 
+    // Renderizado de las tarjetas con tus reglas de semáforo de colores
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div'); 
         
@@ -1187,7 +1200,7 @@ function searchData() {
         
         div.innerHTML = `<div style="font-size:16px; font-weight:700; color:#1F2937; margin-bottom:2px;">${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}</div>
                          <div style="font-size:13px; font-weight:600; color:#621132; margin-bottom:4px; letter-spacing:0.3px;">
-                             CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_LIMPIA']}</span>
+                             CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_DISPLAY']}</span>
                          </div>
                          <div style="font-size:13px; color:#555555;">📍 Calle: ${item['CALLE'] || 'S/C'}, No. Ext: ${item['NUM EXT'] || 'S/N'}, Col. ${item['COLONIA'] || 'S/C'}</div>`;
                          
