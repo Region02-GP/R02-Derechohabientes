@@ -1287,12 +1287,15 @@ function evaluarCantidadVisitas() {
 
     if (cuantas === "1" || cuantas === "2" || cuantas === "3") {
         let opinion = prompt("¿Qué le pareció la atención del servidor de la salud?:");
-        document.getElementById('f-atencion-salud').value = opinion ? opinion.trim() : "SIN COMENTARIOS";
+        // 🔥 CORREGIDO: Guarda la opinión estrictamente en mayúsculas
+        document.getElementById('f-atencion-salud').value = opinion ? opinion.trim().toUpperCase() : "SIN COMENTARIOS";
     } else if (cuantas === "NO_QUIERE") {
         let motivo = prompt("¿Cuál es el motivo por el que no desea la visita del personal de salud?:");
-        document.getElementById('f-motivo-no-visita').value = motivo ? motivo.trim() : "SIN MOTIVO ESPECIFICADO";
+        // 🔥 CORREGIDO: Guarda el motivo del rechazo estrictamente en mayúsculas
+        document.getElementById('f-motivo-no-visita').value = motivo ? motivo.trim().toUpperCase() : "SIN MOTIVO ESPECIFICADO";
     }
 }
+
 
 function actualizarEstilosBotonesFormulario() {
     const btnLoc = document.getElementById('btn-status-localizado'); 
