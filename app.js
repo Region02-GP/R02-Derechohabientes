@@ -1112,19 +1112,18 @@ function searchData() {
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 1. OBTENER EL VALOR ORIGEN DE LA SECCIÓN DE FORMA ULTRA TOLERANTE
+        // 1. EXTRAER LA SECCIÓN COMO TEXTO SIN IMPORTAR EL NOMBRE DE LA PROPIEDAD
         let seccionOriginal = item['SECCION'] !== undefined && item['SECCION'] !== null ? String(item['SECCION']) : "";
         if (!seccionOriginal) seccionOriginal = item['SECCION '] !== undefined && item['SECCION '] !== null ? String(item['SECCION ']) : "";
         if (!seccionOriginal) seccionOriginal = item['Seccion'] !== undefined && item['Seccion'] !== null ? String(item['Seccion']) : "";
         
-        // 2. CORRECCIÓN DE SINTAXIS: Separar por punto para quitar el decimal .0 de Excel y limpiar espacios
-        let partesSeccion = seccionOriginal.split('.');
-        let seccionLimpia = partesSeccion[0].replace(/[\s\u200B-\u200D\uFEFF]/g, "").trim();
+        // 2. SOLUCIÓN DEFINITIVA: Remover decimales flotantes .0 de Excel y espacios ocultos de forma segura
+        let seccionLimpia = seccionOriginal.replace(/\.0+\$/, "").replace(/[\s\u200B-\u200D\uFEFF]/g, "").trim();
 
-        // 3. CONSOLIDAR TEXTO DE BÚSQUEDA (Agregando explícitamente la sección limpia al final)
+        // 3. CONSOLIDAR TEXTO DE BÚSQUEDA INDEXABLE (Incluyendo la Sección en el maestro)
         const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''} ${seccionLimpia}`.toLowerCase();
 
-        // 4. VERIFICAR QUE CADA TOKEN ESCRITO ESTÉ DENTRO DEL TEXTO CONSOLIDADO
+        // 4. VALIDAR SI CADA TOKEN COINCIDE CON EL REGISTRO
         if (searchTokens.every(t => combinedText.includes(t))) {
             item['SECCION_LIMPIA'] = seccionLimpia || 'S/S';
             matchedRecords.push(item);
