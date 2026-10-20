@@ -1100,10 +1100,11 @@ function searchData() {
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = ""; 
     
+    // Permitir búsquedas fluidas desde el primer caracter
     if (query.length < 1) return; 
 
     const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; 
-    const municipioBrigadista = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().replace(/\s+/g, "").trim() : "";
+    const municipioBrigadista = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : "";
     const searchTokens = query.split(/\s+/); 
     let matchedRecords = [];
 
@@ -1111,44 +1112,46 @@ function searchData() {
         const item = localMemoryDatabase[i]; 
         if (!item) continue;
         
-        // 1. EXTRACTOR TOLERANTE PARA EL MUNICIPIO (Evita descartes falsos por espacios invisibles)
-        let munCrudo = item['MUNICIPIO'] || item['MUNICIPIO '] || item['Municipio'] || '';
-        let municipioDerechohabiente = String(munCrudo).toUpperCase().replace(/\s+/g, "").trim();
-        
-        // RESTRICCIÓN DE MUNICIPIO ORIGINAL (Blindada y saneada)
+        // RESTRICCIÓN DE MUNICIPIO ORIGINAL ESTRICTA (INTACTA)
+        const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 2. EXTRAER LA SECCIÓN COMO TEXTO ENTERO (Quita el .0 de Excel de forma matemática pura)
-        let seccionCruda = item['SECCION'] || item['SECCION '] || item['Seccion'] || '';
-        let seccionNumero = parseInt(seccionCruda, 10);
-        let seccionLimpia = isNaN(seccionNumero) ? "" : String(seccionNumero);
+        // 1. EXTRAER EL VALOR DE LA SECCIÓN DE FORMA TOLERANTE A LLAVES
+        let seccionCruda = item['SECCION'] !== undefined && item['SECCION'] !== null ? item['SECCION'] : "";
+        if (!seccionCruda) seccionCruda = item['SECCION '] !== undefined && item['SECCION '] !== null ? item['SECCION '] : "";
+        if (!seccionCruda) seccionCruda = item['Seccion'] !== undefined && item['Seccion'] !== null ? item['Seccion'] : "";
+        
+        // 2. ELIMINAR EL DELICADO ".0" DE EXCEL DE FORMA MATEMÁTICA PURA (LIBRE DE ERRORES DE STRING)
+        let numeroConvertido = parseFloat(seccionCruda);
+        let seccionLimpia = !isNaN(numeroConvertido) ? String(Math.floor(numeroConvertido)) : "";
 
-        // EXTRAER EL RESTO DE LOS CAMPOS MANUALMENTE CON TOLERANCIA A ESPACIOS EN LAS LLAVES
-        const nombre = String(item['NOMBRE'] || item['NOMBRE '] || '').toLowerCase();
-        const paterno = String(item['AP PATERNO'] || item['AP PATERNO '] || item['PATERNO'] || '').toLowerCase();
-        const materno = String(item['AP MATERNO'] || item['AP MATERNO '] || item['MATERNO'] || '').toLowerCase();
-        const curp = String(item['CURP'] || item['CURP '] || '').toLowerCase();
-        const calle = String(item['CALLE'] || item['CALLE '] || '').toLowerCase();
-        const numExt = String(item['NUM EXT'] || item['NUM EXT '] || item['NO EXT'] || '').toLowerCase();
-        const colonia = String(item['COLONIA'] || item['COLONIA '] || '').toLowerCase();
+        // 3. VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA (SUGERIDA POR TI)
+        // Consolida todos los campos legibles en un solo string plano e inyecta la palabra ancla
+        const variableVirtualBusqueda = (
+            String(item['NOMBRE'] || '') + " " +
+            String(item['AP PATERNO'] || '') + " " +
+            String(item['AP MATERNO'] || '') + " " +
+            String(item['CURP'] || '') + " " +
+            String(item['CALLE'] || '') + " " +
+            String(item['NUM EXT'] || '') + " " +
+            String(item['COLONIA'] || '') + " " +
+            "seccion " + seccionLimpia + " " +
+            "sección " + seccionLimpia + " " +
+            seccionLimpia
+        ).toLowerCase();
 
-        // 3. VARIABLE VIRTUAL ABSOLUTA (Garantiza los textos "seccion" y "sección" integrados)
-        const variableVirtualBusqueda = [
-            nombre, paterno, materno, curp, calle, numExt, colonia,
-            "seccion", "sección", "seccion" + seccionLimpia, "sección" + seccionLimpia, seccionLimpia
-        ].join(" ");
-
-        // 4. VALIDACIÓN DE LOS TOKENS DEL TECLADO CONTRA LA VARIABLE VIRTUAL
+        // 4. COMPARACIÓN DE LOS TOKENS DEL TECLADO CONTRA LA VARIABLE VIRTUAL
         if (searchTokens.every(token => variableVirtualBusqueda.includes(token))) {
-            item['SECCION_DISPLAY_OK'] = seccionLimpia || 'S/S';
+            // Guardamos temporalmente el valor limpio para el renderizado visual de la tarjeta
+            item['SECCION_DISPLAY'] = seccionLimpia || 'S/S';
             matchedRecords.push(item);
         }
     }
 
     // Ordenamiento numérico de menor a mayor por número de casa
     matchedRecords.sort((a, b) => {
-        const numA = parseInt(String(a['NUM EXT'] || a['NUM EXT '] || "").replace(/\D/g, ""), 10) || 0;
-        const numB = parseInt(String(b['NUM EXT'] || b['NUM EXT '] || "").replace(/\D/g, ""), 10) || 0;
+        const numA = parseInt(String(a['NUM EXT']).replace(/\D/g, ""), 10) || 0;
+        const numB = parseInt(String(b['NUM EXT']).replace(/\D/g, ""), 10) || 0;
         return numA - numB;
     });
 
@@ -1159,7 +1162,7 @@ function searchData() {
         return;
     }
 
-    // Renderizado con tus reglas exactas de semáforo de colores
+    // Renderizado de las tarjetas con tus reglas de semáforo de colores asignadas
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div'); 
         
@@ -1198,11 +1201,11 @@ function searchData() {
 
         div.className = claseColor;
         
-        div.innerHTML = `<div style="font-size:16px; font-weight:700; color:#1F2937; margin-bottom:2px;">${item['NOMBRE'] || item['NOMBRE '] || ''} ${item['AP PATERNO'] || item['AP PATERNO '] || ''} ${item['AP MATERNO'] || item['AP MATERNO '] || ''}${textoIndicador}</div>
+        div.innerHTML = `<div style="font-size:16px; font-weight:700; color:#1F2937; margin-bottom:2px;">${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}</div>
                          <div style="font-size:13px; font-weight:600; color:#621132; margin-bottom:4px; letter-spacing:0.3px;">
-                             CURP: ${item['CURP'] || item['CURP '] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_DISPLAY_OK']}</span>
+                             CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_DISPLAY']}</span>
                          </div>
-                         <div style="font-size:13px; color:#555555;">📍 Calle: ${item['CALLE'] || item['CALLE '] || 'S/C'}, No. Ext: ${item['NUM EXT'] || item['NUM EXT '] || 'S/N'}, Col. ${item['COLONIA'] || item['COLONIA '] || 'S/C'}</div>`;
+                         <div style="font-size:13px; color:#555555;">📍 Calle: ${item['CALLE'] || 'S/C'}, No. Ext: ${item['NUM EXT'] || 'S/N'}, Col. ${item['COLONIA'] || 'S/C'}</div>`;
                          
         div.onclick = () => openForm(item); 
         resultsContainer.appendChild(div);
