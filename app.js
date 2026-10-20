@@ -1096,38 +1096,42 @@ function preloadDatabaseToMemory() {
     db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).getAll().onsuccess = (e) => { localMemoryDatabase = e.target.result || []; };
 }
 function searchData() {
-    const query = document.getElementById('search-input').value.toLowerCase().trim(); 
+    // Captura el valor eliminando espacios extras y convirtiendo a minúsculas
+    let inputCrudo = document.getElementById('search-input').value || "";
+    let query = inputCrudo.toLowerCase().trim(); 
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = ""; 
     
-    // 🔥 CAMBIO DEFINITIVO: Ahora la búsqueda inicia inmediatamente desde el SEGUNDO carácter
+    // Iniciar la búsqueda desde que el usuario escribe al menos 2 caracteres
     if (query.length < 2) return; 
 
     const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; 
     const municipioBrigadista = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : "";
     
-    // Dividimos la consulta en palabras por si buscan cosas combinadas como "juan 12"
-    const searchTokens = query.split(/\s+/); 
+    // Sanitiza la consulta del teclado reemplazando múltiples espacios por uno solo
+    let queryLimpia = query.replace(/\s+/g, ' ');
+    // Rompe en palabras sueltas (tokens)
+    const searchTokens = queryLimpia.split(' '); 
     let matchedRecords = [];
 
     for (let i = 0; i < localMemoryDatabase.length; i++) {
         const item = localMemoryDatabase[i]; 
         if (!item) continue;
         
-        // RESTRICCIÓN DE MUNICIPIO ORIGINAL ESTRICTA (INTACTA)
+        // RESTRICCIÓN DE MUNICIPIO ORIGINAL (Sigue intacta y estricta)
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 1. EXTRAER LA SECCIÓN COMO CADENA Y QUITAR EL ".0" DE EXCEL MATEMÁTICAMENTE
+        // 1. EXTRAER LA SECCIÓN COMO TEXTO ENTERO (Quita el .0 de Excel limpiamente)
         let seccionCruda = item['SECCION'] || item['SECCION '] || item['Seccion'] || '';
         let seccionNumero = parseInt(seccionCruda, 10);
         let seccionLimpia = isNaN(seccionNumero) ? "" : String(seccionNumero);
 
-        // Asignación obligatoria para que tu index.html dibuje la insignia dorada sin romperse
+        // Guardamos exactamente la clave que tu index.html original necesita para pintar la insignia dorada
         item['SECCION_LIMPIA'] = seccionLimpia || 'S/S';
 
-        // 2. VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA SANITIZADA
-        // Limpiamos espacios al inicio y al final de cada campo antes de unirlos para evitar dobles espacios
+        // 2. VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA SANITIZADA (SUGERIDA POR TI)
+        // Limpiamos los espacios extras individuales de cada campo antes de unirlos
         const variableVirtualBusqueda = (
             String(item['NOMBRE'] || '').trim() + " " +
             String(item['AP PATERNO'] || '').trim() + " " +
@@ -1139,18 +1143,24 @@ function searchData() {
             "seccion " + seccionLimpia + " " +
             "sección " + seccionLimpia + " " +
             seccionLimpia
-        ).toLowerCase().replace(/\s+/g, ' '); // Unifica cualquier doble espacio oculto en uno solo
+        ).toLowerCase().replace(/\s+/g, ' '); // Unifica cualquier doble espacio en uno solo
 
-        // 3. EVALUACIÓN DE COINCIDENCIAS PARCIALES FLUIDAS (Ej: "juan" encuentra "juana" o "ju" encuentra "juan")
-        if (searchTokens.every(token => variableVirtualBusqueda.includes(token))) {
+        // 3. COMPARACIÓN DE COINCIDENCIA PARCIAL MULTI-TOKEN BLINDADA
+        // Comprueba si cada palabra escrita por el usuario está contenida en la variable virtual
+        let esCoincidencia = searchTokens.every(token => {
+            if (!token) return true;
+            return variableVirtualBusqueda.indexOf(token) !== -1;
+        });
+
+        if (esCoincidencia) {
             matchedRecords.push(item);
         }
     }
 
     // Ordenamiento numérico de menor a mayor por número de casa
     matchedRecords.sort((a, b) => {
-        const numA = parseInt(String(a['NUM EXT']).replace(/\D/g, ""), 10) || 0;
-        const numB = parseInt(String(b['NUM EXT']).replace(/\D/g, ""), 10) || 0;
+        const numA = parseInt(String(a['NUM EXT'] || "").replace(/\D/g, ""), 10) || 0;
+        const numB = parseInt(String(b['NUM EXT'] || "").replace(/\D/g, ""), 10) || 0;
         return numA - numB;
     });
 
@@ -1161,7 +1171,7 @@ function searchData() {
         return;
     }
 
-    // 4. RENDERIZADO FINAL DE TARJETAS CON TUS SEMÁFOROS DE COLORES ASIGNADOS
+    // 4. RENDERIZADO FINAL DE TARJETAS CON TUS SEMÁFOROS DE COLORES ASIGNADAS
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div'); 
         
