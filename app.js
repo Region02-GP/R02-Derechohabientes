@@ -1112,21 +1112,22 @@ function searchData() {
         const item = localMemoryDatabase[i]; 
         if (!item) continue;
         
-        // RESTRICCIÓN DE MUNICIPIO ORIGINAL (Sigue intacta)
+        // RESTRICCIÓN DE MUNICIPIO ORIGINAL ESTRICTA (INTACTA)
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 1. EXTRAER EL VALOR DE LA SECCIÓN DE FORMA ULTRA SEGURA
-        let seccionCruda = item['SECCION'] !== undefined && item['SECCION'] !== null ? String(item['SECCION']) : "";
-        if (!seccionCruda) seccionCruda = item['SECCION '] !== undefined && item['SECCION '] !== null ? String(item['SECCION ']) : "";
-        if (!seccionCruda) seccionCruda = item['Seccion'] !== undefined && item['Seccion'] !== null ? String(item['Seccion']) : "";
+        // 1. EXTRAER EL VALOR DE LA SECCIÓN DE FORMA TOLERANTE Y FORZAR A TEXTO PRIMERO
+        let seccionCruda = "";
+        if (item['SECCION'] !== undefined && item['SECCION'] !== null) seccionCruda = String(item['SECCION']);
+        else if (item['SECCION '] !== undefined && item['SECCION '] !== null) seccionCruda = String(item['SECCION ']);
+        else if (item['Seccion'] !== undefined && item['Seccion'] !== null) seccionCruda = String(item['Seccion']);
         
-        // 2. EXTRAER EL ENTERO DE LA SECCIÓN CORRECTAMENTE SIN RESOLVER MÉTODOS EN ARREGLOS
+        // 2. EXTRAER EL ENTERO DE LA SECCIÓN (Elimina el .0 de Excel de forma 100% segura sobre el texto)
         let partes = seccionCruda.split('.');
-        let seccionLimpia = partes[0] ? partes[0].trim() : "";
+        let seccionLimpia = partes && partes[0] ? partes[0].trim() : "";
 
-        // 3. GENERACIÓN DE LA VARIABLE VIRTUAL CONSOLIDADA
-        // Une de forma absoluta todos los campos indexables en un solo string
+        // 3. LA VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA (CON LA PALABRA CLAVE "SECCION")
+        // Unimos todas las propiedades incluyendo de forma virtual las palabras "seccion" y "sección"
         const variableVirtualBusqueda = (
             String(item['NOMBRE'] || '') + " " +
             String(item['AP PATERNO'] || '') + " " +
@@ -1135,12 +1136,14 @@ function searchData() {
             String(item['CALLE'] || '') + " " +
             String(item['NUM EXT'] || '') + " " +
             String(item['COLONIA'] || '') + " " +
+            "seccion " + seccionLimpia + " " +
+            "sección " + seccionLimpia + " " +
             seccionLimpia
         ).toLowerCase();
 
-        // 4. COMPARACIÓN DE LOS TOKENS CONTRA LA VARIABLE VIRTUAL
+        // 4. COMPARACIÓN DE LOS TOKENS DEL BRIGADISTA CONTRA LA VARIABLE VIRTUAL
         if (searchTokens.every(token => variableVirtualBusqueda.includes(token))) {
-            // Guardamos temporalmente el valor para el pintado de la tarjeta sin alterar IndexedDB
+            // Guardamos temporalmente el valor limpio para el renderizado visual de la tarjeta
             item['SECCION_DISPLAY'] = seccionLimpia || 'S/S';
             matchedRecords.push(item);
         }
@@ -1160,7 +1163,7 @@ function searchData() {
         return;
     }
 
-    // Renderizado de tarjetas con tus semáforos de colores asignados
+    // Renderizado de las tarjetas con tus reglas de semáforo de colores asignadas
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div'); 
         
@@ -1209,7 +1212,6 @@ function searchData() {
         resultsContainer.appendChild(div);
     });
 }
-
 
 function buscarLocalidadesEnPantalla() {
     const query = document.getElementById('f-localidad-buscar').value.toLowerCase().trim(); const resultsContainer = document.getElementById('localidad-search-results');
