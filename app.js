@@ -1211,18 +1211,17 @@ function seleccionarEstatusVisita(estatus) {
             actualizarEstilosBotonesFormulario(); 
             return; 
         }
-        motivoNoLocalizadoValue = mot.trim();
+        // 🔥 CORREGIDO: Se fuerza a mayúsculas desde el momento de la captura
+        motivoNoLocalizadoValue = mot.trim().toUpperCase();
         document.getElementById('f-recibio-salud').removeAttribute('required');
         actualizarEstilosBotonesFormulario();
 
-        // 🛰️ VALIDACIÓN INTELIGENTE DE COORDENADAS
+        // VALIDACIÓN DE COORDENADAS PARA GUARDADO AUTOMÁTICO
         const latValue = document.getElementById('f-lat').value;
         if (latValue.includes("Buscando") || latValue === "" || latValue === "ERROR") {
-            // Si el satélite aún no responde, mostramos un aviso sutil y dejamos que el GPS guarde al conectar
             mostrarCargando("Esperando señal de satélite para georreferencia obligatoria...");
             window.pendienteGuardarNoLocalizado = true; 
         } else {
-            // Si el GPS ya estaba listo desde antes, guarda de inmediato
             saveData(null); 
         }
         return;
