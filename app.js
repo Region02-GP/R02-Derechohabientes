@@ -1373,21 +1373,41 @@ function openForm(item) {
     setSafeValue('f-motivo-no-visita', item['MOTIVO_NO_VISITA_SALUD']);
     setSafeValue('f-desea-visita-futura', item['DESEA_VISITA_SALUD']);
 
-    // Geolocalización
+       // Geolocalización
     const fLat = document.getElementById('f-lat');
     const fLon = document.getElementById('f-lon');
     if (fLat) fLat.value = "Buscando satélite..."; 
     if (fLon) fLon.value = "Buscando satélite...";
 
+    // Reseteamos cualquier orden de guardado vieja al abrir un nuevo formulario
+    window.pendienteGuardarNoLocalizado = false;
+
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((position) => {
             if (fLat) fLat.value = String(position.coords.latitude.toFixed(6)).replace(",", "."); 
             if (fLon) fLon.value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
+            
+            // 🛰️ DETECTOR DE GEOREFERENCIA EN TIEMPO REAL:
+            // Si el brigadista ya presionó "NO LOCALIZADO" y estábamos esperando el GPS...
+            if (window.pendienteGuardarNoLocalizado === true) {
+                window.pendienteGuardarNoLocalizado = false; // Limpiamos la bandera
+                ocultarCargando(); // Quitamos el aviso de carga
+                saveData(null); // ¡Guarda automáticamente de forma exitosa!
+            }
         }, () => { 
             if (fLat) fLat.value = "ERROR"; 
             if (fLon) fLon.value = "ERROR"; 
+            if (window.pendienteGuardarNoLocalizado === true) {
+                window.pendienteGuardarNoLocalizado = false;
+                ocultarCargando();
+                alert("🛑 No se pudo obtener la georreferencia. Por favor, guarde manualmente.");
+            }
+        }, {
+            enableHighAccuracy: true, // Forzamos máxima precisión de antenas en campo
+            timeout: 10000
         });
     }
+
     
     // 🚀 AHORA SÍ LLEGARÁ A ESTA LÍNEA SIN ERRORES Y CAMBIARÁ LA PANTALLA
     changeScreen('screen-form');
