@@ -1504,6 +1504,15 @@ function saveData(event) {
     const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp); 
     const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
     
+    // 🔥 TRUCO DE GUARDADO AUTOMÁTICO: Captura lo que puso el usuario en el cuadro de texto
+    let seccionCapturada = document.getElementById('f-seccion').value.toUpperCase().trim();
+    let seccionFinalParaGuardar = seccionCapturada;
+
+    // Si el usuario solo escribió el número (por ejemplo "1234"), le anteponemos la palabra "SECCION "
+    if (seccionCapturada !== "" && !seccionCapturada.startsWith("SECCION") && !seccionCapturada.startsWith("SECCIÓN")) {
+        seccionFinalParaGuardar = "SECCION " + seccionCapturada;
+    }
+
     const record = {
         'CURP': targetCurp, 
         'ID': idValue, 
@@ -1514,7 +1523,10 @@ function saveData(event) {
         'TEL CEL': document.getElementById('f-telcel').value, 
         'MUNICIPIO': document.getElementById('f-municipio').value, 
         'LOCALIDAD': document.getElementById('f-localidad').value, 
-        'SECCION': document.getElementById('f-seccion').value, 
+        
+        // 🔥 Aquí se guarda con la palabra integrada hacia IndexedDB y las Sheets
+        'SECCION': seccionFinalParaGuardar, 
+        
         'COLONIA': document.getElementById('f-colonia').value, 
         'CP': document.getElementById('f-cp').value, 
         'CALLE': document.getElementById('f-calle').value, 
@@ -1543,6 +1555,20 @@ function saveData(event) {
         'DOC_COMPROBANTE': expedienteDigitalTemporal.doc_comprobante || originalRecord.doc_comprobante || originalRecord.DOC_COMPROBANTE || "", 
         'DOC_CURP': expedienteDigitalTemporal.doc_curp || originalRecord.doc_curp || originalRecord.DOC_CURP || ""
     };
+
+    const tx = db.transaction(STORE_NAME, "readwrite"); 
+    tx.objectStore(STORE_NAME).put(record);
+    tx.oncomplete = function() {
+        if (memoryIndex !== -1) localMemoryDatabase[memoryIndex] = record; else localMemoryDatabase.push(record);
+        pendingSync.push(record); 
+        localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
+        
+        alert("✅ ÉXITO: Expediente guardado en el teléfono."); 
+        document.getElementById('search-input').value = ""; 
+        document.getElementById('search-results').innerHTML = ""; 
+        changeScreen('screen-search');
+    };
+}
 
     const tx = db.transaction(STORE_NAME, "readwrite"); 
     tx.objectStore(STORE_NAME).put(record);
