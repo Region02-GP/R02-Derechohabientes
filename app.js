@@ -1100,7 +1100,7 @@ function searchData() {
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = ""; 
     
-    // Permitir búsquedas fluidas desde el primer carácter
+    // Permitir búsquedas fluidas desde el primer caracter escrito
     if (query.length < 1) return; 
 
     const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; 
@@ -1116,21 +1116,20 @@ function searchData() {
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 1. EXTRAER EL VALOR DE LA SECCIÓN DE FORMA ULTRA SEGURA
-        let seccionCruda = "";
-        if (item['SECCION'] !== undefined && item['SECCION'] !== null) seccionCruda = String(item['SECCION']);
-        else if (item['SECCION '] !== undefined && item['SECCION '] !== null) seccionCruda = String(item['SECCION ']);
-        else if (item['Seccion'] !== undefined && item['Seccion'] !== null) seccionCruda = String(item['Seccion']);
+        // 1. EXTRAER EL VALOR DE LA SECCIÓN DE FORMA TOLERANTE A VARIACIONES DE COLUMNA
+        let seccionCruda = item['SECCION'] !== undefined && item['SECCION'] !== null ? item['SECCION'] : "";
+        if (!seccionCruda) seccionCruda = item['SECCION '] !== undefined && item['SECCION '] !== null ? item['SECCION '] : "";
+        if (!seccionCruda) seccionCruda = item['Seccion'] !== undefined && item['Seccion'] !== null ? item['Seccion'] : "";
         
-        // 2. EXTRAER EL ENTERO DE FORMA INFALIBLE (Quita el .0 de Excel sin usar arrays rotos)
-        let seccionNumero = parseInt(seccionCruda, 10);
-        let seccionLimpia = isNaN(seccionNumero) ? "" : String(seccionNumero);
+        // 2. ELIMINAR EL ".0" DE EXCEL DE FORMA MATEMÁTICA PURA (CERO ERRORES DE STRING)
+        let numeroConvertido = parseFloat(seccionCruda);
+        let seccionLimpia = !isNaN(numeroConvertido) ? String(Math.floor(numeroConvertido)) : "";
 
-        // 3. ASIGNACIÓN ASOCIADA AL HTML: Guarda el valor para que tu index.html no se rompa
+        // 3. ASIGNACIÓN ASOCIADA AL HTML: Guarda el valor exacto que tu index.html necesita para renderizar la insignia dorada
         item['SECCION_LIMPIA'] = seccionLimpia || 'S/S';
 
-        // 4. GENERACIÓN DE LA VARIABLE VIRTUAL LIMPIA (PROPUESTA POR TI)
-        // Concatenamos todos los campos legibles e inyectamos la palabra clave con y sin acento
+        // 4. GENERACIÓN DE LA VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA (SUGERIDA POR TI)
+        // Agrega todas las propiedades legibles junto con los anclajes de texto solicitados
         const variableVirtualBusqueda = (
             String(item['NOMBRE'] || '') + " " +
             String(item['AP PATERNO'] || '') + " " +
@@ -1164,7 +1163,7 @@ function searchData() {
         return;
     }
 
-    // 6. RENDERIZADO CON TUS REGLAS DE SEMÁFORO DE COLORES ASIGNADAS
+    // 6. RENDERIZADO CON TU MAQUETACIÓN ORIGINAL Y REGLAS DE SEMÁFOROS DE COLORES
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div'); 
         
@@ -1184,7 +1183,7 @@ function searchData() {
             claseColor = "result-item status-rechazo-salud";
             textoIndicador = ' <span style="color:#BC955C; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado (Rechazo Salud)</span>';
         } 
-        else if (estatusLimpio === "" && saludLinter === "NO_QUIERE") {
+        else if (estatusLimpio === "" && saludLimpia === "NO_QUIERE") {
             claseColor = "result-item status-pendiente-rechazo";
             textoIndicador = ' <span style="color:#621132; font-weight:bold; font-size:12px; margin-left:5px;">⏳ Pendiente con Rechazo</span>';
         } 
