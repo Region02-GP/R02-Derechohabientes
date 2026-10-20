@@ -1543,15 +1543,11 @@ function saveData(event) {
         return;
     }
 
-    // (A partir de aquí continúa tu código original exacto de georreferencia...)
     const latValue = document.getElementById('f-lat').value; 
     const lonValue = document.getElementById('f-lon').value;
-    if (latValue.includes("Buscando") || latValue === "" || latValue === "ERROR") return alert("🛑 Georreferencia incompleta: Espere a que el satélite asigne coordenadas GPS antes de guardar.");
-
-
-    const latValue = document.getElementById('f-lat').value; 
-    const lonValue = document.getElementById('f-lon').value;
-    if (latValue.includes("Buscando") || latValue === "" || latValue === "ERROR") return alert("🛑 Georreferencia incompleta: Espere a que el satélite asigne coordenadas GPS antes de guardar.");
+    if (latValue.includes("Buscando") || latValue === "" || latValue === "ERROR") {
+        return alert("🛑 Georreferencia incompleta: Espere a que el satélite asigne coordenadas GPS antes de guardar.");
+    }
 
     const idValue = document.getElementById('f-id').value; 
     const evaluacionTratoActual = window.currentTratoValue || "";
@@ -1574,9 +1570,9 @@ function saveData(event) {
         seccionFinalParaGuardar = "SECCION " + seccionCapturada;
     }
 
-    // ⚡ FORMATEO DINÁMICO REQUERIDO: Pasa todo a mayúsculas estrictas antes de guardar
+    // Formateo dinámico: Pasa todo a mayúsculas estrictas antes de guardar
     const record = {
-        'CURP': targetCurp, // Ya viene en mayúsculas por validación previa
+        'CURP': targetCurp,
         'ID': String(idValue).toUpperCase().trim(), 
         'NOMBRE': String(document.getElementById('f-nombre').value).toUpperCase().trim(), 
         'AP PATERNO': String(document.getElementById('f-paterno').value).toUpperCase().trim(), 
