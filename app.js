@@ -1530,8 +1530,9 @@ function saveData(event) {
         'MUNICIPIO': document.getElementById('f-municipio').value, 
         'LOCALIDAD': document.getElementById('f-localidad').value, 
         
-        // 🔥 Aquí se guarda con la palabra integrada hacia IndexedDB y las Sheets
-        'SECCION': seccionFinalParaGuardar, 
+              // Captura el número puro del cuadro de texto e inyecta la palabra clave para la Sheets
+        'SECCION': "SECCION " + String(document.getElementById('f-seccion').value).toUpperCase().replace("SECCION", "").replace("SECCIÓN", "").trim(),
+
         
         'COLONIA': document.getElementById('f-colonia').value, 
         'CP': document.getElementById('f-cp').value, 
