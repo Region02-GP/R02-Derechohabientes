@@ -1112,13 +1112,13 @@ function searchData() {
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // EXTRAEDOR ULTRA-TOLERANTE DE SECCIÓN:
-        // Fuerza la conversión a texto, limpia decimales (.0) que agrega Excel y quita espacios.
-        let seccionValor = item['SECCION'] !== undefined && item['SECCION'] !== null ? String(item['SECCION']) : "";
-        if (!seccionValor) seccionValor = item['SECCION '] !== undefined && item['SECCION '] !== null ? String(item['SECCION ']) : "";
-        if (!seccionValor) seccionValor = item['Seccion'] !== undefined && item['Seccion'] !== null ? String(item['Seccion']) : "";
+        // EXTRAEDOR ULTRA-TOLERANTE DE SECCIÓN (CORREGIDO):
+        let seccionOriginal = item['SECCION'] !== undefined && item['SECCION'] !== null ? String(item['SECCION']) : "";
+        if (!seccionOriginal) seccionOriginal = item['SECCION '] !== undefined && item['SECCION '] !== null ? String(item['SECCION ']) : "";
+        if (!seccionOriginal) seccionOriginal = item['Seccion'] !== undefined && item['Seccion'] !== null ? String(item['Seccion']) : "";
         
-        seccionValor = seccionValor.split('.')[0].replace(/\s+/g, "").trim(); 
+        // Elimina decimales como .0 y quita cualquier espacio en blanco intermedio
+        let seccionValor = seccionOriginal.split('.')[0].replace(/[\s\u200B-\u200D\uFEFF]/g, "").trim();
 
         // Variables de identidad estándar convertidas a texto limpio
         const nombre = String(item['NOMBRE'] || '').toLowerCase();
@@ -1137,8 +1137,8 @@ function searchData() {
                    curp.includes(token) || 
                    calle.includes(token) || 
                    colonia.includes(token) || 
-                   seccionLimpiaLower === token || // Coincidencia exacta de sección (Ej: usuario escribe "1234")
-                   seccionLimpiaLower.includes(token); // Coincidencia parcial de sección
+                   seccionLimpiaLower === token || // Coincidencia exacta de sección (Ej: "1234")
+                   seccionLimpiaLower.includes(token); // Coincidencia parcial de sección (Ej: "12")
         });
 
         if (matchAllTokens) {
