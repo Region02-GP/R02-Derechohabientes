@@ -1583,19 +1583,6 @@ function saveData(event) {
     };
 }
 
-    const tx = db.transaction(STORE_NAME, "readwrite"); 
-    tx.objectStore(STORE_NAME).put(record);
-    tx.oncomplete = function() {
-        if (memoryIndex !== -1) localMemoryDatabase[memoryIndex] = record; else localMemoryDatabase.push(record);
-        pendingSync.push(record); 
-        localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
-        
-        alert("✅ ÉXITO: Expediente guardado en el teléfono."); 
-        document.getElementById('search-input').value = ""; 
-        document.getElementById('search-results').innerHTML = ""; 
-        changeScreen('screen-search');
-    };
-}
 function abrirFormularioVacioAltaNueva() {
     if (!currentUser) { alert("🚨 ERROR OPERATIVO: Inicie sesión primero."); changeScreen('screen-login'); return; }
     document.getElementById('f-curp').removeAttribute('readonly'); document.getElementById('f-nombre').removeAttribute('readonly'); document.getElementById('f-paterno').removeAttribute('readonly'); document.getElementById('f-materno').removeAttribute('readonly');
