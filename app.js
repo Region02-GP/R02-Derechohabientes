@@ -1296,55 +1296,79 @@ function openForm(item) {
         resetearContenedoresYBotonesFotografias();
     }
 
-    document.getElementById('f-curp').value = item['CURP'] || ''; 
-    document.getElementById('f-id').value = item['ID'] || ''; 
-    document.getElementById('f-nombre').value = item['NOMBRE'] || ''; 
-    document.getElementById('f-paterno').value = item['AP PATERNO'] || ''; 
-    document.getElementById('f-materno').value = item['AP MATERNO'] || ''; 
-    document.getElementById('f-telfijo').value = item['TEL FIJO'] || ''; 
-    document.getElementById('f-telcel').value = item['TEL CEL'] || ''; 
-    document.getElementById('f-seccion').value = item['SECCION'] || ''; 
-    document.getElementById('f-cp').value = item['CP'] || ''; 
-    document.getElementById('f-calle').value = item['CALLE'] || ''; 
-    document.getElementById('f-numext').value = item['NUM EXT'] || ''; 
-    document.getElementById('f-referencia').value = item['REFERENCIA'] || ''; 
-    document.getElementById('f-situacion').value = item['SITUACION'] || ''; 
-    document.getElementById('f-causal').value = item['CAUSAL'] || '';
+    // Usamos una función auxiliar interna para asignar valores de forma segura sin romper el código
+    const setSafeValue = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val || '';
+    };
 
+    // Asignación segura de campos principales
+    setSafeValue('f-curp', item['CURP']); 
+    setSafeValue('f-id', item['ID']); 
+    setSafeValue('f-nombre', item['NOMBRE']); 
+    setSafeValue('f-paterno', item['AP PATERNO']); 
+    setSafeValue('f-materno', item['AP MATERNO']); 
+    setSafeValue('f-telfijo', item['TEL FIJO']); 
+    setSafeValue('f-telcel', item['TEL CEL']); 
+    setSafeValue('f-seccion', item['SECCION']); 
+    setSafeValue('f-cp', item['CP']); 
+    setSafeValue('f-calle', item['CALLE']); 
+    setSafeValue('f-numext', item['NUM EXT']); 
+    setSafeValue('f-referencia', item['REFERENCIA']); 
+    setSafeValue('f-situacion', item['SITUACION']); 
+    
+    // Estos campos fallaban porque no existen en tu HTML actual (ahora son seguros)
+    setSafeValue('f-causal', item['CAUSAL']);
+
+    // Gestión de Estatus de Visita
     currentEstatusVisita = item['ESTATUS_VISITA'] || "LOCALIZADO"; 
     motivoNoLocalizadoValue = item['MOTIVO_NO_LOCALIZADO'] || ""; 
     actualizarEstilosBotonesFormulario(); 
     window.currentTratoValue = item['EVALUACION_TRATO'] || ""; 
     
-    // CORREGIDO SÍNCRONAMENTE: Nombre unificado para evitar excepciones de referencia
     actualizarEstilosBotonesTrato(); 
 
-    if (document.getElementById('f-recibio-salud')) {
-        document.getElementById('f-recibio-salud').value = item['RECIBIO_VISITA_SALUD'] || '';
+    // Flujo de Servidores de la Salud (Validaciones de existencia)
+    const fRecibioSalud = document.getElementById('f-recibio-salud');
+    if (fRecibioSalud) {
+        fRecibioSalud.value = item['RECIBIO_VISITA_SALUD'] || '';
     }
-    if (item['RECIBIO_VISITA_SALUD'] === "SI" && document.getElementById('wrapper-cuantas-visitas')) {
-        document.getElementById('wrapper-cuantas-visitas').style.display = "block";
-        document.getElementById('f-cuantas-visitas').value = item['CUANTAS_VISITAS_SALUD'] || '';
-    } else if (document.getElementById('wrapper-cuantas-visitas')) {
-        document.getElementById('wrapper-cuantas-visitas').style.display = "none";
-    }
-    if (document.getElementById('f-atencion-salud')) document.getElementById('f-atencion-salud').value = item['OPINION_ATENCION_SALUD'] || '';
-    if (document.getElementById('f-motivo-no-visita')) document.getElementById('f-motivo-no-visita').value = item['MOTIVO_NO_VISITA_SALUD'] || '';
-    if (document.getElementById('f-desea-visita-futura')) document.getElementById('f-desea-visita-futura').value = item['DESEA_VISITA_SALUD'] || '';
 
-    document.getElementById('f-lat').value = "Buscando satélite..."; 
-    document.getElementById('f-lon').value = "Buscando satélite...";
+    const wrapperVisitas = document.getElementById('wrapper-cuantas-visitas');
+    const fCuantasVisitas = document.getElementById('f-cuantas-visitas');
+    
+    if (item['RECIBIO_VISITA_SALUD'] === "SI") {
+        if (wrapperVisitas) wrapperVisitas.style.display = "block";
+        if (fCuantasVisitas) fCuantasVisitas.value = item['CUANTAS_VISITAS_SALUD'] || '';
+    } else {
+        if (wrapperVisitas) wrapperVisitas.style.display = "none";
+    }
+
+    // Campos condicionales o de control (Asignación segura)
+    setSafeValue('f-atencion-salud', item['OPINION_ATENCION_SALUD']);
+    setSafeValue('f-motivo-no-visita', item['MOTIVO_NO_VISITA_SALUD']);
+    setSafeValue('f-desea-visita-futura', item['DESEA_VISITA_SALUD']);
+
+    // Geolocalización
+    const fLat = document.getElementById('f-lat');
+    const fLon = document.getElementById('f-lon');
+    if (fLat) fLat.value = "Buscando satélite..."; 
+    if (fLon) fLon.value = "Buscando satélite...";
+
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((position) => {
-            document.getElementById('f-lat').value = String(position.coords.latitude.toFixed(6)).replace(",", "."); 
-            document.getElementById('f-lon').value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
+            if (fLat) fLat.value = String(position.coords.latitude.toFixed(6)).replace(",", "."); 
+            if (fLon) fLon.value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
         }, () => { 
-            document.getElementById('f-lat').value = "ERROR"; 
-            document.getElementById('f-lon').value = "ERROR"; 
+            if (fLat) fLat.value = "ERROR"; 
+            if (fLon) fLon.value = "ERROR"; 
         });
     }
     
+    // 🚀 AHORA SÍ LLEGARÁ A ESTA LÍNEA SIN ERRORES Y CAMBIARÁ LA PANTALLA
     changeScreen('screen-form');
+
+    // Limpieza de buscadores predictivos integrados en la pantalla 4
     if (document.getElementById('f-localidad-buscar')) document.getElementById('f-localidad-buscar').value = "";
     if (document.getElementById('localidad-search-results')) document.getElementById('localidad-search-results').style.display = "none";
     if (document.getElementById('f-municipio-buscar')) document.getElementById('f-municipio-buscar').value = "";
@@ -1352,14 +1376,19 @@ function openForm(item) {
     if (document.getElementById('f-colonia-buscar')) document.getElementById('f-colonia-buscar').value = "";
     if (document.getElementById('colonia-search-results')) document.getElementById('colonia-search-results').style.display = "none";
     
-    document.getElementById('f-localidad').value = item['LOCALIDAD'] ? String(item['LOCALIDAD']).toUpperCase().trim() : "";
-    document.getElementById('f-municipio').value = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
-    document.getElementById('f-colonia').value = item['COLONIA'] ? String(item['COLONIA']).toUpperCase().trim() : "";
+    setSafeValue('f-localidad', item['LOCALIDAD'] ? String(item['LOCALIDAD']).toUpperCase().trim() : "");
+    setSafeValue('f-municipio', item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "");
+    setSafeValue('f-colonia', item['COLONIA'] ? String(item['COLONIA']).toUpperCase().trim() : "");
 
+    // Carga de Expediente Digital (Miniaturas base64)
     expedienteDigitalTemporal = { 
-        doc_ine_frontal: item['DOC_INE_FRONTAL'] || "", doc_ine_trasera: item['DOC_INE_TRASERA'] || "", 
-        doc_acta: item['DOC_ACTA'] || "", doc_comprobante: item['DOC_COMPROBANTE'] || "", doc_curp: item['DOC_CURP'] || "" 
+        doc_ine_frontal: item['DOC_INE_FRONTAL'] || "", 
+        doc_ine_trasera: item['DOC_INE_TRASERA'] || "", 
+        doc_acta: item['DOC_ACTA'] || "", 
+        doc_comprobante: item['DOC_COMPROBANTE'] || "", 
+        doc_curp: item['DOC_CURP'] || "" 
     };
+
     const mapeoMiniaturas = [
         { id: 'preview-ine-frontal', dato: expedienteDigitalTemporal.doc_ine_frontal }, 
         { id: 'preview-ine-trasera', dato: expedienteDigitalTemporal.doc_ine_trasera },
@@ -1367,6 +1396,7 @@ function openForm(item) {
         { id: 'preview-comprobante', dato: expedienteDigitalTemporal.doc_comprobante },
         { id: 'preview-curp', dato: expedienteDigitalTemporal.doc_curp }
     ];
+
     mapeoMiniaturas.forEach(m => {
         const img = document.getElementById(m.id);
         if (img) { 
@@ -1375,6 +1405,7 @@ function openForm(item) {
         }
     });
 }
+
 function procesarFotoEvidencia(inputElement, previewId, claveDocumento, wrapperId, buttonId, textoNuevo) {
     if (inputElement && inputElement.files && inputElement.files[0]) {
         const file = inputElement.files[0];
