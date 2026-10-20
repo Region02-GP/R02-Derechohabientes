@@ -281,7 +281,9 @@
          
             <hr style="margin:25px 0;">
             <div class="button-row-grid">
-                <button type="button" onclick="document.getElementById('edit-form').requestSubmit();" style="margin-top:0; background-color: var(--primary-color);">💾 Guardar Todo</button>
+               <!-- Reemplaza el botón de guardar en la pantalla de documentos por este: -->
+<button type="button" onclick="saveData(null);" style="margin-top:0; background-color: var(--primary-color);">💾 Guardar Todo</button>
+
                 <button type="button" onclick="changeScreen('screen-form')" class="btn-back" style="margin-top:0;">🔙 Regresar</button>
             </div>
         </section>
