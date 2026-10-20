@@ -1570,6 +1570,10 @@ function saveData(event) {
         seccionFinalParaGuardar = "SECCION " + seccionCapturada;
     }
 
+    // Mantenemos los valores de control del select exactamente como los espera el flujo original
+    const valorRecibioSalud = document.getElementById('f-recibio-salud').value;
+    const valorCuantasVisitas = document.getElementById('f-cuantas-visitas').value;
+
     // Formateo dinámico: Pasa todo a mayúsculas estrictas antes de guardar
     const record = {
         'CURP': targetCurp,
@@ -1598,8 +1602,10 @@ function saveData(event) {
         'USUARIO_MODIFICA': String(currentUser.name).toUpperCase().trim(), 
         'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || "",
         
-        'RECIBIO_VISITA_SALUD': String(document.getElementById('f-recibio-salud').value).toUpperCase().trim(),
-        'CUANTAS_VISITAS_SALUD': String(document.getElementById('f-cuantas-visitas').value).toUpperCase().trim(),
+        // CORREGIDO: Valores limpios para que no se rompan las condicionales de tu formulario
+        'RECIBIO_VISITA_SALUD': valorRecibioSalud,
+        'CUANTAS_VISITAS_SALUD': valorCuantasVisitas,
+        
         'OPINION_ATENCION_SALUD': String(document.getElementById('f-atencion-salud').value).toUpperCase().trim(),
         'MOTIVO_NO_VISITA_SALUD': String(document.getElementById('f-motivo-no-visita').value).toUpperCase().trim(),
         'DESEA_VISITA_SALUD': String(document.getElementById('f-desea-visita-futura').value).toUpperCase().trim(),
@@ -1624,6 +1630,7 @@ function saveData(event) {
         changeScreen('screen-search');
     };
 }
+
 
 function abrirFormularioVacioAltaNueva() {
     if (!currentUser) { alert("🚨 ERROR OPERATIVO: Inicie sesión primero."); changeScreen('screen-login'); return; }
