@@ -1100,7 +1100,7 @@ function searchData() {
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = ""; 
     
-    // Permitir búsquedas desde un dígito para capturar secciones cortas
+    // Permitir búsquedas fluidas desde el primer caracter
     if (query.length < 1) return; 
 
     const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; 
@@ -1112,20 +1112,21 @@ function searchData() {
         const item = localMemoryDatabase[i]; 
         if (!item) continue;
         
-        // RESTRICCIÓN DE MUNICIPIO ORIGINAL (INTACTA)
+        // RESTRICCIÓN DE MUNICIPIO ORIGINAL (Sigue intacta)
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 1. EXTRAER LA SECCIÓN DE FORMA TOLERANTE
+        // 1. EXTRAER EL VALOR DE LA SECCIÓN DE FORMA ULTRA SEGURA
         let seccionCruda = item['SECCION'] !== undefined && item['SECCION'] !== null ? String(item['SECCION']) : "";
         if (!seccionCruda) seccionCruda = item['SECCION '] !== undefined && item['SECCION '] !== null ? String(item['SECCION ']) : "";
         if (!seccionCruda) seccionCruda = item['Seccion'] !== undefined && item['Seccion'] !== null ? String(item['Seccion']) : "";
         
-        // 2. EXTRAER EL ENTERO (Elimina el .0 de Excel de forma segura dividiendo por el punto)
-        let seccionLimpia = seccionCruda.split('.')[0].trim();
+        // 2. EXTRAER EL ENTERO DE LA SECCIÓN CORRECTAMENTE SIN RESOLVER MÉTODOS EN ARREGLOS
+        let partes = seccionCruda.split('.');
+        let seccionLimpia = partes[0] ? partes[0].trim() : "";
 
-        // 3. LA VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA
-        // Une todas las propiedades en una sola cadena de texto plano en minúsculas
+        // 3. GENERACIÓN DE LA VARIABLE VIRTUAL CONSOLIDADA
+        // Une de forma absoluta todos los campos indexables en un solo string
         const variableVirtualBusqueda = (
             String(item['NOMBRE'] || '') + " " +
             String(item['AP PATERNO'] || '') + " " +
@@ -1137,9 +1138,9 @@ function searchData() {
             seccionLimpia
         ).toLowerCase();
 
-        // 4. COMPARACIÓN DIRECTA CONTRA LA VARIABLE VIRTUAL
+        // 4. COMPARACIÓN DE LOS TOKENS CONTRA LA VARIABLE VIRTUAL
         if (searchTokens.every(token => variableVirtualBusqueda.includes(token))) {
-            // Guardamos temporalmente el valor limpio para el renderizado
+            // Guardamos temporalmente el valor para el pintado de la tarjeta sin alterar IndexedDB
             item['SECCION_DISPLAY'] = seccionLimpia || 'S/S';
             matchedRecords.push(item);
         }
@@ -1159,7 +1160,7 @@ function searchData() {
         return;
     }
 
-    // Renderizado de las tarjetas con tus reglas de semáforo de colores
+    // Renderizado de tarjetas con tus semáforos de colores asignados
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div'); 
         
@@ -1208,6 +1209,7 @@ function searchData() {
         resultsContainer.appendChild(div);
     });
 }
+
 
 function buscarLocalidadesEnPantalla() {
     const query = document.getElementById('f-localidad-buscar').value.toLowerCase().trim(); const resultsContainer = document.getElementById('localidad-search-results');
