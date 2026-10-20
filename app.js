@@ -1099,25 +1099,18 @@ function preloadDatabaseToMemory() {
 
 
 function searchData() {
-    const query = document.getElementById('search-input').value.toLowerCase().trim(); 
-    const resultsContainer = document.getElementById('search-results');
-    resultsContainer.innerHTML = ""; 
-    
-    // Mantenemos tu inicio de búsqueda desde el segundo dígito o letra
-    if (query.length < 2) return;
+    const query = document.getElementById('search-input').value.toLowerCase().trim(); const resultsContainer = document.getElementById('search-results');
+    resultsContainer.innerHTML = ""; if (query.length < 2) return; // Mantiene tu inicio desde el segundo dígito
 
-    const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; 
-    const municipioBrigadista = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : "";
-    const searchTokens = query.split(/\s+/); 
-    let matchedRecords = [];
+    const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; const municipioBrigadista = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : "";
+    const searchTokens = query.split(/\s+/); let matchedRecords = [];
 
     for (let i = 0; i < localMemoryDatabase.length; i++) {
-        const item = localMemoryDatabase[i]; 
-        if (!item) continue;
+        const item = localMemoryDatabase[i]; if (!item) continue;
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // Recupera el valor de la sección e ignora decimales .0 de Excel de forma matemática pura
+        // DETECTOR TOLERANTE ORIGINAL: Recupera el valor de la sección e ignora decimales .0 de Excel de forma matemática pura
         const seccionValor = item['SECCION'] || item['SECCION '] || item['Seccion'] || '';
         let seccionNumero = parseInt(seccionValor, 10);
         let seccionLimpia = isNaN(seccionNumero) ? "" : String(seccionNumero);
@@ -1126,6 +1119,7 @@ function searchData() {
         const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''} ${seccionLimpia} seccion ${seccionLimpia} sección ${seccionLimpia}`.toLowerCase();
         
         if (searchTokens.every(t => combinedText.includes(t))) {
+            // Guarda el valor limpio para que tu maquetación de tarjeta dibuje la sección sin romperse
             item['SECCION_LIMPIA'] = seccionLimpia;
             matchedRecords.push(item);
         }
@@ -1142,77 +1136,54 @@ function searchData() {
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div'); 
         
-        // Control de sincronización local (Cola pendiente de LocalStorage)
         const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']); 
         const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
-        
-        // Extraer valores reales de control sanitizados de forma estricta
         const estatusFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['ESTATUS_VISITA'] : (item['ESTATUS_VISITA'] || "");
+        
+        // Extrae la cantidad de visitas de forma segura tolerando espacios ocultos en la llave
         const saludFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['CUANTAS_VISITAS_SALUD'] : (item['CUANTAS_VISITAS_SALUD'] || item['CUANTAS_VISITAS_SALUD '] || "");
 
         const estatusLimpio = String(estatusFinal).toUpperCase().trim();
         const saludLimpia = String(saludFinal).toUpperCase().trim();
 
-        // 🎨 VARIABLES DE SEMÁFORO CROMÁTICO (VALORES POR DEFECTO: REGLA 1)
-        let fondoTarjeta = "#EDF4F9";             // Azul Glaciar Pastel
-        let bordeIzquierdo = "5px solid #BC955C"; // Borde Dorado
-        let colorTextoPrincipal = "#1F2937";      // Negro Antracita
-        let colorSubtextos = "#555555";            // Gris oscuro
+        // 🎨 DETALLES ESTÉTICOS: ASIGNACIÓN DE CLASES ASOCIADAS A LAS 5 REGLAS EXACTAS
+        let claseColor = "result-item"; // Regla 1 y 2 por defecto (Azul Glaciar Pastel / Borde Dorado)
         let textoIndicador = ' <span style="color:#718096; font-weight:bold; font-size:12px; margin-left:5px;">⏳ No Tocado</span>';
-
-        // =========================================================================
-        // RESTRICCIÓN EVALUATORIA CRONOLÓGICA DE LAS 5 REGLAS EXACTAS SOLICITADAS
-        // =========================================================================
 
         if (estatusLimpio === "LOCALIZADO" && saludLimpia === "NO_QUIERE") {
             // /* 4. RECHAZO DE SALUD: Guinda Oscuro / Borde Dorado de Advertencia */
-            fondoTarjeta = "#4A0E25";
-            bordeIzquierdo = "5px solid #BC955C";
-            colorTextoPrincipal = "#FFFFFF"; // Contraste blanco
-            colorSubtextos = "#E5E7EB";
+            claseColor = "result-item status-rechazo-salud";
             textoIndicador = ' <span style="color:#BC955C; font-weight:bold; font-size:12px; margin-left:5px;">✓ Rechazo Salud</span>';
         } 
         else if (estatusLimpio === "" && saludLimpia === "NO_QUIERE") {
             // /* 5. PENDIENTES CON RECHAZO PREVIO: Fondo Azul Pastel / Borde Lateral Guinda */
-            fondoTarjeta = "#EDF4F9";
-            bordeIzquierdo = "5px solid #621132"; // Borde Lateral Guinda
+            claseColor = "result-item status-pendiente-rechazo";
             textoIndicador = ' <span style="color:#621132; font-weight:bold; font-size:12px; margin-left:5px;">⏳ Pendiente con Rechazo</span>';
         } 
         else if (estatusLimpio === "NO LOCALIZADO" && saludLimpia !== "NO_QUIERE") {
             // /* 3. NO LOCALIZADOS: Rojo Rosáceo / Borde Carmesí */
-            fondoTarjeta = "#FCE8E6";
-            bordeIzquierdo = "5px solid #b91c1c";
+            claseColor = "result-item status-nolocalizado";
             textoIndicador = ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
         } 
-        else if (estatusLimpio === "LOCALIZADO" && (saludLimpia === "" || saludLimpia === "1" || saludLimpia === "2" || saludLimpia === "3")) {
+        else if (estatusLimpio === "LOCALIZADO") {
             // /* 2. LOCALIZADOS ESTÁNDAR: Azul Glaciar Pastel / Borde Dorado */
-            fondoTarjeta = "#EDF4F9";
-            bordeIzquierdo = "5px solid #BC955C";
+            claseColor = "result-item status-localizado";
             textoIndicador = ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>';
         }
 
-        // ⚡ SOLUCIÓN ABSOLUTA AL BLOCK DE INTERFAZ: Forzar las propiedades usando setProperty con !important
-        div.className = "result-item";
-        div.style.setProperty("background-color", fondoTarjeta, "important");
-        div.style.setProperty("border-left", bordeIzquierdo, "important");
+        div.className = claseColor;
         
-        // Estilos de maquetación y tipografía base
-        div.style.padding = "14px 16px";
-        div.style.borderBottom = "1px solid #F3F4F6";
-        div.style.cursor = "pointer";
-        div.style.marginBottom = "8px";
-        div.style.borderRadius = "4px";
-
-        div.innerHTML = `<div style="font-size:16px; font-weight:700; color:${colorTextoPrincipal}; margin-bottom:2px;">${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}</div>
-                         <div style="font-size:13px; font-weight:600; color:#621132; margin-bottom:4px; letter-spacing:0.3px;">
+        // Mantiene tu maquetación limpia e inyecta la insignia dorada de la sección mapeada con tu HTML
+        div.innerHTML = `<div style="font-size:16px; font-weight:700; color:var(--dark-color); margin-bottom:2px;">${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}</div>
+                         <div style="font-size:13px; font-weight:600; color:var(--primary-color); margin-bottom:4px; letter-spacing:0.3px;">
                              CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_LIMPIA'] || 'S/S'}</span>
                          </div>
-                         <div style="font-size:13px; color:${colorSubtextos};">📍 Calle: ${item['CALLE'] || 'S/C'}, No. Ext: ${item['NUM EXT'] || 'S/N'}, Col. ${item['COLONIA'] || 'S/C'}</div>`;
+                         <div style="font-size:13px; color:#555555;">📍 Calle: ${item['CALLE'] || 'S/C'}, No. Ext: ${item['NUM EXT'] || 'S/N'}, Col. ${item['COLONIA'] || 'S/C'}</div>`;
                          
-        div.onclick = () => openForm(item); 
-        resultsContainer.appendChild(div);
+        div.onclick = () => openForm(item); resultsContainer.appendChild(div);
     });
 }
+
 
 
 function buscarLocalidadesEnPantalla() {
