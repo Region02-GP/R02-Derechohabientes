@@ -1097,72 +1097,31 @@ function preloadDatabaseToMemory() {
 }
 
 
-function searchData() {
-    const query = document.getElementById('search-input').value.toLowerCase().trim(); 
-    const resultsContainer = document.getElementById('search-results');
-    resultsContainer.innerHTML = ""; 
-    
-    // Iniciar la búsqueda inmediatamente a partir del segundo carácter o número escrito
-    if (query.length < 2) return; 
 
-    const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; 
-    const municipioBrigadista = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : "";
-    
-    // Dividimos la consulta en palabras sueltas sanitizadas
-    const searchTokens = query.split(/\s+/); 
-    let matchedRecords = [];
+function searchData() {
+    const query = document.getElementById('search-input').value.toLowerCase().trim(); const resultsContainer = document.getElementById('search-results');
+    resultsContainer.innerHTML = ""; if (query.length < 3) return;
+
+    const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; const municipioBrigadista = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : "";
+    const searchTokens = query.split(/\s+/); let matchedRecords = [];
 
     for (let i = 0; i < localMemoryDatabase.length; i++) {
-        const item = localMemoryDatabase[i]; 
-        if (!item) continue;
-        
-        // RESTRICCIÓN DE MUNICIPIO ORIGINAL ESTRICTA (INTACTA)
+        const item = localMemoryDatabase[i]; if (!item) continue;
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 1. EXTRAER LA SECCIÓN COMO CADENA Y ELIMINAR EL ".0" DE EXCEL MATEMÁTICAMENTE
-        let seccionCruda = item['SECCION'] || item['SECCION '] || item['Seccion'] || '';
-        let numeroConvertido = parseFloat(seccionCruda);
-        let seccionLimpia = !isNaN(numeroConvertido) ? String(Math.floor(numeroConvertido)) : "";
+        // DETECTOR TOLERANTE: Recupera el valor de la sección ignorando si tiene espacios ocultos al final
+        const seccionValor = item['SECCION'] || item['SECCION '] || item['Seccion'] || '';
 
-        // Asignación obligatoria asociada a tu index.html original para pintar el cuadro dorado (\${item['SECCION_LIMPIA']})
-        item['SECCION_LIMPIA'] = seccionLimpia || 'S/S';
-
-        // 2. VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA CON TRIMMING AGRESIVO (SUGERIDA POR TI)
-        // Limpiamos los espacios extras individuales de CADA campo para destruir dobles espacios de origen
-        const nombreLimpio = String(item['NOMBRE'] || '').trim();
-        const paternoLimpio = String(item['AP PATERNO'] || '').trim();
-        const maternoLimpio = String(item['AP MATERNO'] || '').trim();
-        const curpLimpia = String(item['CURP'] || '').trim();
-        const calleLimpia = String(item['CALLE'] || '').trim();
-        const numExtLimpio = String(item['NUM EXT'] || '').trim();
-        const coloniaLimpia = String(item['COLONIA'] || '').trim();
-
-        // Armamos el texto continuo plano e inyectamos los anclajes de palabra clave solicitados
-        let variableVirtualBusqueda = (
-            nombreLimpio + " " +
-            paternoLimpio + " " +
-            maternoLimpio + " " +
-            curpLimpia + " " +
-            calleLimpia + " " +
-            numExtLimpio + " " +
-            coloniaLimpia + " " +
-            "seccion " + seccionLimpia + " " +
-            "sección " + seccionLimpia + " " +
-            seccionLimpia
-        ).toLowerCase();
-
-        // APLANADOR DEFINITIVO: Reemplaza cualquier doble espacio oculto por un único espacio limpio
-        variableVirtualBusqueda = variableVirtualBusqueda.replace(/\s+/g, ' ');
-
-        // 3. EVALUACIÓN DE COINCIDENCIAS PARCIALES FLUIDAS
-        // Comprueba si cada palabra suelta ingresada por el usuario está contenida en la variable virtual limpia
-        if (searchTokens.every(token => variableVirtualBusqueda.includes(token))) {
+        const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''} ${seccionValor}`.toLowerCase();
+        if (searchTokens.every(t => combinedText.includes(t))) {
+            // Guarda temporalmente el valor limpio para usarlo en el renderizado de la tarjeta
+            item['SECCION_LIMPIA'] = seccionValor;
             matchedRecords.push(item);
         }
     }
 
-    // Ordenamiento numérico de menor a mayor por número de casa
+    // Ordenamiento numérico estricto de menor a mayor por número de casa
     matchedRecords.sort((a, b) => {
         const numA = parseInt(String(a['NUM EXT']).replace(/\D/g, ""), 10) || 0;
         const numB = parseInt(String(b['NUM EXT']).replace(/\D/g, ""), 10) || 0;
@@ -1170,62 +1129,25 @@ function searchData() {
     });
 
     resultsContainer.innerHTML = "";
-    
-    if (matchedRecords.length === 0) {
-        resultsContainer.innerHTML = '<div style="padding:16px; text-align:center; color:#b91c1c; font-weight:bold;">❌ Sin coincidencias en tu municipio</div>';
-        return;
-    }
-
-    // 4. RENDERIZADO FINAL DE TARJETAS CON TUS SEMÁFOROS DE COLORES ASIGNADOS
     matchedRecords.slice(0, 30).forEach(item => {
-        const div = document.createElement('div'); 
-        
-        const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']); 
-        const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
-        
-        const estatusFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['ESTATUS_VISITA'] : (item['ESTATUS_VISITA'] || "");
-        const saludFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['CUANTAS_VISITAS_SALUD'] : (item['CUANTAS_VISITAS_SALUD'] || "");
-
-        let claseColor = "result-item"; 
-        let textoIndicador = "";
-
-        const estatusLimpio = estatusFinal.toUpperCase().trim();
-        const saludLimpia = saludFinal.toUpperCase().trim();
-
-        if (estatusLimpio === "LOCALIZADO" && saludLimpia === "NO_QUIERE") {
-            claseColor = "result-item status-rechazo-salud";
-            textoIndicador = ' <span style="color:#BC955C; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado (Rechazo Salud)</span>';
-        } 
-        else if (estatusLimpio === "" && saludLimpia === "NO_QUIERE") {
-            claseColor = "result-item status-pendiente-rechazo";
-            textoIndicador = ' <span style="color:#621132; font-weight:bold; font-size:12px; margin-left:5px;">⏳ Pendiente con Rechazo</span>';
-        } 
-        else if (estatusLimpio === "NO LOCALIZADO" && saludLimpia !== "NO_QUIERE") {
-            claseColor = "result-item status-nolocalizado";
-            textoIndicador = ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
-        } 
-        else if ((estatusLimpio === "" || estatusLimpio === "LOCALIZADO") && (saludLimpia === "" || saludLimpia === "1" || saludLimpia === "2" || saludLimpia === "3")) {
-            claseColor = "result-item"; 
-            if (estatusLimpio === "LOCALIZADO") {
-                textoIndicador = ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>';
-            } else {
-                textoIndicador = ' <span style="color:#718096; font-weight:bold; font-size:12px; margin-left:5px;">⏳ No Tocado</span>';
-            }
-        }
+        const div = document.createElement('div'); const estatusActual = item['ESTATUS_VISITA'] || "";
+        const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']); const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
+        const estatusFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['ESTATUS_VISITA'] : estatusActual;
+        let claseColor = estatusFinal === "LOCALIZADO" ? "result-item status-localizado" : (estatusFinal === "NO LOCALIZADO" ? "result-item status-nolocalizado" : "result-item");
+        let textoIndicador = estatusFinal === "LOCALIZADO" ? ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>' : (estatusFinal === "NO LOCALIZADO" ? ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>' : "");
 
         div.className = claseColor;
         
+        // CORRECCIÓN VISUAL: Inyecta la insignia con fondo dorado y texto de contraste negro antracita
         div.innerHTML = `<div style="font-size:16px; font-weight:700; color:#1F2937; margin-bottom:2px;">${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}</div>
                          <div style="font-size:13px; font-weight:600; color:#621132; margin-bottom:4px; letter-spacing:0.3px;">
-                             CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_LIMPIA']}</span>
+                             CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_LIMPIA'] || 'S/S'}</span>
                          </div>
                          <div style="font-size:13px; color:#555555;">📍 Calle: ${item['CALLE'] || 'S/C'}, No. Ext: ${item['NUM EXT'] || 'S/N'}, Col. ${item['COLONIA'] || 'S/C'}</div>`;
                          
-        div.onclick = () => openForm(item); 
-        resultsContainer.appendChild(div);
+        div.onclick = () => openForm(item); resultsContainer.appendChild(div);
     });
 }
-
 
 
 function buscarLocalidadesEnPantalla() {
