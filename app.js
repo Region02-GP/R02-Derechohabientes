@@ -1629,15 +1629,35 @@ function abrirFormularioVacioAltaNueva() {
     
     const fLat = document.getElementById('f-lat'); if (fLat) fLat.value = "Buscando satélite...";
     const fLon = document.getElementById('f-lon'); if (fLon) fLon.value = "Buscando satélite...";
+    
+    // 🛰️ AQUÍ ESTÁ EL CAMBIO DEL PASO 3: Apaga cualquier orden de guardado automático anterior al abrir un registro en blanco
+    window.pendienteGuardarNoLocalizado = false;
+
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((position) => { 
             if (fLat) fLat.value = String(position.coords.latitude.toFixed(6)).replace(",", "."); 
             if (fLon) fLon.value = String(position.coords.longitude.toFixed(6)).replace(",", ".");
-        }, () => { if (fLat) fLat.value = "ERROR"; if (fLon) fLon.value = "ERROR"; });
+            
+            // Si el brigadista presionó "NO LOCALIZADO" demasiado rápido en una alta nueva
+            if (window.pendienteGuardarNoLocalizado === true) {
+                window.pendienteGuardarNoLocalizado = false;
+                ocultarCargando();
+                saveData(null);
+            }
+        }, () => { 
+            if (fLat) fLat.value = "ERROR"; if (fLon) fLon.value = "ERROR"; 
+            if (window.pendienteGuardarNoLocalizado === true) {
+                window.pendienteGuardarNoLocalizado = false;
+                ocultarCargando();
+                alert("🛑 No se pudo obtener la georreferencia. Por favor, guarde manualmente.");
+            }
+        }, {
+            enableHighAccuracy: true,
+            timeout: 10000
+        });
     }
     const curpInputEl = document.getElementById('f-curp'); if (curpInputEl) { curpInputEl.removeEventListener('input', verificarCurpDuplicadaEnTiempoReal); curpInputEl.addEventListener('input', verificarCurpDuplicadaEnTiempoReal); }
     
-    // Cambiar de pantalla directamente (aquí se limpió la llamada que bloqueaba la interfaz)
     changeScreen('screen-form');
     
     expedienteDigitalTemporal = { doc_ine_frontal: "", doc_ine_trasera: "", doc_acta: "", doc_comprobante: "", doc_curp: "" };
