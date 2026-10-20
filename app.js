@@ -1100,7 +1100,7 @@ function searchData() {
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = ""; 
     
-    // Permitir búsquedas fluidas desde el primer dígito o letra
+    // Permitir búsquedas fluidas desde el primer carácter
     if (query.length < 1) return; 
 
     const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; 
@@ -1116,20 +1116,21 @@ function searchData() {
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 1. EXTRAER LA SECCIÓN FORZANDO A STRING DIRECTAMENTE (Evita que truene si es número entero)
-        let seccionOriginal = "";
-        if (item['SECCION'] !== undefined && item['SECCION'] !== null) seccionOriginal = String(item['SECCION']);
-        else if (item['SECCION '] !== undefined && item['SECCION '] !== null) seccionOriginal = String(item['SECCION ']);
-        else if (item['Seccion'] !== undefined && item['Seccion'] !== null) seccionOriginal = String(item['Seccion']);
+        // 1. EXTRAER EL VALOR DE LA SECCIÓN DE FORMA ULTRA SEGURA
+        let seccionCruda = "";
+        if (item['SECCION'] !== undefined && item['SECCION'] !== null) seccionCruda = String(item['SECCION']);
+        else if (item['SECCION '] !== undefined && item['SECCION '] !== null) seccionCruda = String(item['SECCION ']);
+        else if (item['Seccion'] !== undefined && item['Seccion'] !== null) seccionCruda = String(item['Seccion']);
         
-        // 2. MATAR EL Oculto ".0" DE EXCEL DE FORMA SEGURA
-        let seccionLimpia = seccionOriginal.split('.')[0].trim();
+        // 2. EXTRAER EL ENTERO DE FORMA INFALIBLE (Quita el .0 de Excel sin usar arrays rotos)
+        let seccionNumero = parseInt(seccionCruda, 10);
+        let seccionLimpia = isNaN(seccionNumero) ? "" : String(seccionNumero);
 
-        // 3. ASIGNACIÓN ASOCIADA AL HTML: Guarda el valor para que tu index.html lo pinte correctamente
+        // 3. ASIGNACIÓN ASOCIADA AL HTML: Guarda el valor para que tu index.html no se rompa
         item['SECCION_LIMPIA'] = seccionLimpia || 'S/S';
 
-        // 4. GENERACIÓN DE LA VARIABLE VIRTUAL LIMPIA (SUGERIDA POR TI)
-        // Concatenamos todos los campos del derechohabiente e inyectamos la palabra clave que pediste
+        // 4. GENERACIÓN DE LA VARIABLE VIRTUAL LIMPIA (PROPUESTA POR TI)
+        // Concatenamos todos los campos legibles e inyectamos la palabra clave con y sin acento
         const variableVirtualBusqueda = (
             String(item['NOMBRE'] || '') + " " +
             String(item['AP PATERNO'] || '') + " " +
@@ -1183,7 +1184,7 @@ function searchData() {
             claseColor = "result-item status-rechazo-salud";
             textoIndicador = ' <span style="color:#BC955C; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado (Rechazo Salud)</span>';
         } 
-        else if (estatusLimpio === "" && saludLimpia === "NO_QUIERE") {
+        else if (estatusLimpio === "" && saludLinter === "NO_QUIERE") {
             claseColor = "result-item status-pendiente-rechazo";
             textoIndicador = ' <span style="color:#621132; font-weight:bold; font-size:12px; margin-left:5px;">⏳ Pendiente con Rechazo</span>';
         } 
