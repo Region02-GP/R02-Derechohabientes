@@ -1112,37 +1112,21 @@ function searchData() {
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // EXTRAEDOR ULTRA-TOLERANTE DE SECCIÓN (CORREGIDO):
+        // 1. OBTENER EL VALOR ORIGEN DE LA SECCIÓN DE FORMA ULTRA TOLERANTE
         let seccionOriginal = item['SECCION'] !== undefined && item['SECCION'] !== null ? String(item['SECCION']) : "";
         if (!seccionOriginal) seccionOriginal = item['SECCION '] !== undefined && item['SECCION '] !== null ? String(item['SECCION ']) : "";
         if (!seccionOriginal) seccionOriginal = item['Seccion'] !== undefined && item['Seccion'] !== null ? String(item['Seccion']) : "";
         
-        // Elimina decimales como .0 y quita cualquier espacio en blanco intermedio
-        let seccionValor = seccionOriginal.split('.')[0].replace(/[\s\u200B-\u200D\uFEFF]/g, "").trim();
+        // 2. CORRECCIÓN DE SINTAXIS: Separar por punto para quitar el decimal .0 de Excel y limpiar espacios
+        let partesSeccion = seccionOriginal.split('.');
+        let seccionLimpia = partesSeccion[0].replace(/[\s\u200B-\u200D\uFEFF]/g, "").trim();
 
-        // Variables de identidad estándar convertidas a texto limpio
-        const nombre = String(item['NOMBRE'] || '').toLowerCase();
-        const paterno = String(item['AP PATERNO'] || '').toLowerCase();
-        const materno = String(item['AP MATERNO'] || '').toLowerCase();
-        const curp = String(item['CURP'] || '').toLowerCase();
-        const calle = String(item['CALLE'] || '').toLowerCase();
-        const colonia = String(item['COLONIA'] || '').toLowerCase();
-        const seccionLimpiaLower = seccionValor.toLowerCase();
+        // 3. CONSOLIDAR TEXTO DE BÚSQUEDA (Agregando explícitamente la sección limpia al final)
+        const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''} ${seccionLimpia}`.toLowerCase();
 
-        // El registro califica si CADA token escrito por el usuario coincide con alguna de las propiedades
-        const matchAllTokens = searchTokens.every(token => {
-            return nombre.includes(token) || 
-                   paterno.includes(token) || 
-                   materno.includes(token) || 
-                   curp.includes(token) || 
-                   calle.includes(token) || 
-                   colonia.includes(token) || 
-                   seccionLimpiaLower === token || // Coincidencia exacta de sección (Ej: "1234")
-                   seccionLimpiaLower.includes(token); // Coincidencia parcial de sección (Ej: "12")
-        });
-
-        if (matchAllTokens) {
-            item['SECCION_LIMPIA'] = seccionValor || 'S/S';
+        // 4. VERIFICAR QUE CADA TOKEN ESCRITO ESTÉ DENTRO DEL TEXTO CONSOLIDADO
+        if (searchTokens.every(t => combinedText.includes(t))) {
+            item['SECCION_LIMPIA'] = seccionLimpia || 'S/S';
             matchedRecords.push(item);
         }
     }
@@ -1209,6 +1193,7 @@ function searchData() {
         resultsContainer.appendChild(div);
     });
 }
+
 
 function buscarLocalidadesEnPantalla() {
     const query = document.getElementById('f-localidad-buscar').value.toLowerCase().trim(); const resultsContainer = document.getElementById('localidad-search-results');
