@@ -1105,6 +1105,9 @@ function searchData() {
 
     const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; 
     const municipioBrigadista = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : "";
+    
+    // Convertimos la consulta en tokens/palabras sueltas para permitir búsquedas cruzadas parciales
+    const searchTokens = query.split(/\s+/); 
     let matchedRecords = [];
 
     for (let i = 0; i < localMemoryDatabase.length; i++) {
@@ -1117,30 +1120,35 @@ function searchData() {
 
         // 1. EXTRAER LA SECCIÓN COMO CADENA Y QUITAR EL ".0" DE EXCEL
         let seccionCruda = item['SECCION'] || item['SECCION '] || item['Seccion'] || '';
-        let seccionLimpia = String(seccionCruda).split('.')[0].trim();
+        let seccionLimpia = "";
+        if (seccionCruda) {
+            let partes = String(seccionCruda).split('.');
+            if (partes && partes[0]) {
+                seccionLimpia = partes[0].trim();
+            }
+        }
 
         // Asignación obligatoria para que tu HTML dibuje la insignia dorada sin romperse
         item['SECCION_LIMPIA'] = seccionLimpia || 'S/S';
 
-        // 2. VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA (Excluye fotos base64 para evitar congelamiento)
-        // Agrega todo el registro en una sola cadena de texto continuo para permitir coincidencias parciales
+        // 2. VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA SANITIZADA
+        // Limpiamos los espacios extras individuales de cada campo antes de unirlos para evitar dobles espacios ocultos
         const variableVirtualBusqueda = (
-            String(item['NOMBRE'] || '') + " " +
-            String(item['AP PATERNO'] || '') + " " +
-            String(item['AP MATERNO'] || '') + " " +
-            String(item['CURP'] || '') + " " +
-            String(item['CALLE'] || '') + " " +
-            String(item['NUM EXT'] || '') + " " +
-            String(item['COLONIA'] || '') + " " +
-            String(item['SECCION'] || '') + " " +
+            String(item['NOMBRE'] || '').trim() + " " +
+            String(item['AP PATERNO'] || '').trim() + " " +
+            String(item['AP MATERNO'] || '').trim() + " " +
+            String(item['CURP'] || '').trim() + " " +
+            String(item['CALLE'] || '').trim() + " " +
+            String(item['NUM EXT'] || '').trim() + " " +
+            String(item['COLONIA'] || '').trim() + " " +
             "seccion " + seccionLimpia + " " +
             "sección " + seccionLimpia + " " +
             seccionLimpia
-        ).toLowerCase();
+        ).toLowerCase().replace(/\s+/g, ' '); // Convierte cualquier doble espacio en uno solo
 
-        // 3. BÚSQUEDA PARCIAL DIRECTA Y FLUIDA
-        // Si el texto que escribiste está contenido en cualquier parte de la variable virtual, califica.
-        if (variableVirtualBusqueda.indexOf(query) !== -1) {
+        // 3. EVALUACIÓN DE COINCIDENCIAS PARCIALES FLUIDAS
+        // Un registro califica si CADA token o palabra que escribiste está contenida parcialmente en la variable virtual
+        if (searchTokens.every(token => variableVirtualBusqueda.includes(token))) {
             matchedRecords.push(item);
         }
     }
@@ -1187,7 +1195,7 @@ function searchData() {
             claseColor = "result-item status-nolocalizado";
             textoIndicador = ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
         } 
-        else if ((estatusLimpio === "" || estatusLimpio === "LOCALIZADO") && (saludLimpia === "" || saludLimpia === "1" || saludLimpia === "2" || saludLimpia === "3")) {
+        else if ((estatusLimpio === "" || estatusLimpio === "LOCALIZADO") && (saludLinter === "" || saludLimpia === "1" || saludLimpia === "2" || saludLimpia === "3")) {
             claseColor = "result-item"; 
             if (estatusLimpio === "LOCALIZADO") {
                 textoIndicador = ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>';
