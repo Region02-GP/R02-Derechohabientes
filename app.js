@@ -1100,7 +1100,7 @@ function searchData() {
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = ""; 
     
-    // Permitir búsquedas fluidas desde el primer carácter
+    // Permitir búsquedas fluidas desde el primer carácter escrito
     if (query.length < 1) return; 
 
     const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; 
@@ -1116,40 +1116,30 @@ function searchData() {
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 1. EXTRAER EL VALOR DE LA SECCIÓN DE FORMA TOLERANTE A VARIACIONES DE CLAVE
-        let seccionCruda = "";
-        if (item['SECCION'] !== undefined && item['SECCION'] !== null) seccionCruda = String(item['SECCION']);
-        else if (item['SECCION '] !== undefined && item['SECCION '] !== null) seccionCruda = String(item['SECCION ']);
-        else if (item['Seccion'] !== undefined && item['Seccion'] !== null) seccionCruda = String(item['Seccion']);
+        // 1. EXTRAER LA SECCIÓN DE FORMA TOLERANTE (Matamos el .0 de Excel de forma matemática)
+        let seccionCruda = item['SECCION'] !== undefined && item['SECCION'] !== null ? item['SECCION'] : "";
+        if (!seccionCruda) seccionCruda = item['SECCION '] !== undefined && item['SECCION '] !== null ? item['SECCION '] : "";
+        if (!seccionCruda) seccionCruda = item['Seccion'] !== undefined && item['Seccion'] !== null ? item['Seccion'] : "";
         
-        // 2. EXTRAER EL ENTERO LIMPIO (Quita el decimal .0 de Excel cortando de forma segura la cadena antes del punto)
-        let seccionLimpia = "";
-        if (seccionCruda) {
-            let partes = seccionCruda.split('.');
-            if (partes && partes[0]) {
-                seccionLimpia = partes[0].trim();
+        let numeroConvertido = parseFloat(seccionCruda);
+        let seccionLimpia = !isNaN(numeroConvertido) ? String(Math.floor(numeroConvertido)) : "";
+
+        // 2. ASIGNACIÓN CLAVE: Guarda exactamente el valor que tu index.html original espera para pintar la sección (\${item['SECCION_LIMPIA']})
+        item['SECCION_LIMPIA'] = seccionLimpia || 'S/S';
+
+        // 3. LA VARIABLE VIRTUAL ABSOLUTA (SUGERIDA POR TI):
+        // Recorremos dinámicamente CADA clave/propiedad que tenga el registro dentro de IndexedDB
+        let variableVirtualBusqueda = "";
+        for (let propiedad in item) {
+            if (item[propiedad] !== undefined && item[propiedad] !== null) {
+                variableVirtualBusqueda += " " + String(item[propiedad]).toLowerCase();
             }
         }
 
-        // 3. ASIGNACIÓN CLAVE: Guarda el valor exacto que tu index.html original necesita para renderizar
-        item['SECCION_LIMPIA'] = seccionLimpia || 'S/S';
+        // 4. INYECTAR LAS ANCLAS DE TEXTO SOLICITADAS JUNTO A LA SECCIÓN
+        variableVirtualBusqueda += " seccion " + seccionLimpia + " sección " + seccionLimpia + " " + seccionLimpia;
 
-        // 4. GENERACIÓN DE LA VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA
-        // Consolida todos los campos e integra los textos de anclaje "seccion" y "sección"
-        const variableVirtualBusqueda = (
-            String(item['NOMBRE'] || '') + " " +
-            String(item['AP PATERNO'] || '') + " " +
-            String(item['AP MATERNO'] || '') + " " +
-            String(item['CURP'] || '') + " " +
-            String(item['CALLE'] || '') + " " +
-            String(item['NUM EXT'] || '') + " " +
-            String(item['COLONIA'] || '') + " " +
-            "seccion " + seccionLimpia + " " +
-            "sección " + seccionLimpia + " " +
-            seccionLimpia
-        ).toLowerCase();
-
-        // 5. COMPARACIÓN DE LOS TOKENS DEL TECLADO CONTRA LA VARIABLE VIRTUAL
+        // 5. EVALUACIÓN DE TOKENS DEL TECLADO CONTRA LA VARIABLE VIRTUAL COMPLETA
         if (searchTokens.every(token => variableVirtualBusqueda.includes(token))) {
             matchedRecords.push(item);
         }
@@ -1169,7 +1159,7 @@ function searchData() {
         return;
     }
 
-    // 6. RENDERIZADO CON TU MAQUETACIÓN ORIGINAL Y REGLAS DE SEMÁFOROS DE COLORES CORREGIDAS
+    // 6. RENDERIZADO CON TUS REGLAS DE SEMÁFORO DE COLORES ASIGNADAS (CORREGIDO SIN TYPOS)
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div'); 
         
@@ -1185,7 +1175,6 @@ function searchData() {
         const estatusLimpio = estatusFinal.toUpperCase().trim();
         const saludLimpia = saludFinal.toUpperCase().trim();
 
-        // --- SEMÁFORO VISUAL CORREGIDO Y SIN ERRORES DE SINTAXIS ---
         if (estatusLimpio === "LOCALIZADO" && saludLimpia === "NO_QUIERE") {
             claseColor = "result-item status-rechazo-salud";
             textoIndicador = ' <span style="color:#BC955C; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado (Rechazo Salud)</span>';
