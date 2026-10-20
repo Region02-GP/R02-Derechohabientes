@@ -1096,42 +1096,38 @@ function preloadDatabaseToMemory() {
     db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).getAll().onsuccess = (e) => { localMemoryDatabase = e.target.result || []; };
 }
 function searchData() {
-    // Captura el valor eliminando espacios extras y convirtiendo a minúsculas
-    let inputCrudo = document.getElementById('search-input').value || "";
-    let query = inputCrudo.toLowerCase().trim(); 
+    const query = document.getElementById('search-input').value.toLowerCase().trim(); 
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = ""; 
     
-    // Iniciar la búsqueda desde que el usuario escribe al menos 2 caracteres
+    // Iniciar la búsqueda inmediatamente a partir del segundo carácter o número escrito
     if (query.length < 2) return; 
 
     const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; 
     const municipioBrigadista = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : "";
     
-    // Sanitiza la consulta del teclado reemplazando múltiples espacios por uno solo
-    let queryLimpia = query.replace(/\s+/g, ' ');
-    // Rompe en palabras sueltas (tokens)
-    const searchTokens = queryLimpia.split(' '); 
+    // Dividimos la consulta en palabras sueltas por si buscan cosas combinadas (Ej: "juan 1234")
+    const searchTokens = query.split(/\s+/); 
     let matchedRecords = [];
 
     for (let i = 0; i < localMemoryDatabase.length; i++) {
         const item = localMemoryDatabase[i]; 
         if (!item) continue;
         
-        // RESTRICCIÓN DE MUNICIPIO ORIGINAL (Sigue intacta y estricta)
+        // RESTRICCIÓN DE MUNICIPIO ORIGINAL ESTRICTA (INTACTA)
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 1. EXTRAER LA SECCIÓN COMO TEXTO ENTERO (Quita el .0 de Excel limpiamente)
+        // 1. EXTRAER LA SECCIÓN COMO CADENA Y ELIMINAR EL ".0" DE EXCEL DE FORMA MATEMÁTICA PURA (SIN ARREGLOS ROTOS)
         let seccionCruda = item['SECCION'] || item['SECCION '] || item['Seccion'] || '';
-        let seccionNumero = parseInt(seccionCruda, 10);
-        let seccionLimpia = isNaN(seccionNumero) ? "" : String(seccionNumero);
+        let numeroConvertido = parseFloat(seccionCruda);
+        let seccionLimpia = !isNaN(numeroConvertido) ? String(Math.floor(numeroConvertido)) : "";
 
-        // Guardamos exactamente la clave que tu index.html original necesita para pintar la insignia dorada
+        // Asignación obligatoria asociada a tu index.html original para pintar el cuadro dorado (\${item['SECCION_LIMPIA']})
         item['SECCION_LIMPIA'] = seccionLimpia || 'S/S';
 
         // 2. VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA SANITIZADA (SUGERIDA POR TI)
-        // Limpiamos los espacios extras individuales de cada campo antes de unirlos
+        // Limpiamos los espacios extras individuales de cada campo e inyectamos los textos ancla
         const variableVirtualBusqueda = (
             String(item['NOMBRE'] || '').trim() + " " +
             String(item['AP PATERNO'] || '').trim() + " " +
@@ -1143,24 +1139,19 @@ function searchData() {
             "seccion " + seccionLimpia + " " +
             "sección " + seccionLimpia + " " +
             seccionLimpia
-        ).toLowerCase().replace(/\s+/g, ' '); // Unifica cualquier doble espacio en uno solo
+        ).toLowerCase().replace(/\s+/g, ' '); // Unifica cualquier doble espacio oculto en uno solo
 
-        // 3. COMPARACIÓN DE COINCIDENCIA PARCIAL MULTI-TOKEN BLINDADA
-        // Comprueba si cada palabra escrita por el usuario está contenida en la variable virtual
-        let esCoincidencia = searchTokens.every(token => {
-            if (!token) return true;
-            return variableVirtualBusqueda.indexOf(token) !== -1;
-        });
-
-        if (esCoincidencia) {
+        // 3. EVALUACIÓN DE COINCIDENCIAS PARCIALES FLUIDAS
+        // Comprueba si cada palabra suelta ingresada por el usuario está contenida en la variable virtual
+        if (searchTokens.every(token => variableVirtualBusqueda.includes(token))) {
             matchedRecords.push(item);
         }
     }
 
     // Ordenamiento numérico de menor a mayor por número de casa
     matchedRecords.sort((a, b) => {
-        const numA = parseInt(String(a['NUM EXT'] || "").replace(/\D/g, ""), 10) || 0;
-        const numB = parseInt(String(b['NUM EXT'] || "").replace(/\D/g, ""), 10) || 0;
+        const numA = parseInt(String(a['NUM EXT']).replace(/\D/g, ""), 10) || 0;
+        const numB = parseInt(String(b['NUM EXT']).replace(/\D/g, ""), 10) || 0;
         return numA - numB;
     });
 
@@ -1171,7 +1162,7 @@ function searchData() {
         return;
     }
 
-    // 4. RENDERIZADO FINAL DE TARJETAS CON TUS SEMÁFOROS DE COLORES ASIGNADAS
+    // 4. RENDERIZADO FINAL DE TARJETAS CON TUS SEMÁFOROS DE COLORES ASIGNADOS (MÉTRICAS CORRECTAS SIN TYPOS)
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div'); 
         
