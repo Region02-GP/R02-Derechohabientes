@@ -1099,24 +1099,34 @@ function preloadDatabaseToMemory() {
 
 
 function searchData() {
-    const query = document.getElementById('search-input').value.toLowerCase().trim(); const resultsContainer = document.getElementById('search-results');
-    resultsContainer.innerHTML = ""; if (query.length < 2) return;
+    const query = document.getElementById('search-input').value.toLowerCase().trim(); 
+    const resultsContainer = document.getElementById('search-results');
+    resultsContainer.innerHTML = ""; 
+    
+    // Mantenemos tu inicio de búsqueda desde el segundo dígito o letra
+    if (query.length < 2) return;
 
-    const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; const municipioBrigadista = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : "";
-    const searchTokens = query.split(/\s+/); let matchedRecords = [];
+    const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; 
+    const municipioBrigadista = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : "";
+    const searchTokens = query.split(/\s+/); 
+    let matchedRecords = [];
 
     for (let i = 0; i < localMemoryDatabase.length; i++) {
-        const item = localMemoryDatabase[i]; if (!item) continue;
+        const item = localMemoryDatabase[i]; 
+        if (!item) continue;
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // DETECTOR TOLERANTE: Recupera el valor de la sección ignorando si tiene espacios ocultos al final
+        // Recupera el valor de la sección e ignora decimales .0 de Excel de forma matemática pura
         const seccionValor = item['SECCION'] || item['SECCION '] || item['Seccion'] || '';
+        let seccionNumero = parseInt(seccionValor, 10);
+        let seccionLimpia = isNaN(seccionNumero) ? "" : String(seccionNumero);
 
-        const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''} ${item['SECCION'] || ''} ${seccionValor}`.toLowerCase();
+        // Tu misma cadena original concatenando la sección y las palabras clave al final
+        const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''} ${seccionLimpia} seccion ${seccionLimpia} sección ${seccionLimpia}`.toLowerCase();
+        
         if (searchTokens.every(t => combinedText.includes(t))) {
-            // Guarda temporalmente el valor limpio para usarlo en el renderizado de la tarjeta
-            item['SECCION_LIMPIA'] = seccionValor;
+            item['SECCION_LIMPIA'] = seccionLimpia;
             matchedRecords.push(item);
         }
     }
@@ -1130,22 +1140,76 @@ function searchData() {
 
     resultsContainer.innerHTML = "";
     matchedRecords.slice(0, 30).forEach(item => {
-        const div = document.createElement('div'); const estatusActual = item['ESTATUS_VISITA'] || "";
-        const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']); const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
-        const estatusFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['ESTATUS_VISITA'] : estatusActual;
-        let claseColor = estatusFinal === "LOCALIZADO" ? "result-item status-localizado" : (estatusFinal === "NO LOCALIZADO" ? "result-item status-nolocalizado" : "result-item");
-        let textoIndicador = estatusFinal === "LOCALIZADO" ? ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>' : (estatusFinal === "NO LOCALIZADO" ? ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>' : "");
-
-        div.className = claseColor;
+        const div = document.createElement('div'); 
         
-        // CORRECCIÓN VISUAL: Inyecta la insignia con fondo dorado y texto de contraste negro antracita
-        div.innerHTML = `<div style="font-size:16px; font-weight:700; color:#1F2937; margin-bottom:2px;">${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}</div>
+        // Control de sincronización local
+        const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']); 
+        const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
+        
+        // Extraer valores reales sanitizados
+        const estatusFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['ESTATUS_VISITA'] : (item['ESTATUS_VISITA'] || "");
+        const saludFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['CUANTAS_VISITAS_SALUD'] : (item['CUANTAS_VISITAS_SALUD'] || "");
+
+        const estatusLimpio = String(estatusFinal).toUpperCase().trim();
+        const saludLimpia = String(saludFinal).toUpperCase().trim();
+
+        // 🎨 VARIABLES DE ESTILO DINÁMICO (ESTILOS EN LÍNEA PARA NO DEPENDER DEL CSS)
+        let fondoTarjeta = "#EDF4F9";      // Azul Glaciar Pastel por defecto
+        let bordeIzquierdo = "5px solid #BC955C"; // Borde Dorado por defecto
+        let colorTextoPrincipal = "#1F2937"; // Negro Antracita
+        let colorSubtextos = "#555555";     // Gris oscuro
+        let textoIndicador = "";
+
+        // VALIDADORES DE REGLAS ESTRICTOS
+        const esSaludVacioOVisitas = (saludLimpia === "" || saludLimpia === "1" || saludLimpia === "2" || saludLimpia === "3");
+
+        if ((estatusLimpio === "" || estatusLimpio === "LOCALIZADO") && esSaludVacioOVisitas) {
+            // 🟦 REGLA 1 y 2: PENDIENTES / LOCALIZADOS CON VISITAS (Azul Glaciar Pastel / Borde Dorado)
+            fondoTarjeta = "#EDF4F9";
+            bordeIzquierdo = "5px solid #BC955C";
+            textoIndicador = estatusLimpio === "LOCALIZADO" 
+                ? ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>'
+                : ' <span style="color:#718096; font-weight:bold; font-size:12px; margin-left:5px;">⏳ No Tocado</span>';
+        } 
+        else if (estatusLimpio === "NO LOCALIZADO" && saludLimpia !== "NO_QUIERE") {
+            // 🟥 REGLA 3: NO LOCALIZADOS (Rojo Rosáceo / Borde Carmesí)
+            fondoTarjeta = "#FCE8E6";
+            bordeIzquierdo = "5px solid #b91c1c";
+            textoIndicador = ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
+        } 
+        else if (estatusLimpio === "LOCALIZADO" && saludLimpia === "NO_QUIERE") {
+            // 🟫 REGLA 4: RECHAZO DE SALUD (Guinda Oscuro / Borde Dorado de Advertencia)
+            fondoTarjeta = "#4A0E25";
+            bordeIzquierdo = "5px solid #BC955C";
+            colorTextoPrincipal = "#FFFFFF"; // Contraste blanco obligatorio por fondo oscuro
+            colorSubtextos = "#E5E7EB";
+            textoIndicador = ' <span style="color:#BC955C; font-weight:bold; font-size:12px; margin-left:5px;">✓ Rechazo Salud</span>';
+        } 
+        else if (estatusLimpio === "" && saludLimpia === "NO_QUIERE") {
+            // 🟪 REGLA 5: PENDIENTES CON RECHAZO PREVIO (Fondo Azul Pastel / Borde Lateral Guinda)
+            fondoTarjeta = "#EDF4F9";
+            bordeIzquierdo = "5px solid #621132"; // Borde Guinda
+            textoIndicador = ' <span style="color:#621132; font-weight:bold; font-size:12px; margin-left:5px;">⏳ Pendiente con Rechazo</span>';
+        }
+
+        // Inyectamos de forma forzada los estilos calculados para pintar la tarjeta sí o sí
+        div.className = "result-item";
+        div.style.backgroundColor = fondoTarjeta;
+        div.style.borderLeft = bordeIzquierdo;
+        div.style.padding = "14px 16px";
+        div.style.borderBottom = "1px solid #F3F4F6";
+        div.style.cursor = "pointer";
+        div.style.marginBottom = "8px";
+        div.style.borderRadius = "4px";
+
+        div.innerHTML = `<div style="font-size:16px; font-weight:700; color:${colorTextoPrincipal}; margin-bottom:2px;">${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}</div>
                          <div style="font-size:13px; font-weight:600; color:#621132; margin-bottom:4px; letter-spacing:0.3px;">
                              CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_LIMPIA'] || 'S/S'}</span>
                          </div>
-                         <div style="font-size:13px; color:#555555;">📍 Calle: ${item['CALLE'] || 'S/C'}, No. Ext: ${item['NUM EXT'] || 'S/N'}, Col. ${item['COLONIA'] || 'S/C'}</div>`;
+                         <div style="font-size:13px; color:${colorSubtextos};">📍 Calle: ${item['CALLE'] || 'S/C'}, No. Ext: ${item['NUM EXT'] || 'S/N'}, Col. ${item['COLONIA'] || 'S/C'}</div>`;
                          
-        div.onclick = () => openForm(item); resultsContainer.appendChild(div);
+        div.onclick = () => openForm(item); 
+        resultsContainer.appendChild(div);
     });
 }
 
