@@ -1095,6 +1095,8 @@ function preloadDatabaseToMemory() {
     if (!db) return;
     db.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).getAll().onsuccess = (e) => { localMemoryDatabase = e.target.result || []; };
 }
+
+
 function searchData() {
     const query = document.getElementById('search-input').value.toLowerCase().trim(); 
     const resultsContainer = document.getElementById('search-results');
@@ -1106,7 +1108,7 @@ function searchData() {
     const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; 
     const municipioBrigadista = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : "";
     
-    // Dividimos la consulta en palabras sueltas por si buscan cosas combinadas (Ej: "juan 1234")
+    // Dividimos la consulta en palabras sueltas sanitizadas
     const searchTokens = query.split(/\s+/); 
     let matchedRecords = [];
 
@@ -1118,7 +1120,7 @@ function searchData() {
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 1. EXTRAER LA SECCIÓN COMO CADENA Y ELIMINAR EL ".0" DE EXCEL DE FORMA MATEMÁTICA PURA (SIN ARREGLOS ROTOS)
+        // 1. EXTRAER LA SECCIÓN COMO CADENA Y ELIMINAR EL ".0" DE EXCEL MATEMÁTICAMENTE
         let seccionCruda = item['SECCION'] || item['SECCION '] || item['Seccion'] || '';
         let numeroConvertido = parseFloat(seccionCruda);
         let seccionLimpia = !isNaN(numeroConvertido) ? String(Math.floor(numeroConvertido)) : "";
@@ -1126,23 +1128,35 @@ function searchData() {
         // Asignación obligatoria asociada a tu index.html original para pintar el cuadro dorado (\${item['SECCION_LIMPIA']})
         item['SECCION_LIMPIA'] = seccionLimpia || 'S/S';
 
-        // 2. VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA SANITIZADA (SUGERIDA POR TI)
-        // Limpiamos los espacios extras individuales de cada campo e inyectamos los textos ancla
-        const variableVirtualBusqueda = (
-            String(item['NOMBRE'] || '').trim() + " " +
-            String(item['AP PATERNO'] || '').trim() + " " +
-            String(item['AP MATERNO'] || '').trim() + " " +
-            String(item['CURP'] || '').trim() + " " +
-            String(item['CALLE'] || '').trim() + " " +
-            String(item['NUM EXT'] || '').trim() + " " +
-            String(item['COLONIA'] || '').trim() + " " +
+        // 2. VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA CON TRIMMING AGRESIVO (SUGERIDA POR TI)
+        // Limpiamos los espacios extras individuales de CADA campo para destruir dobles espacios de origen
+        const nombreLimpio = String(item['NOMBRE'] || '').trim();
+        const paternoLimpio = String(item['AP PATERNO'] || '').trim();
+        const maternoLimpio = String(item['AP MATERNO'] || '').trim();
+        const curpLimpia = String(item['CURP'] || '').trim();
+        const calleLimpia = String(item['CALLE'] || '').trim();
+        const numExtLimpio = String(item['NUM EXT'] || '').trim();
+        const coloniaLimpia = String(item['COLONIA'] || '').trim();
+
+        // Armamos el texto continuo plano e inyectamos los anclajes de palabra clave solicitados
+        let variableVirtualBusqueda = (
+            nombreLimpio + " " +
+            paternoLimpio + " " +
+            maternoLimpio + " " +
+            curpLimpia + " " +
+            calleLimpia + " " +
+            numExtLimpio + " " +
+            coloniaLimpia + " " +
             "seccion " + seccionLimpia + " " +
             "sección " + seccionLimpia + " " +
             seccionLimpia
-        ).toLowerCase().replace(/\s+/g, ' '); // Unifica cualquier doble espacio oculto en uno solo
+        ).toLowerCase();
+
+        // APLANADOR DEFINITIVO: Reemplaza cualquier doble espacio oculto por un único espacio limpio
+        variableVirtualBusqueda = variableVirtualBusqueda.replace(/\s+/g, ' ');
 
         // 3. EVALUACIÓN DE COINCIDENCIAS PARCIALES FLUIDAS
-        // Comprueba si cada palabra suelta ingresada por el usuario está contenida en la variable virtual
+        // Comprueba si cada palabra suelta ingresada por el usuario está contenida en la variable virtual limpia
         if (searchTokens.every(token => variableVirtualBusqueda.includes(token))) {
             matchedRecords.push(item);
         }
@@ -1162,7 +1176,7 @@ function searchData() {
         return;
     }
 
-    // 4. RENDERIZADO FINAL DE TARJETAS CON TUS SEMÁFOROS DE COLORES ASIGNADOS (MÉTRICAS CORRECTAS SIN TYPOS)
+    // 4. RENDERIZADO FINAL DE TARJETAS CON TUS SEMÁFOROS DE COLORES ASIGNADOS
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div'); 
         
