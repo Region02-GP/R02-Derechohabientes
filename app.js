@@ -1112,19 +1112,24 @@ function searchData() {
         const item = localMemoryDatabase[i]; 
         if (!item) continue;
         
-        // RESTRICCIÓN DE MUNICIPIO ORIGINAL (Sigue intacta)
+        // RESTRICCIÓN DE MUNICIPIO ORIGINAL ESTRICTA (INTACTA)
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 1. EXTRACTOR SEGURO DE SECCIÓN (Convierte a texto y limpia el ".0" de Excel)
-        let seccionCruda = item['SECCION'] || item['SECCION '] || item['Seccion'] || '';
-        let seccionLimpia = String(seccionCruda).split('.')[0].trim();
+        // 1. EXTRAER LA SECCIÓN FORZANDO A STRING DIRECTAMENTE (Evita que truene si es número entero)
+        let seccionOriginal = "";
+        if (item['SECCION'] !== undefined && item['SECCION'] !== null) seccionOriginal = String(item['SECCION']);
+        else if (item['SECCION '] !== undefined && item['SECCION '] !== null) seccionOriginal = String(item['SECCION ']);
+        else if (item['Seccion'] !== undefined && item['Seccion'] !== null) seccionOriginal = String(item['Seccion']);
+        
+        // 2. MATAR EL Oculto ".0" DE EXCEL DE FORMA SEGURA
+        let seccionLimpia = seccionOriginal.split('.')[0].trim();
 
-        // 2. CORRECCIÓN VITAL: Asignar exactamente la clave que tu código original usa para renderizar
+        // 3. ASIGNACIÓN ASOCIADA AL HTML: Guarda el valor para que tu index.html lo pinte correctamente
         item['SECCION_LIMPIA'] = seccionLimpia || 'S/S';
 
-        // 3. LA VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA (SUGERIDA POR TI)
-        // Agrega todas las propiedades legibles junto con los anclajes de texto solicitados
+        // 4. GENERACIÓN DE LA VARIABLE VIRTUAL LIMPIA (SUGERIDA POR TI)
+        // Concatenamos todos los campos del derechohabiente e inyectamos la palabra clave que pediste
         const variableVirtualBusqueda = (
             String(item['NOMBRE'] || '') + " " +
             String(item['AP PATERNO'] || '') + " " +
@@ -1138,7 +1143,7 @@ function searchData() {
             seccionLimpia
         ).toLowerCase();
 
-        // 4. COMPARACIÓN DE LOS TOKENS DEL BRIGADISTA CONTRA LA VARIABLE VIRTUAL
+        // 5. COMPARACIÓN DE LOS TOKENS DEL TECLADO CONTRA LA VARIABLE VIRTUAL
         if (searchTokens.every(token => variableVirtualBusqueda.includes(token))) {
             matchedRecords.push(item);
         }
@@ -1158,7 +1163,7 @@ function searchData() {
         return;
     }
 
-    // 5. RENDERIZADO CON TU CÓDIGO ORIGINAL Y REGLAS DE SEMÁFOROS DE COLORES
+    // 6. RENDERIZADO CON TUS REGLAS DE SEMÁFORO DE COLORES ASIGNADAS
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div'); 
         
@@ -1197,7 +1202,6 @@ function searchData() {
 
         div.className = claseColor;
         
-        // Mantiene intacta la clave de renderizado original '\${item['SECCION_LIMPIA']}' de tu index.html
         div.innerHTML = `<div style="font-size:16px; font-weight:700; color:#1F2937; margin-bottom:2px;">${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}</div>
                          <div style="font-size:13px; font-weight:600; color:#621132; margin-bottom:4px; letter-spacing:0.3px;">
                              CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_LIMPIA']}</span>
