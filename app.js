@@ -1099,6 +1099,8 @@ function searchData() {
     const query = document.getElementById('search-input').value.toLowerCase().trim(); 
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = ""; 
+    
+    // Si el usuario no ha escrito nada, limpiamos y salimos
     if (query.length < 1) return; 
 
     const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; 
@@ -1110,49 +1112,28 @@ function searchData() {
         const item = localMemoryDatabase[i]; 
         if (!item) continue;
         
-        // RESTRICCIÓN DE MUNICIPIO ORIGINAL (INTACTA)
+        // RESTRICCIÓN DE MUNICIPIO ORIGINAL ESTRICTA (INTACTA)
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 1. EXTRAER EL VALOR DE LA SECCIÓN DE FORMA ULTRA SEGURA
-        let seccionCruda = "";
-        if (item['SECCION'] !== undefined && item['SECCION'] !== null) seccionCruda = String(item['SECCION']);
-        else if (item['SECCION '] !== undefined && item['SECCION '] !== null) seccionCruda = String(item['SECCION ']);
-        else if (item['Seccion'] !== undefined && item['Seccion'] !== null) seccionCruda = String(item['Seccion']);
+        // DETECTOR TOLERANTE DE SECCIÓN:
+        // Obtiene la propiedad sin importar espacios en la clave, extrae la parte entera (elimina .0)
+        let seccionCruda = item['SECCION'] || item['SECCION '] || item['Seccion'] || '';
+        let seccionLimpia = String(seccionCruda).split('.')[0].trim();
+
+        // Guardamos temporalmente el valor limpio para usarlo en el renderizado de la tarjeta sin alterar IndexedDB
+        item['SECCION_LIMPIA'] = seccionLimpia || 'S/S';
+
+        // CONSOLIDACIÓN IDÉNTICA A TU LOGÍSTICA ORIGINAL (Añadiendo la sección limpia al final)
+        const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''} ${seccionLimpia}`.toLowerCase();
         
-        // 2. EXTRAER SOLO EL NÚMERO ENTERO (Quita el .0 de Excel y espacios ocultos)
-        let seccionNumero = parseInt(seccionCruda, 10);
-        let seccionLimpiaCadena = isNaN(seccionNumero) ? "" : String(seccionNumero);
-
-        // 3. CONCATENAR CAMPOS PARA LA BÚSQUEDA SIN ALTERAR EL OBJETO ITEM
-        const nombre = String(item['NOMBRE'] || '').toLowerCase();
-        const paterno = String(item['AP PATERNO'] || '').toLowerCase();
-        const materno = String(item['AP MATERNO'] || '').toLowerCase();
-        const curp = String(item['CURP'] || '').toLowerCase();
-        const calle = String(item['CALLE'] || '').toLowerCase();
-        const colonia = String(item['COLONIA'] || '').toLowerCase();
-
-        // 4. VERIFICAR SI CADA TOKEN COINCIDE CON ALGÚN CAMPO O CON LA SECCIÓN LIMPIA
-        const matchAllTokens = searchTokens.every(token => {
-            return nombre.includes(token) || 
-                   paterno.includes(token) || 
-                   materno.includes(token) || 
-                   curp.includes(token) || 
-                   calle.includes(token) || 
-                   colonia.includes(token) || 
-                   seccionLimpiaCadena === token || 
-                   seccionLimpiaCadena.includes(token);
-        });
-
-        if (matchAllTokens) {
-            // Creamos un nuevo objeto clonado para el renderizado, protegiendo los datos puros de la RAM
-            let clonRecord = Object.assign({}, item);
-            clonRecord['SECCION_DISPLAY'] = seccionLimpiaCadena || 'S/S';
-            matchedRecords.push(clonRecord);
+        // Verifica si todos los tokens del input están incluidos en el texto consolidado
+        if (searchTokens.every(t => combinedText.includes(t))) {
+            matchedRecords.push(item);
         }
     }
 
-    // Ordenamiento numérico de menor a mayor por número de casa
+    // Ordenamiento numérico estricto de menor a mayor por número de casa
     matchedRecords.sort((a, b) => {
         const numA = parseInt(String(a['NUM EXT']).replace(/\D/g, ""), 10) || 0;
         const numB = parseInt(String(b['NUM EXT']).replace(/\D/g, ""), 10) || 0;
@@ -1204,11 +1185,11 @@ function searchData() {
 
         div.className = claseColor;
         
-        div.innerHTML = `<div style="font-size:16px; font-weight:700; margin-bottom:2px;">${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}</div>
-                         <div style="font-size:13px; font-weight:600; margin-bottom:4px; letter-spacing:0.3px;">
-                             CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_DISPLAY']}</span>
+        div.innerHTML = `<div style="font-size:16px; font-weight:700; color:#1F2937; margin-bottom:2px;">${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}</div>
+                         <div style="font-size:13px; font-weight:600; color:#621132; margin-bottom:4px; letter-spacing:0.3px;">
+                             CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_LIMPIA']}</span>
                          </div>
-                         <div style="font-size:13px; opacity:0.85;">📍 Calle: ${item['CALLE'] || 'S/C'}, No. Ext: ${item['NUM EXT'] || 'S/N'}, Col. ${item['COLONIA'] || 'S/C'}</div>`;
+                         <div style="font-size:13px; color:#555555;">📍 Calle: ${item['CALLE'] || 'S/C'}, No. Ext: ${item['NUM EXT'] || 'S/N'}, Col. ${item['COLONIA'] || 'S/C'}</div>`;
                          
         div.onclick = () => openForm(item); 
         resultsContainer.appendChild(div);
