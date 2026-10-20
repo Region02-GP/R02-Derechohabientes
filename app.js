@@ -1314,19 +1314,12 @@ function openForm(item) {
     setSafeValue('f-materno', item['AP MATERNO']); 
     setSafeValue('f-telfijo', item['TEL FIJO']); 
     setSafeValue('f-telcel', item['TEL CEL']); 
-        // 🔥 LIMPIEZA AUTOMÁTICA EN LA PANTALLA 4 AL ABRIR:
-    // Extrae el dato crudo que viene con la palabra integrada
-    let seccionOrigenParaInput = item['SECCION'] || '';
-    
-    // Le removemos las palabras "SECCION" o "SECCIÓN" y dejamos solo el número limpio en el cuadro de texto
-    let numeroPuroSeccion = String(seccionOrigenParaInput)
-        .toUpperCase()
-        .replace("SECCION", "")
-        .replace("SECCIÓN", "")
-        .trim();
+      // Extrae la sección que ya trae la palabra grabada desde tu hoja de cálculo
+    let seccionOrigen = item['SECCION'] || item['SECCION '] || '';
+    // Deja solo los números quitando las palabras de anclaje
+    let numeroPuro = String(seccionOrigen).toUpperCase().replace("SECCION", "").replace("SECCIÓN", "").trim();
+    setSafeValue('f-seccion', numeroPuro);
 
-    // Asignamos el número puro al cuadro de texto de tu formulario para que no se duplique al guardar de nuevo
-    setSafeValue('f-seccion', numeroPuroSeccion);
 
     setSafeValue('f-cp', item['CP']); 
     setSafeValue('f-calle', item['CALLE']); 
