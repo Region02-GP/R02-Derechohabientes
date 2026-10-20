@@ -1600,8 +1600,10 @@ function saveData(event) {
         'ESTATUS_VISITA': String(currentEstatusVisita).toUpperCase().trim(), 
         'MOTIVO_NO_LOCALIZADO': String(motivoNoLocalizadoValue).toUpperCase().trim(), 
         'EVALUACION_TRATO': currentEstatusVisita === "NO LOCALIZADO" ? "" : String(evaluacionTratoActual).toUpperCase().trim(), 
-        'Latitud': latValue, 
-        'Longitud': lonValue, 
+                // 🔥 SOLUCIÓN DEFINITIVA: Inyecta un apóstrofo "'" al inicio para obligar a Google Sheets a leerlo como texto con punto decimal
+        'Latitud': "'" + String(latValue).trim(), 
+        'Longitud': "'" + String(lonValue).trim(), 
+
         'FECHA_MODIFICACION': new Date().toLocaleString("es-MX").toUpperCase(), 
         'USUARIO_MODIFICA': String(currentUser.name).toUpperCase().trim(), 
         'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || "",
