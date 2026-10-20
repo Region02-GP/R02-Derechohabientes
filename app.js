@@ -1544,51 +1544,47 @@ function saveData(event) {
     const memoryIndex = localMemoryDatabase.findIndex(r => r.CURP === targetCurp); 
     const originalRecord = memoryIndex !== -1 ? localMemoryDatabase[memoryIndex] : {};
     
-    // 🔥 TRUCO DE GUARDADO AUTOMÁTICO: Captura lo que puso el usuario en el cuadro de texto
+    // Captura el número puro del cuadro de texto e inyecta el prefijo de anclaje para la Sheets
     let seccionCapturada = document.getElementById('f-seccion').value.toUpperCase().trim();
     let seccionFinalParaGuardar = seccionCapturada;
 
-    // Si el usuario solo escribió el número (por ejemplo "1234"), le anteponemos la palabra "SECCION "
     if (seccionCapturada !== "" && !seccionCapturada.startsWith("SECCION") && !seccionCapturada.startsWith("SECCIÓN")) {
         seccionFinalParaGuardar = "SECCION " + seccionCapturada;
     }
 
+    // ⚡ FORMATEO DINÁMICO REQUERIDO: Pasa todo a mayúsculas estrictas antes de guardar
     const record = {
-        'CURP': targetCurp, 
-        'ID': idValue, 
-        'NOMBRE': document.getElementById('f-nombre').value, 
-        'AP PATERNO': document.getElementById('f-paterno').value, 
-        'AP MATERNO': document.getElementById('f-materno').value, 
-        'TEL FIJO': document.getElementById('f-telfijo').value, 
-        'TEL CEL': document.getElementById('f-telcel').value, 
-        'MUNICIPIO': document.getElementById('f-municipio').value, 
-        'LOCALIDAD': document.getElementById('f-localidad').value, 
-        
-              // Captura el número puro del cuadro de texto e inyecta la palabra clave para la Sheets
-        'SECCION': "SECCION " + String(document.getElementById('f-seccion').value).toUpperCase().replace("SECCION", "").replace("SECCIÓN", "").trim(),
-
-        
-        'COLONIA': document.getElementById('f-colonia').value, 
-        'CP': document.getElementById('f-cp').value, 
-        'CALLE': document.getElementById('f-calle').value, 
-        'NUM EXT': document.getElementById('f-numext').value, 
-        'REFERENCIA': document.getElementById('f-referencia').value, 
-        'SITUACION': document.getElementById('f-situacion').value, 
-        'CAUSAL': document.getElementById('f-causal').value, 
-        'ESTATUS_VISITA': currentEstatusVisita, 
-        'MOTIVO_NO_LOCALIZADO': motivoNoLocalizadoValue, 
-        'EVALUACION_TRATO': currentEstatusVisita === "NO LOCALIZADO" ? "" : evaluacionTratoActual, 
+        'CURP': targetCurp, // Ya viene en mayúsculas por validación previa
+        'ID': String(idValue).toUpperCase().trim(), 
+        'NOMBRE': String(document.getElementById('f-nombre').value).toUpperCase().trim(), 
+        'AP PATERNO': String(document.getElementById('f-paterno').value).toUpperCase().trim(), 
+        'AP MATERNO': String(document.getElementById('f-materno').value).toUpperCase().trim(), 
+        'TEL FIJO': String(document.getElementById('f-telfijo').value).toUpperCase().trim(), 
+        'TEL CEL': String(document.getElementById('f-telcel').value).toUpperCase().trim(), 
+        'MUNICIPIO': String(document.getElementById('f-municipio').value).toUpperCase().trim(), 
+        'LOCALIDAD': String(document.getElementById('f-localidad').value).toUpperCase().trim(), 
+        'SECCION': String(seccionFinalParaGuardar).toUpperCase().trim(), 
+        'COLONIA': String(document.getElementById('f-colonia').value).toUpperCase().trim(), 
+        'CP': String(document.getElementById('f-cp').value).toUpperCase().trim(), 
+        'CALLE': String(document.getElementById('f-calle').value).toUpperCase().trim(), 
+        'NUM EXT': String(document.getElementById('f-numext').value).toUpperCase().trim(), 
+        'REFERENCIA': String(document.getElementById('f-referencia').value).toUpperCase().trim(), 
+        'SITUACION': String(document.getElementById('f-situacion').value).toUpperCase().trim(), 
+        'CAUSAL': String(document.getElementById('f-causal').value).toUpperCase().trim(), 
+        'ESTATUS_VISITA': String(currentEstatusVisita).toUpperCase().trim(), 
+        'MOTIVO_NO_LOCALIZADO': String(motivoNoLocalizadoValue).toUpperCase().trim(), 
+        'EVALUACION_TRATO': currentEstatusVisita === "NO LOCALIZADO" ? "" : String(evaluacionTratoActual).toUpperCase().trim(), 
         'Latitud': latValue, 
         'Longitud': lonValue, 
-        'FECHA_MODIFICACION': new Date().toLocaleString("es-MX"), 
-        'USUARIO_MODIFICA': currentUser.name, 
+        'FECHA_MODIFICACION': new Date().toLocaleString("es-MX").toUpperCase(), 
+        'USUARIO_MODIFICA': String(currentUser.name).toUpperCase().trim(), 
         'SHEETS_ROW_INDEX': originalRecord.SHEETS_ROW_INDEX || "",
         
-        'RECIBIO_VISITA_SALUD': document.getElementById('f-recibio-salud').value,
-        'CUANTAS_VISITAS_SALUD': document.getElementById('f-cuantas-visitas').value,
-        'OPINION_ATENCION_SALUD': document.getElementById('f-atencion-salud').value,
-        'MOTIVO_NO_VISITA_SALUD': document.getElementById('f-motivo-no-visita').value,
-        'DESEA_VISITA_SALUD': document.getElementById('f-desea-visita-futura').value,
+        'RECIBIO_VISITA_SALUD': String(document.getElementById('f-recibio-salud').value).toUpperCase().trim(),
+        'CUANTAS_VISITAS_SALUD': String(document.getElementById('f-cuantas-visitas').value).toUpperCase().trim(),
+        'OPINION_ATENCION_SALUD': String(document.getElementById('f-atencion-salud').value).toUpperCase().trim(),
+        'MOTIVO_NO_VISITA_SALUD': String(document.getElementById('f-motivo-no-visita').value).toUpperCase().trim(),
+        'DESEA_VISITA_SALUD': String(document.getElementById('f-desea-visita-futura').value).toUpperCase().trim(),
 
         'DOC_INE_FRONTAL': expedienteDigitalTemporal.doc_ine_frontal || originalRecord.doc_ine_frontal || originalRecord.DOC_INE_FRONTAL || "", 
         'DOC_INE_TRASERA': expedienteDigitalTemporal.doc_ine_trasera || originalRecord.doc_ine_trasera || originalRecord.DOC_INE_TRASERA || "", 
