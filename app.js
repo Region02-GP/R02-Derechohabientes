@@ -1146,19 +1146,19 @@ function searchData() {
         const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']); 
         const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
         
-        // Extraer valores reales sanitizados de forma estricta
+        // Extraer valores reales de control sanitizados de forma estricta
         const estatusFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['ESTATUS_VISITA'] : (item['ESTATUS_VISITA'] || "");
         const saludFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['CUANTAS_VISITAS_SALUD'] : (item['CUANTAS_VISITAS_SALUD'] || item['CUANTAS_VISITAS_SALUD '] || "");
 
         const estatusLimpio = String(estatusFinal).toUpperCase().trim();
         const saludLimpia = String(saludFinal).toUpperCase().trim();
 
-        // 🎨 VARIABLES DE ESTILO DINÁMICO POR DEFECTO
+        // 🎨 VARIABLES DE SEMÁFORO CROMÁTICO (VALORES POR DEFECTO: REGLA 1)
         let fondoTarjeta = "#EDF4F9";             // Azul Glaciar Pastel
         let bordeIzquierdo = "5px solid #BC955C"; // Borde Dorado
         let colorTextoPrincipal = "#1F2937";      // Negro Antracita
         let colorSubtextos = "#555555";            // Gris oscuro
-        let textoIndicador = "";
+        let textoIndicador = ' <span style="color:#718096; font-weight:bold; font-size:12px; margin-left:5px;">⏳ No Tocado</span>';
 
         // =========================================================================
         // RESTRICCIÓN EVALUATORIA CRONOLÓGICA DE LAS 5 REGLAS EXACTAS SOLICITADAS
@@ -1168,7 +1168,7 @@ function searchData() {
             // /* 4. RECHAZO DE SALUD: Guinda Oscuro / Borde Dorado de Advertencia */
             fondoTarjeta = "#4A0E25";
             bordeIzquierdo = "5px solid #BC955C";
-            colorTextoPrincipal = "#FFFFFF"; // Letras blancas obligatorias por contraste
+            colorTextoPrincipal = "#FFFFFF"; // Contraste blanco
             colorSubtextos = "#E5E7EB";
             textoIndicador = ' <span style="color:#BC955C; font-weight:bold; font-size:12px; margin-left:5px;">✓ Rechazo Salud</span>';
         } 
@@ -1189,18 +1189,14 @@ function searchData() {
             fondoTarjeta = "#EDF4F9";
             bordeIzquierdo = "5px solid #BC955C";
             textoIndicador = ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>';
-        } 
-        else {
-            // /* 1. PENDIENTES / NO TOCADOS: Azul Glaciar Pastel / Borde Dorado */ (Estatus vacío o cualquier otra opción estándar)
-            fondoTarjeta = "#EDF4F9";
-            bordeIzquierdo = "5px solid #BC955C";
-            textoIndicador = ' <span style="color:#718096; font-weight:bold; font-size:12px; margin-left:5px;">⏳ No Tocado</span>';
         }
 
-        // Forzamos la inyección visual en línea
+        // ⚡ SOLUCIÓN ABSOLUTA AL BLOCK DE INTERFAZ: Forzar las propiedades usando setProperty con !important
         div.className = "result-item";
-        div.style.backgroundColor = fondoTarjeta;
-        div.style.borderLeft = bordeIzquierdo;
+        div.style.setProperty("background-color", fondoTarjeta, "important");
+        div.style.setProperty("border-left", bordeIzquierdo, "important");
+        
+        // Estilos de maquetación y tipografía base
         div.style.padding = "14px 16px";
         div.style.borderBottom = "1px solid #F3F4F6";
         div.style.cursor = "pointer";
