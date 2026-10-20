@@ -1116,30 +1116,37 @@ function searchData() {
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 1. EXTRAER LA SECCIÓN DE FORMA TOLERANTE (Matamos el .0 de Excel de forma matemática)
+        // 1. EXTRAER LA SECCIÓN DE FORMA TOLERANTE Y LIMPIAR EL ".0" DE EXCEL MATEMÁTICAMENTE
         let seccionCruda = item['SECCION'] !== undefined && item['SECCION'] !== null ? item['SECCION'] : "";
-        if (!seccionCruda) seccionCruda = item['SECCION '] !== undefined && item['SECCION '] !== null ? item['SECCION '] : "";
+        if (!seccionCruda) seccionCruda = item['SECCION '] !== undefined && item['SECCION '] !== null ? item['SECCION ']: "";
         if (!seccionCruda) seccionCruda = item['Seccion'] !== undefined && item['Seccion'] !== null ? item['Seccion'] : "";
         
         let numeroConvertido = parseFloat(seccionCruda);
         let seccionLimpia = !isNaN(numeroConvertido) ? String(Math.floor(numeroConvertido)) : "";
 
-        // 2. ASIGNACIÓN CLAVE: Guarda exactamente el valor que tu index.html original espera para pintar la sección (\${item['SECCION_LIMPIA']})
+        // 2. ASIGNACIÓN ASOCIADA AL HTML: Guarda el valor exacto que tu index.html original espera para pintar la sección
         item['SECCION_LIMPIA'] = seccionLimpia || 'S/S';
 
-        // 3. LA VARIABLE VIRTUAL ABSOLUTA (SUGERIDA POR TI):
-        // Recorremos dinámicamente CADA clave/propiedad que tenga el registro dentro de IndexedDB
-        let variableVirtualBusqueda = "";
-        for (let propiedad in item) {
-            if (item[propiedad] !== undefined && item[propiedad] !== null) {
-                variableVirtualBusqueda += " " + String(item[propiedad]).toLowerCase();
-            }
-        }
+        // 3. VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA SELECTIVA (FILTRADA PARA EVITAR CONGELAMIENTO POR FOTOS BASE64)
+        // Concatenamos estrictamente todos los campos de texto e introducimos los anclajes de palabra clave solicitados
+        const variableVirtualBusqueda = (
+            String(item['NOMBRE'] || '') + " " +
+            String(item['AP PATERNO'] || '') + " " +
+            String(item['AP MATERNO'] || '') + " " +
+            String(item['CURP'] || '') + " " +
+            String(item['CALLE'] || '') + " " +
+            String(item['NUM EXT'] || '') + " " +
+            String(item['COLONIA'] || '') + " " +
+            String(item['CP'] || '') + " " +
+            String(item['REFERENCIA'] || '') + " " +
+            String(item['SITUACION'] || '') + " " +
+            String(item['CAUSAL'] || '') + " " +
+            "seccion " + seccionLimpia + " " +
+            "sección " + seccionLimpia + " " +
+            seccionLimpia
+        ).toLowerCase();
 
-        // 4. INYECTAR LAS ANCLAS DE TEXTO SOLICITADAS JUNTO A LA SECCIÓN
-        variableVirtualBusqueda += " seccion " + seccionLimpia + " sección " + seccionLimpia + " " + seccionLimpia;
-
-        // 5. EVALUACIÓN DE TOKENS DEL TECLADO CONTRA LA VARIABLE VIRTUAL COMPLETA
+        // 4. COMPARACIÓN DE LOS TOKENS DEL TECLADO CONTRA LA VARIABLE VIRTUAL
         if (searchTokens.every(token => variableVirtualBusqueda.includes(token))) {
             matchedRecords.push(item);
         }
@@ -1159,7 +1166,7 @@ function searchData() {
         return;
     }
 
-    // 6. RENDERIZADO CON TUS REGLAS DE SEMÁFORO DE COLORES ASIGNADAS (CORREGIDO SIN TYPOS)
+    // 5. RENDERIZADO CON TU MAQUETACIÓN ORIGINAL Y REGLAS DE SEMÁFOROS DE COLORES ASIGNADAS
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div'); 
         
@@ -1208,6 +1215,7 @@ function searchData() {
         resultsContainer.appendChild(div);
     });
 }
+
 
 function buscarLocalidadesEnPantalla() {
     const query = document.getElementById('f-localidad-buscar').value.toLowerCase().trim(); const resultsContainer = document.getElementById('localidad-search-results');
