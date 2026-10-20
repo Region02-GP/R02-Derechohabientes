@@ -1141,6 +1141,7 @@ function searchData() {
             String(item['REFERENCIA'] || '') + " " +
             String(item['SITUACION'] || '') + " " +
             String(item['CAUSAL'] || '') + " " +
+            String(item['SECCION'] || '') + " " +
             "seccion " + seccionLimpia + " " +
             "sección " + seccionLimpia + " " +
             seccionLimpia
