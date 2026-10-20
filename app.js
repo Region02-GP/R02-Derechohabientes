@@ -1213,6 +1213,12 @@ function seleccionarEstatusVisita(estatus) {
         }
         motivoNoLocalizadoValue = mot.trim();
         document.getElementById('f-recibio-salud').removeAttribute('required');
+        
+        // 🔄 AUTOMATIZACIÓN DEFINITIVA:
+        // Actualiza los estilos visuales de los botones e invoca inmediatamente la función de guardado
+        actualizarEstilosBotonesFormulario();
+        saveData(null); 
+        return;
     } else { 
         motivoNoLocalizadoValue = ""; 
         document.getElementById('f-recibio-salud').setAttribute('required', 'required');
