@@ -1099,7 +1099,7 @@ function searchData() {
     const query = document.getElementById('search-input').value.toLowerCase().trim(); 
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = ""; 
-    if (query.length < 3) return;
+    if (query.length < 1) return; // Permitimos búsquedas desde 1 dígito o letra por si buscan secciones cortas
 
     const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; 
     const municipioBrigadista = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : "";
@@ -1112,9 +1112,13 @@ function searchData() {
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        const seccionValor = item['SECCION'] || item['SECCION '] || item['Seccion'] || '';
+        // DETECTOR TOLERANTE: Recupera el valor de la sección eliminando espacios ocultos
+        const seccionValor = String(item['SECCION'] || item['SECCION '] || item['Seccion'] || '').trim();
 
+        // CONCATENACIÓN DE TEXTO: Se incluye la sección explícitamente en el bloque de búsqueda indexable
         const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''} ${seccionValor}`.toLowerCase();
+        
+        // El registro califica si todos los términos del input del usuario se encuentran en el bloque consolidado
         if (searchTokens.every(t => combinedText.includes(t))) {
             item['SECCION_LIMPIA'] = seccionValor;
             matchedRecords.push(item);
@@ -1129,42 +1133,41 @@ function searchData() {
     });
 
     resultsContainer.innerHTML = "";
+    
+    if (matchedRecords.length === 0) {
+        resultsContainer.innerHTML = '<div style="padding:16px; text-align:center; color:#b91c1c; font-weight:bold;">❌ Sin coincidencias en tu municipio</div>';
+        return;
+    }
+
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div'); 
         
-        // Evaluar si el registro está en la cola pendiente de sincronizar
         const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']); 
         const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
         
-        // Extraer valores reales priorizando la cola de LocalStorage
         const estatusFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['ESTATUS_VISITA'] : (item['ESTATUS_VISITA'] || "");
         const saludFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['CUANTAS_VISITAS_SALUD'] : (item['CUANTAS_VISITAS_SALUD'] || "");
 
-        // --- CÁLCULO ESTRICTO DEL SEMÁFORO DE COLORES ---
-        let claseColor = "result-item"; // Por defecto usa el estilo base (Regla 1)
+        let claseColor = "result-item"; 
         let textoIndicador = "";
 
         const estatusLimpio = estatusFinal.toUpperCase().trim();
         const saludLimpia = saludFinal.toUpperCase().trim();
 
         if (estatusLimpio === "LOCALIZADO" && saludLimpia === "NO_QUIERE") {
-            // Regla 4: RECHAZO DE SALUD (Guinda Oscuro / Borde Dorado de Advertencia)
             claseColor = "result-item status-rechazo-salud";
             textoIndicador = ' <span style="color:#BC955C; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado (Rechazo Salud)</span>';
         } 
         else if (estatusLimpio === "" && saludLimpia === "NO_QUIERE") {
-            // Regla 5: PENDIENTES CON RECHAZO PREVIO (Fondo Azul Pastel / Borde Lateral Guinda)
             claseColor = "result-item status-pendiente-rechazo";
             textoIndicador = ' <span style="color:#621132; font-weight:bold; font-size:12px; margin-left:5px;">⏳ Pendiente con Rechazo</span>';
         } 
         else if (estatusLimpio === "NO LOCALIZADO" && saludLimpia !== "NO_QUIERE") {
-            // Regla 3: NO LOCALIZADOS (Rojo Rosáceo / Borde Carmesí)
             claseColor = "result-item status-nolocalizado";
             textoIndicador = ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
         } 
         else if ((estatusLimpio === "" || estatusLimpio === "LOCALIZADO") && (saludLimpia === "" || saludLimpia === "1" || saludLimpia === "2" || saludLimpia === "3")) {
-            // Reglas 1 y 2: PENDIENTES / LOCALIZADOS ESTÁNDAR (Azul Glaciar Pastel / Borde Dorado)
-            claseColor = "result-item"; // Estilo base definido en styles.css (.result-item)
+            claseColor = "result-item"; 
             if (estatusLimpio === "LOCALIZADO") {
                 textoIndicador = ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>';
             } else {
@@ -1174,7 +1177,6 @@ function searchData() {
 
         div.className = claseColor;
         
-        // Renderizado del elemento HTML
         div.innerHTML = `<div style="font-size:16px; font-weight:700; margin-bottom:2px;">${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}</div>
                          <div style="font-size:13px; font-weight:600; margin-bottom:4px; letter-spacing:0.3px;">
                              CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_LIMPIA'] || 'S/S'}</span>
