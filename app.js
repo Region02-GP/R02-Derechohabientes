@@ -1100,13 +1100,13 @@ function searchData() {
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = ""; 
     
-    // Si la caja de búsqueda está vacía, no hace nada
-    if (query.length < 1) return; 
+    // 🔥 CAMBIO DEFINITIVO: Ahora la búsqueda inicia inmediatamente desde el SEGUNDO carácter
+    if (query.length < 2) return; 
 
     const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; 
     const municipioBrigadista = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : "";
     
-    // Dividimos la consulta en palabras por si buscan cosas combinadas como "juan 1234"
+    // Dividimos la consulta en palabras por si buscan cosas combinadas como "juan 12"
     const searchTokens = query.split(/\s+/); 
     let matchedRecords = [];
 
@@ -1118,7 +1118,7 @@ function searchData() {
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 1. EXTRAER LA SECCIÓN COMO CADENA Y QUITAR EL ".0" DE EXCEL DE FORMA MATEMÁTICA SEGURA
+        // 1. EXTRAER LA SECCIÓN COMO CADENA Y QUITAR EL ".0" DE EXCEL MATEMÁTICAMENTE
         let seccionCruda = item['SECCION'] || item['SECCION '] || item['Seccion'] || '';
         let seccionNumero = parseInt(seccionCruda, 10);
         let seccionLimpia = isNaN(seccionNumero) ? "" : String(seccionNumero);
@@ -1141,8 +1141,7 @@ function searchData() {
             seccionLimpia
         ).toLowerCase().replace(/\s+/g, ' '); // Unifica cualquier doble espacio oculto en uno solo
 
-        // 3. EVALUACIÓN DE COINCIDENCIAS PARCIALES FLUIDAS (Ej: "juan" encuentra "juana")
-        // Cada palabra que escribas debe estar contenida en cualquier fragmento de la variable virtual
+        // 3. EVALUACIÓN DE COINCIDENCIAS PARCIALES FLUIDAS (Ej: "juan" encuentra "juana" o "ju" encuentra "juan")
         if (searchTokens.every(token => variableVirtualBusqueda.includes(token))) {
             matchedRecords.push(item);
         }
@@ -1162,7 +1161,7 @@ function searchData() {
         return;
     }
 
-    // 4. RENDERIZADO FINAL DE TARJETAS CON TUS SEMÁFOROS DE COLORES ASIGNADOS (CORREGIDO)
+    // 4. RENDERIZADO FINAL DE TARJETAS CON TUS SEMÁFOROS DE COLORES ASIGNADOS
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div'); 
         
