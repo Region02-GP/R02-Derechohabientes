@@ -1142,59 +1142,62 @@ function searchData() {
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div'); 
         
-        // Control de sincronización local
+        // Control de sincronización local (Cola pendiente de LocalStorage)
         const estaEnColaPendiente = pendingSync.some(p => p['CURP'] === item['CURP']); 
         const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
         
-        // Extraer valores reales sanitizados
+        // Extraer valores reales sanitizados de forma estricta
         const estatusFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['ESTATUS_VISITA'] : (item['ESTATUS_VISITA'] || "");
-        const saludFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['CUANTAS_VISITAS_SALUD'] : (item['CUANTAS_VISITAS_SALUD'] || "");
+        const saludFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['CUANTAS_VISITAS_SALUD'] : (item['CUANTAS_VISITAS_SALUD'] || item['CUANTAS_VISITAS_SALUD '] || "");
 
         const estatusLimpio = String(estatusFinal).toUpperCase().trim();
         const saludLimpia = String(saludFinal).toUpperCase().trim();
 
-        // 🎨 VARIABLES DE ESTILO DINÁMICO (ESTILOS EN LÍNEA PARA NO DEPENDER DEL CSS)
-        let fondoTarjeta = "#EDF4F9";      // Azul Glaciar Pastel por defecto
-        let bordeIzquierdo = "5px solid #BC955C"; // Borde Dorado por defecto
-        let colorTextoPrincipal = "#1F2937"; // Negro Antracita
-        let colorSubtextos = "#555555";     // Gris oscuro
+        // 🎨 VARIABLES DE ESTILO DINÁMICO POR DEFECTO
+        let fondoTarjeta = "#EDF4F9";             // Azul Glaciar Pastel
+        let bordeIzquierdo = "5px solid #BC955C"; // Borde Dorado
+        let colorTextoPrincipal = "#1F2937";      // Negro Antracita
+        let colorSubtextos = "#555555";            // Gris oscuro
         let textoIndicador = "";
 
-        // 🔥 DETECTOR TOLERANTE POR INCLUSIÓN: Captura "NO_QUIERE" incluso si tiene espacios extras
-        const tieneRechazoSalud = saludLimpia.includes("NO_QUIERE") || saludLimpia.includes("NO QUIERE");
-        const esSaludVacioOVisitas = (!tieneRechazoSalud && (saludLimpia === "" || saludLimpia === "1" || saludLimpia === "2" || saludLimpia === "3"));
+        // =========================================================================
+        // RESTRICCIÓN EVALUATORIA CRONOLÓGICA DE LAS 5 REGLAS EXACTAS SOLICITADAS
+        // =========================================================================
 
-        // EVALUACIÓN DE LAS 5 REGLAS EXACTAS
-        if ((estatusLimpio === "" || estatusLimpio === "LOCALIZADO") && esSaludVacioOVisitas) {
-            // 🟦 REGLA 1 y 2: PENDIENTES / LOCALIZADOS CON VISITAS (Azul Glaciar Pastel / Borde Dorado)
-            fondoTarjeta = "#EDF4F9";
+        if (estatusLimpio === "LOCALIZADO" && saludLimpia === "NO_QUIERE") {
+            // /* 4. RECHAZO DE SALUD: Guinda Oscuro / Borde Dorado de Advertencia */
+            fondoTarjeta = "#4A0E25";
             bordeIzquierdo = "5px solid #BC955C";
-            textoIndicador = estatusLimpio === "LOCALIZADO" 
-                ? ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>'
-                : ' <span style="color:#718096; font-weight:bold; font-size:12px; margin-left:5px;">⏳ No Tocado</span>';
+            colorTextoPrincipal = "#FFFFFF"; // Letras blancas obligatorias por contraste
+            colorSubtextos = "#E5E7EB";
+            textoIndicador = ' <span style="color:#BC955C; font-weight:bold; font-size:12px; margin-left:5px;">✓ Rechazo Salud</span>';
         } 
-        else if (estatusLimpio === "NO LOCALIZADO" && !tieneRechazoSalud) {
-            // 🟥 REGLA 3: NO LOCALIZADOS (Rojo Rosáceo / Borde Carmesí)
+        else if (estatusLimpio === "" && saludLimpia === "NO_QUIERE") {
+            // /* 5. PENDIENTES CON RECHAZO PREVIO: Fondo Azul Pastel / Borde Lateral Guinda */
+            fondoTarjeta = "#EDF4F9";
+            bordeIzquierdo = "5px solid #621132"; // Borde Lateral Guinda
+            textoIndicador = ' <span style="color:#621132; font-weight:bold; font-size:12px; margin-left:5px;">⏳ Pendiente con Rechazo</span>';
+        } 
+        else if (estatusLimpio === "NO LOCALIZADO" && saludLimpia !== "NO_QUIERE") {
+            // /* 3. NO LOCALIZADOS: Rojo Rosáceo / Borde Carmesí */
             fondoTarjeta = "#FCE8E6";
             bordeIzquierdo = "5px solid #b91c1c";
             textoIndicador = ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
         } 
-        else if (estatusLimpio === "LOCALIZADO" && tieneRechazoSalud) {
-            // 🟫 REGLA 4: RECHAZO DE SALUD (Guinda Oscuro / Borde Dorado de Advertencia)
-            fondoTarjeta = "#4A0E25";
-            bordeIzquierdo = "5px solid #BC955C";
-            colorTextoPrincipal = "#FFFFFF"; // Contraste blanco obligatorio por fondo oscuro
-            colorSubtextos = "#E5E7EB";
-            textoIndicador = ' <span style="color:#BC955C; font-weight:bold; font-size:12px; margin-left:5px;">✓ Rechazo Salud</span>';
-        } 
-        else if (estatusLimpio === "" && tieneRechazoSalud) {
-            // 🟪 REGLA 5: PENDIENTES CON RECHAZO PREVIO (Fondo Azul Pastel / Borde Lateral Guinda)
+        else if (estatusLimpio === "LOCALIZADO" && (saludLimpia === "" || saludLimpia === "1" || saludLimpia === "2" || saludLimpia === "3")) {
+            // /* 2. LOCALIZADOS ESTÁNDAR: Azul Glaciar Pastel / Borde Dorado */
             fondoTarjeta = "#EDF4F9";
-            bordeIzquierdo = "5px solid #621132"; // Borde Guinda
-            textoIndicador = ' <span style="color:#621132; font-weight:bold; font-size:12px; margin-left:5px;">⏳ Pendiente con Rechazo</span>';
+            bordeIzquierdo = "5px solid #BC955C";
+            textoIndicador = ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>';
+        } 
+        else {
+            // /* 1. PENDIENTES / NO TOCADOS: Azul Glaciar Pastel / Borde Dorado */ (Estatus vacío o cualquier otra opción estándar)
+            fondoTarjeta = "#EDF4F9";
+            bordeIzquierdo = "5px solid #BC955C";
+            textoIndicador = ' <span style="color:#718096; font-weight:bold; font-size:12px; margin-left:5px;">⏳ No Tocado</span>';
         }
 
-        // Inyectamos de forma forzada los estilos calculados para pintar la tarjeta sí o sí
+        // Forzamos la inyección visual en línea
         div.className = "result-item";
         div.style.backgroundColor = fondoTarjeta;
         div.style.borderLeft = bordeIzquierdo;
