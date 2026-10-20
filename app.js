@@ -1527,7 +1527,27 @@ function saveData(event) {
     
     const fCurp = document.getElementById('f-curp');
     const targetCurp = fCurp ? fCurp.value.replace(/[\s\u200B-\u200D\uFEFF]/g, "").toUpperCase().trim() : "";
-    if (!targetCurp || targetCurp.length !== 18) return alert("🛑 ERROR EN CAMPO: La CURP debe tener 18 caracteres obligatorios.");
+    
+    // 🆔 VALIDACIÓN OFICIAL DE CURP (Expresión Regular de SEGOB)
+    const regexCurpOficial = /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z\d]\d$/;
+    
+    if (!targetCurp || targetCurp.length !== 18) {
+        alert("🛑 ERROR EN CAMPO: La CURP debe tener exactamente 18 caracteres obligatorios.");
+        if (fCurp) fCurp.focus();
+        return;
+    }
+    
+    if (!regexCurpOficial.test(targetCurp)) {
+        alert("🛑 ESTRUCTURA INVÁLIDA: La CURP ingresada no tiene un formato oficial válido.\n\nPor favor, revise las letras, la fecha de nacimiento o el sexo (H/M) e intente de nuevo.");
+        if (fCurp) fCurp.focus();
+        return;
+    }
+
+    // (A partir de aquí continúa tu código original exacto de georreferencia...)
+    const latValue = document.getElementById('f-lat').value; 
+    const lonValue = document.getElementById('f-lon').value;
+    if (latValue.includes("Buscando") || latValue === "" || latValue === "ERROR") return alert("🛑 Georreferencia incompleta: Espere a que el satélite asigne coordenadas GPS antes de guardar.");
+
 
     const latValue = document.getElementById('f-lat').value; 
     const lonValue = document.getElementById('f-lon').value;
