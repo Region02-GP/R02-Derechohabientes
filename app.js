@@ -1100,35 +1100,30 @@ function searchData() {
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = ""; 
     
-    // Permitir búsquedas fluidas desde el primer carácter escrito
+    // Si la caja está vacía, no busca nada
     if (query.length < 1) return; 
 
     const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; 
     const municipioBrigadista = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : "";
-    const searchTokens = query.split(/\s+/); 
     let matchedRecords = [];
 
     for (let i = 0; i < localMemoryDatabase.length; i++) {
         const item = localMemoryDatabase[i]; 
         if (!item) continue;
         
-        // RESTRICCIÓN DE MUNICIPIO ORIGINAL ESTRICTA (INTACTA)
+        // RESTRICCIÓN DE MUNICIPIO ORIGINAL (Sigue intacta y estricta)
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 1. EXTRAER LA SECCIÓN DE FORMA TOLERANTE Y LIMPIAR EL ".0" DE EXCEL MATEMÁTICAMENTE
-        let seccionCruda = item['SECCION'] !== undefined && item['SECCION'] !== null ? item['SECCION'] : "";
-        if (!seccionCruda) seccionCruda = item['SECCION '] !== undefined && item['SECCION '] !== null ? item['SECCION ']: "";
-        if (!seccionCruda) seccionCruda = item['Seccion'] !== undefined && item['Seccion'] !== null ? item['Seccion'] : "";
-        
-        let numeroConvertido = parseFloat(seccionCruda);
-        let seccionLimpia = !isNaN(numeroConvertido) ? String(Math.floor(numeroConvertido)) : "";
+        // 1. EXTRAER LA SECCIÓN COMO CADENA Y QUITAR EL ".0" DE EXCEL
+        let seccionCruda = item['SECCION'] || item['SECCION '] || item['Seccion'] || '';
+        let seccionLimpia = String(seccionCruda).split('.')[0].trim();
 
-        // 2. ASIGNACIÓN ASOCIADA AL HTML: Guarda el valor exacto que tu index.html original espera para pintar la sección
+        // Asignación obligatoria para que tu HTML dibuje la insignia dorada sin romperse
         item['SECCION_LIMPIA'] = seccionLimpia || 'S/S';
 
-        // 3. VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA SELECTIVA (FILTRADA PARA EVITAR CONGELAMIENTO POR FOTOS BASE64)
-        // Concatenamos estrictamente todos los campos de texto e introducimos los anclajes de palabra clave solicitados
+        // 2. VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA (Excluye fotos base64 para evitar congelamiento)
+        // Agrega todo el registro en una sola cadena de texto continuo para permitir coincidencias parciales
         const variableVirtualBusqueda = (
             String(item['NOMBRE'] || '') + " " +
             String(item['AP PATERNO'] || '') + " " +
@@ -1137,18 +1132,15 @@ function searchData() {
             String(item['CALLE'] || '') + " " +
             String(item['NUM EXT'] || '') + " " +
             String(item['COLONIA'] || '') + " " +
-            String(item['CP'] || '') + " " +
-            String(item['REFERENCIA'] || '') + " " +
-            String(item['SITUACION'] || '') + " " +
-            String(item['CAUSAL'] || '') + " " +
             String(item['SECCION'] || '') + " " +
             "seccion " + seccionLimpia + " " +
             "sección " + seccionLimpia + " " +
             seccionLimpia
         ).toLowerCase();
 
-        // 4. COMPARACIÓN DE LOS TOKENS DEL TECLADO CONTRA LA VARIABLE VIRTUAL
-        if (searchTokens.every(token => variableVirtualBusqueda.includes(token))) {
+        // 3. BÚSQUEDA PARCIAL DIRECTA Y FLUIDA
+        // Si el texto que escribiste está contenido en cualquier parte de la variable virtual, califica.
+        if (variableVirtualBusqueda.indexOf(query) !== -1) {
             matchedRecords.push(item);
         }
     }
@@ -1167,7 +1159,7 @@ function searchData() {
         return;
     }
 
-    // 5. RENDERIZADO CON TU MAQUETACIÓN ORIGINAL Y REGLAS DE SEMÁFOROS DE COLORES ASIGNADAS
+    // Renderizado final de tarjetas con tus semáforos de colores asignados
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div'); 
         
