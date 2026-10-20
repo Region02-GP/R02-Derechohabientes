@@ -1100,13 +1100,13 @@ function searchData() {
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = ""; 
     
-    // Si la caja está vacía, no busca nada
+    // Si la caja de búsqueda está vacía, no hace nada
     if (query.length < 1) return; 
 
     const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; 
     const municipioBrigadista = brigadistaActivo ? brigadistaActivo.municipio.toUpperCase().trim() : "";
     
-    // Convertimos la consulta en tokens/palabras sueltas para permitir búsquedas cruzadas parciales
+    // Dividimos la consulta en palabras por si buscan cosas combinadas como "juan 1234"
     const searchTokens = query.split(/\s+/); 
     let matchedRecords = [];
 
@@ -1114,25 +1114,20 @@ function searchData() {
         const item = localMemoryDatabase[i]; 
         if (!item) continue;
         
-        // RESTRICCIÓN DE MUNICIPIO ORIGINAL (Sigue intacta y estricta)
+        // RESTRICCIÓN DE MUNICIPIO ORIGINAL ESTRICTA (INTACTA)
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 1. EXTRAER LA SECCIÓN COMO CADENA Y QUITAR EL ".0" DE EXCEL
+        // 1. EXTRAER LA SECCIÓN COMO CADENA Y QUITAR EL ".0" DE EXCEL DE FORMA MATEMÁTICA SEGURA
         let seccionCruda = item['SECCION'] || item['SECCION '] || item['Seccion'] || '';
-        let seccionLimpia = "";
-        if (seccionCruda) {
-            let partes = String(seccionCruda).split('.');
-            if (partes && partes[0]) {
-                seccionLimpia = partes[0].trim();
-            }
-        }
+        let seccionNumero = parseInt(seccionCruda, 10);
+        let seccionLimpia = isNaN(seccionNumero) ? "" : String(seccionNumero);
 
-        // Asignación obligatoria para que tu HTML dibuje la insignia dorada sin romperse
+        // Asignación obligatoria para que tu index.html dibuje la insignia dorada sin romperse
         item['SECCION_LIMPIA'] = seccionLimpia || 'S/S';
 
         // 2. VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA SANITIZADA
-        // Limpiamos los espacios extras individuales de cada campo antes de unirlos para evitar dobles espacios ocultos
+        // Limpiamos espacios al inicio y al final de cada campo antes de unirlos para evitar dobles espacios
         const variableVirtualBusqueda = (
             String(item['NOMBRE'] || '').trim() + " " +
             String(item['AP PATERNO'] || '').trim() + " " +
@@ -1144,10 +1139,10 @@ function searchData() {
             "seccion " + seccionLimpia + " " +
             "sección " + seccionLimpia + " " +
             seccionLimpia
-        ).toLowerCase().replace(/\s+/g, ' '); // Convierte cualquier doble espacio en uno solo
+        ).toLowerCase().replace(/\s+/g, ' '); // Unifica cualquier doble espacio oculto en uno solo
 
-        // 3. EVALUACIÓN DE COINCIDENCIAS PARCIALES FLUIDAS
-        // Un registro califica si CADA token o palabra que escribiste está contenida parcialmente en la variable virtual
+        // 3. EVALUACIÓN DE COINCIDENCIAS PARCIALES FLUIDAS (Ej: "juan" encuentra "juana")
+        // Cada palabra que escribas debe estar contenida en cualquier fragmento de la variable virtual
         if (searchTokens.every(token => variableVirtualBusqueda.includes(token))) {
             matchedRecords.push(item);
         }
@@ -1167,7 +1162,7 @@ function searchData() {
         return;
     }
 
-    // Renderizado final de tarjetas con tus semáforos de colores asignados
+    // 4. RENDERIZADO FINAL DE TARJETAS CON TUS SEMÁFOROS DE COLORES ASIGNADOS (CORREGIDO)
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div'); 
         
@@ -1195,7 +1190,7 @@ function searchData() {
             claseColor = "result-item status-nolocalizado";
             textoIndicador = ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
         } 
-        else if ((estatusLimpio === "" || estatusLimpio === "LOCALIZADO") && (saludLinter === "" || saludLimpia === "1" || saludLimpia === "2" || saludLimpia === "3")) {
+        else if ((estatusLimpio === "" || estatusLimpio === "LOCALIZADO") && (saludLimpia === "" || saludLimpia === "1" || saludLimpia === "2" || saludLimpia === "3")) {
             claseColor = "result-item"; 
             if (estatusLimpio === "LOCALIZADO") {
                 textoIndicador = ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>';
@@ -1216,6 +1211,7 @@ function searchData() {
         resultsContainer.appendChild(div);
     });
 }
+
 
 
 function buscarLocalidadesEnPantalla() {
