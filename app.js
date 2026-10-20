@@ -1100,7 +1100,7 @@ function searchData() {
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = ""; 
     
-    // Permitir búsquedas fluidas desde el primer caracter
+    // Permitir búsquedas fluidas desde el primer dígito o letra
     if (query.length < 1) return; 
 
     const brigadistaActivo = AUTHORIZED_CURPS[currentUser.curp]; 
@@ -1112,21 +1112,19 @@ function searchData() {
         const item = localMemoryDatabase[i]; 
         if (!item) continue;
         
-        // RESTRICCIÓN DE MUNICIPIO ORIGINAL ESTRICTA (INTACTA)
+        // RESTRICCIÓN DE MUNICIPIO ORIGINAL (Sigue intacta)
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 1. EXTRAER EL VALOR DE LA SECCIÓN DE FORMA TOLERANTE A LLAVES
-        let seccionCruda = item['SECCION'] !== undefined && item['SECCION'] !== null ? item['SECCION'] : "";
-        if (!seccionCruda) seccionCruda = item['SECCION '] !== undefined && item['SECCION '] !== null ? item['SECCION '] : "";
-        if (!seccionCruda) seccionCruda = item['Seccion'] !== undefined && item['Seccion'] !== null ? item['Seccion'] : "";
-        
-        // 2. ELIMINAR EL DELICADO ".0" DE EXCEL DE FORMA MATEMÁTICA PURA (LIBRE DE ERRORES DE STRING)
-        let numeroConvertido = parseFloat(seccionCruda);
-        let seccionLimpia = !isNaN(numeroConvertido) ? String(Math.floor(numeroConvertido)) : "";
+        // 1. EXTRACTOR SEGURO DE SECCIÓN (Convierte a texto y limpia el ".0" de Excel)
+        let seccionCruda = item['SECCION'] || item['SECCION '] || item['Seccion'] || '';
+        let seccionLimpia = String(seccionCruda).split('.')[0].trim();
 
-        // 3. VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA (SUGERIDA POR TI)
-        // Consolida todos los campos legibles en un solo string plano e inyecta la palabra ancla
+        // 2. CORRECCIÓN VITAL: Asignar exactamente la clave que tu código original usa para renderizar
+        item['SECCION_LIMPIA'] = seccionLimpia || 'S/S';
+
+        // 3. LA VARIABLE VIRTUAL DE CONCATENACIÓN ABSOLUTA (SUGERIDA POR TI)
+        // Agrega todas las propiedades legibles junto con los anclajes de texto solicitados
         const variableVirtualBusqueda = (
             String(item['NOMBRE'] || '') + " " +
             String(item['AP PATERNO'] || '') + " " +
@@ -1140,10 +1138,8 @@ function searchData() {
             seccionLimpia
         ).toLowerCase();
 
-        // 4. COMPARACIÓN DE LOS TOKENS DEL TECLADO CONTRA LA VARIABLE VIRTUAL
+        // 4. COMPARACIÓN DE LOS TOKENS DEL BRIGADISTA CONTRA LA VARIABLE VIRTUAL
         if (searchTokens.every(token => variableVirtualBusqueda.includes(token))) {
-            // Guardamos temporalmente el valor limpio para el renderizado visual de la tarjeta
-            item['SECCION_DISPLAY'] = seccionLimpia || 'S/S';
             matchedRecords.push(item);
         }
     }
@@ -1162,7 +1158,7 @@ function searchData() {
         return;
     }
 
-    // Renderizado de las tarjetas con tus reglas de semáforo de colores asignadas
+    // 5. RENDERIZADO CON TU CÓDIGO ORIGINAL Y REGLAS DE SEMÁFOROS DE COLORES
     matchedRecords.slice(0, 30).forEach(item => {
         const div = document.createElement('div'); 
         
@@ -1201,9 +1197,10 @@ function searchData() {
 
         div.className = claseColor;
         
+        // Mantiene intacta la clave de renderizado original '\${item['SECCION_LIMPIA']}' de tu index.html
         div.innerHTML = `<div style="font-size:16px; font-weight:700; color:#1F2937; margin-bottom:2px;">${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}</div>
                          <div style="font-size:13px; font-weight:600; color:#621132; margin-bottom:4px; letter-spacing:0.3px;">
-                             CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_DISPLAY']}</span>
+                             CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_LIMPIA']}</span>
                          </div>
                          <div style="font-size:13px; color:#555555;">📍 Calle: ${item['CALLE'] || 'S/C'}, No. Ext: ${item['NUM EXT'] || 'S/N'}, Col. ${item['COLONIA'] || 'S/C'}</div>`;
                          
