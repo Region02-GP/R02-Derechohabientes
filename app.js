@@ -1110,21 +1110,30 @@ function searchData() {
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // 🔄 MODIFICACIÓN AQUÍ: Recupera el valor como texto estricto y limpia espacios
+        // 🛠️ CORRECCIÓN DE SECCIÓN: Tratamiento de texto seguro sin romper el Array
         const seccionValor = String(item['SECCION'] || item['SECCION '] || item['Seccion'] || '').trim();
         
-        // Extrae solo los dígitos (elimina ".0", letras o símbolos que vengan en el texto)
-        const soloDigitos = seccionValor.split('.')[0].replace(/\D/g, "");
+        // Obtenemos solo la parte entera antes del punto decimal de Excel de forma segura
+        const parteEntera = seccionValor.split('.')[0]; 
+        const soloDigitos = parteEntera.replace(/\D/g, ""); // Ahora sí aplica .replace a un String
         
-        // Convierte a número de forma segura y luego a texto limpio
         let seccionNumero = parseInt(soloDigitos, 10);
         let seccionLimpia = isNaN(seccionNumero) ? "" : String(seccionNumero);
 
-        // Tu misma cadena original concatenando la sección y las palabras clave al final
-        const combinedText = `${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''} ${item['CURP'] || ''} ${item['CALLE'] || ''} ${item['NUM EXT'] || ''} ${item['COLONIA'] || ''} ${seccionLimpia} seccion ${seccionLimpia} sección ${seccionLimpia}`.toLowerCase();
+        // 🔍 CONCATENACIÓN ROBUSTA: Forzamos String() en cada campo para evitar fallos si vienen nulos o numéricos
+        const nombre = String(item['NOMBRE'] || '').trim();
+        const apPaterno = String(item['AP PATERNO'] || '').trim();
+        const apMaterno = String(item['AP MATERNO'] || '').trim();
+        const curp = String(item['CURP'] || '').trim();
+        const calle = String(item['CALLE'] || '').trim();
+        const numExt = String(item['NUM EXT'] || '').trim();
+        const colonia = String(item['COLONIA'] || '').trim();
+
+        // Cadena unificada completamente convertida a minúsculas
+        const combinedText = `${nombre} ${apPaterno} ${apMaterno} ${curp} ${calle} ${numExt} ${colonia} ${seccionLimpia} seccion ${seccionLimpia} sección ${seccionLimpia}`.toLowerCase();
         
+        // Verifica que todos los tokens de búsqueda coincidan
         if (searchTokens.every(t => combinedText.includes(t))) {
-            // Guarda el valor limpio para que tu maquetación de tarjeta dibuje la sección sin romperse
             item['SECCION_LIMPIA'] = seccionLimpia;
             matchedRecords.push(item);
         }
@@ -1145,40 +1154,33 @@ function searchData() {
         const recordEnCola = pendingSync.find(p => p['CURP'] === item['CURP']);
         const estatusFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['ESTATUS_VISITA'] : (item['ESTATUS_VISITA'] || "");
         
-        // Extrae la cantidad de visitas de forma segura tolerando espacios ocultos en la llave
         const saludFinal = estaEnColaPendiente && recordEnCola ? recordEnCola['CUANTAS_VISITAS_SALUD'] : (item['CUANTAS_VISITAS_SALUD'] || item['CUANTAS_VISITAS_SALUD '] || "");
 
         const estatusLimpio = String(estatusFinal).toUpperCase().trim();
         const saludLimpia = String(saludFinal).toUpperCase().trim();
 
-        // 🎨 DETALLES ESTÉTICOS: ASIGNACIÓN DE CLASES ASOCIADAS A LAS 5 REGLAS EXACTAS
-        let claseColor = "result-item"; // Regla 1 y 2 por defecto (Azul Glaciar Pastel / Borde Dorado)
+        let claseColor = "result-item"; 
         let textoIndicador = ' <span style="color:#718096; font-weight:bold; font-size:12px; margin-left:5px;">⏳ No Visitado</span>';
 
         if (estatusLimpio === "LOCALIZADO" && saludLimpia === "NO_QUIERE") {
-            // /* 4. RECHAZO DE SALUD: Guinda Oscuro / Borde Dorado de Advertencia */
-            claseColor = "result-item status-rechazo-salud";
+            claseColor = "result-item status-rechazo-salul";
             textoIndicador = ' <span style="color:#BC955C; font-weight:bold; font-size:12px; margin-left:5px;">✓ Rechazo Salud</span>';
         } 
-        else if (estatusLimpio === "" && saludLinter === "NO_QUIERE" || (estatusLimpio === "" && saludLimpia === "NO_QUIERE")) {
-            // /* 5. PENDIENTES CON RECHAZO PREVIO: Fondo Azul Pastel / Borde Lateral Guinda */
+        else if (estatusLimpio === "" && saludLimpia === "NO_QUIERE") {
             claseColor = "result-item status-pendiente-rechazo";
             textoIndicador = ' <span style="color:#621132; font-weight:bold; font-size:12px; margin-left:5px;">⏳ Pendiente con Rechazo</span>';
         } 
         else if (estatusLimpio === "NO LOCALIZADO" && saludLimpia !== "NO_QUIERE") {
-            // /* 3. NO LOCALIZADOS: Rojo Rosáceo / Borde Carmesí */
             claseColor = "result-item status-nolocalizado";
             textoIndicador = ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
         } 
         else if (estatusLimpio === "LOCALIZADO") {
-            // /* 2. LOCALIZADOS ESTÁNDAR: Azul Glaciar Pastel / Borde Dorado */
             claseColor = "result-item status-localizado";
             textoIndicador = ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>';
         }
 
         div.className = claseColor;
         
-        // Mantiene tu maquetación limpia e inyecta la insignia dorada de la sección mapeada con tu HTML
         div.innerHTML = `<div style="font-size:16px; font-weight:700; color:var(--dark-color); margin-bottom:2px;">${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}</div>
                          <div style="font-size:13px; font-weight:600; color:var(--primary-color); margin-bottom:4px; letter-spacing:0.3px;">
                              CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_LIMPIA'] || 'S/S'}</span>
@@ -1188,6 +1190,7 @@ function searchData() {
         div.onclick = () => openForm(item); resultsContainer.appendChild(div);
     });
 }
+
 
 
 function buscarLocalidadesEnPantalla() {
