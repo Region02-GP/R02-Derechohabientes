@@ -1148,7 +1148,7 @@ function searchData() {
 
         // 🎨 DETALLES ESTÉTICOS: ASIGNACIÓN DE CLASES ASOCIADAS A LAS 5 REGLAS EXACTAS
         let claseColor = "result-item"; // Regla 1 y 2 por defecto (Azul Glaciar Pastel / Borde Dorado)
-        let textoIndicador = ' <span style="color:#718096; font-weight:bold; font-size:12px; margin-left:5px;">⏳ No Tocado</span>';
+        let textoIndicador = ' <span style="color:#718096; font-weight:bold; font-size:12px; margin-left:5px;">⏳ No Visitado</span>';
 
         if (estatusLimpio === "LOCALIZADO" && saludLimpia === "NO_QUIERE") {
             // /* 4. RECHAZO DE SALUD: Guinda Oscuro / Borde Dorado de Advertencia */
