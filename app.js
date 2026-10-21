@@ -1110,9 +1110,14 @@ function searchData() {
         const municipioDerechohabiente = item['MUNICIPIO'] ? String(item['MUNICIPIO']).toUpperCase().trim() : "";
         if (municipioDerechohabiente !== municipioBrigadista) continue; 
 
-        // DETECTOR TOLERANTE ORIGINAL: Recupera el valor de la sección e ignora decimales .0 de Excel de forma matemática pura
-        const seccionValor = item['SECCION'] || item['SECCION '] || item['Seccion'] || '';
-        let seccionNumero = parseInt(seccionValor, 10);
+        // 🔄 MODIFICACIÓN AQUÍ: Recupera el valor como texto estricto y limpia espacios
+        const seccionValor = String(item['SECCION'] || item['SECCION '] || item['Seccion'] || '').trim();
+        
+        // Extrae solo los dígitos (elimina ".0", letras o símbolos que vengan en el texto)
+        const soloDigitos = seccionValor.split('.')[0].replace(/\D/g, "");
+        
+        // Convierte a número de forma segura y luego a texto limpio
+        let seccionNumero = parseInt(soloDigitos, 10);
         let seccionLimpia = isNaN(seccionNumero) ? "" : String(seccionNumero);
 
         // Tu misma cadena original concatenando la sección y las palabras clave al final
@@ -1155,7 +1160,7 @@ function searchData() {
             claseColor = "result-item status-rechazo-salud";
             textoIndicador = ' <span style="color:#BC955C; font-weight:bold; font-size:12px; margin-left:5px;">✓ Rechazo Salud</span>';
         } 
-        else if (estatusLimpio === "" && saludLimpia === "NO_QUIERE") {
+        else if (estatusLimpio === "" && saludLinter === "NO_QUIERE" || (estatusLimpio === "" && saludLimpia === "NO_QUIERE")) {
             // /* 5. PENDIENTES CON RECHAZO PREVIO: Fondo Azul Pastel / Borde Lateral Guinda */
             claseColor = "result-item status-pendiente-rechazo";
             textoIndicador = ' <span style="color:#621132; font-weight:bold; font-size:12px; margin-left:5px;">⏳ Pendiente con Rechazo</span>';
@@ -1183,7 +1188,6 @@ function searchData() {
         div.onclick = () => openForm(item); resultsContainer.appendChild(div);
     });
 }
-
 
 
 function buscarLocalidadesEnPantalla() {
