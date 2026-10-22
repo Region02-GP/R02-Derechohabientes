@@ -1163,19 +1163,19 @@ function searchData() {
         let textoIndicador = ' <span style="color:#718096; font-weight:bold; font-size:12px; margin-left:5px;">⏳ No Visitado</span>';
 
         if (estatusLimpio === "LOCALIZADO" && saludLimpia === "NO_QUIERE") {
-            claseColor = "result-item status-rechazo-salul";
+            claseColor = "result-item.status-rechazo-salud";
             textoIndicador = ' <span style="color:#BC955C; font-weight:bold; font-size:12px; margin-left:5px;">✓ Rechazo Salud</span>';
         } 
         else if (estatusLimpio === "" && saludLimpia === "NO_QUIERE") {
-            claseColor = "result-item status-pendiente-rechazo";
+            claseColor = "result-item.status-pendiente-rechazo";
             textoIndicador = ' <span style="color:#621132; font-weight:bold; font-size:12px; margin-left:5px;">⏳ Pendiente con Rechazo</span>';
         } 
         else if (estatusLimpio === "NO LOCALIZADO" && saludLimpia !== "NO_QUIERE") {
-            claseColor = "result-item status-nolocalizado";
+            claseColor = "result-item.status-nolocalizado";
             textoIndicador = ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
         } 
         else if (estatusLimpio === "LOCALIZADO") {
-            claseColor = "result-item status-localizado";
+            claseColor = "result-item.status-localizado";
             textoIndicador = ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>';
         }
 
