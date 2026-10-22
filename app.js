@@ -1161,21 +1161,27 @@ function searchData() {
 
         let claseColor = "result-item"; 
         let textoIndicador = ' <span style="color:#718096; font-weight:bold; font-size:12px; margin-left:5px;">⏳ No Visitado</span>';
+        // Variable dinámica para cambiar el fondo de la etiqueta SECCIÓN si es rechazo
+        let badgeSeccionColor = "#BC955C"; 
+        let badgeSeccionTextoColor = "#1F2937";
 
         if (estatusLimpio === "LOCALIZADO" && saludLimpia === "NO_QUIERE") {
-            claseColor = "result-item.status-rechazo-salud";
-            textoIndicador = ' <span style="color:#BC955C; font-weight:bold; font-size:12px; margin-left:5px;">✓ Rechazo Salud</span>';
+            claseColor = "result-item status-rechazo-salul";
+            // 🔴 CAMBIO A GUINDA (#621132) para el texto e indicador
+            textoIndicador = ' <span style="color:#621132; font-weight:bold; font-size:12px; margin-left:5px;">✓ Rechazo Salud</span>';
+            badgeSeccionColor = "#621132";
+            badgeSeccionTextoColor = "#FFFFFF";
         } 
         else if (estatusLimpio === "" && saludLimpia === "NO_QUIERE") {
-            claseColor = "result-item.status-pendiente-rechazo";
+            claseColor = "result-item status-pendiente-rechazo";
             textoIndicador = ' <span style="color:#621132; font-weight:bold; font-size:12px; margin-left:5px;">⏳ Pendiente con Rechazo</span>';
         } 
         else if (estatusLimpio === "NO LOCALIZADO" && saludLimpia !== "NO_QUIERE") {
-            claseColor = "result-item.status-nolocalizado";
+            claseColor = "result-item status-nolocalizado";
             textoIndicador = ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
         } 
         else if (estatusLimpio === "LOCALIZADO") {
-            claseColor = "result-item.status-localizado";
+            claseColor = "result-item status-localizado";
             textoIndicador = ' <span style="color:#137333; font-weight:bold; font-size:12px; margin-left:5px;">✓ Localizado</span>';
         }
 
@@ -1183,14 +1189,13 @@ function searchData() {
         
         div.innerHTML = `<div style="font-size:16px; font-weight:700; color:var(--dark-color); margin-bottom:2px;">${item['NOMBRE'] || ''} ${item['AP PATERNO'] || ''} ${item['AP MATERNO'] || ''}${textoIndicador}</div>
                          <div style="font-size:13px; font-weight:600; color:var(--primary-color); margin-bottom:4px; letter-spacing:0.3px;">
-                             CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:#BC955C; color:#1F2937; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_LIMPIA'] || 'S/S'}</span>
+                             CURP: ${item['CURP'] || 'SIN CURP'} | <span style="background-color:${badgeSeccionColor}; color:${badgeSeccionTextoColor}; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 11px; display:inline-block; margin-left:2px;">SECCIÓN: ${item['SECCION_LIMPIA'] || 'S/S'}</span>
                          </div>
                          <div style="font-size:13px; color:#555555;">📍 Calle: ${item['CALLE'] || 'S/C'}, No. Ext: ${item['NUM EXT'] || 'S/N'}, Col. ${item['COLONIA'] || 'S/C'}</div>`;
                          
         div.onclick = () => openForm(item); resultsContainer.appendChild(div);
     });
 }
-
 
 
 function buscarLocalidadesEnPantalla() {
