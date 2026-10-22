@@ -1176,7 +1176,7 @@ function searchData() {
             claseColor = "result-item status-pendiente-rechazo";
             textoIndicador = ' <span style="color:#621132; font-weight:bold; font-size:12px; margin-left:5px;">⏳ Pendiente con Rechazo</span>';
         } 
-        else if (estatusLimpio === "NO LOCALIZADO" && saludLimpia !== "NO_QUIERE") {
+        else if (estatusLimpio === "NO LOCALIZADO" && saludLimpia === "NO_QUIERE") {
             claseColor = "result-item status-nolocalizado";
             textoIndicador = ' <span style="color:#C5221F; font-weight:bold; font-size:12px; margin-left:5px;">✗ No Localizado</span>';
         } 
