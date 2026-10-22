@@ -1166,7 +1166,7 @@ function searchData() {
         let badgeSeccionTextoColor = "#1F2937";
 
         if (estatusLimpio === "LOCALIZADO" && saludLimpia === "NO_QUIERE") {
-            claseColor = "result-item status-rechazo-salul";
+            claseColor = "result-item status-rechazo-salud";
             // 🔴 CAMBIO A GUINDA (#621132) para el texto e indicador
             textoIndicador = ' <span style="color:#621132; font-weight:bold; font-size:12px; margin-left:5px;">✓ Rechazo Salud</span>';
             badgeSeccionColor = "#621132";
